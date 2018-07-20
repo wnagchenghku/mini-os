@@ -1,0 +1,3 @@
+ifeq ($(CONFIG_UK_ARCH),arm)
+	include $(CONFIG_UK_BASE)/arch/arm/arm/Compiler.uk
+endif

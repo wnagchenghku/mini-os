@@ -1,0 +1,39 @@
+################################################################################
+#
+# Invisible feature flags
+#
+################################################################################
+# set to true when an according feature library was selected
+
+config HAVE_BOOTENTRY
+       bool
+       default n
+
+config HAVE_LIBC
+       bool
+       default n
+
+config HAVE_SCHED
+       bool
+       default n
+
+
+################################################################################
+#
+# Library definitions
+#
+################################################################################
+source "lib/ukboot/Config.uk"
+source "lib/ukdebug/Config.uk"
+source "lib/ukargparse/Config.uk"
+source "lib/uktimeconv/Config.uk"
+source "lib/nolibc/Config.uk"
+source "lib/ukalloc/Config.uk"
+source "lib/ukallocbbuddy/Config.uk"
+source "lib/uksched/Config.uk"
+source "lib/ukschedcoop/Config.uk"
+source "lib/fdt/Config.uk"
+source "lib/uklock/Config.uk"
+source "lib/ukmpi/Config.uk"
+source "lib/ukswrand/Config.uk"
+source "lib/ukbus/Config.uk"
