@@ -1,0 +1,83 @@
+#  liblnewlib Makefile.uk
+#
+#  Authors: Felipe Huici <felipe.huici@neclab.eu>
+#           Florian Schmidt <florian.schmidt@neclab.eu>
+#
+#  Copyright (c) 2017, NEC Europe Ltd., NEC Corporation. All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions
+#  are met:
+#
+#  1. Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#  3. Neither the name of the copyright holder nor the names of its
+#     contributors may be used to endorse or promote products derived from
+#     this software without specific prior written permission.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#  POSSIBILITY OF SUCH DAMAGE.
+#
+#  THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
+#
+
+################################################################################
+# Library registration
+################################################################################
+# We have two libraries with newlib: libc and libm
+# We are going to register both but fetch the sources of both into libc's
+# build dir.
+$(eval $(call addlib_s,libcpp,$(CONFIG_LIBCPP)))
+
+
+################################################################################
+# Sources
+################################################################################
+LIBCPP_VERSION=4.0.1
+LIBCPP_URL=http://releases.llvm.org/$(LIBCPP_VERSION)/libcxx-$(LIBCPP_VERSION).src.tar.xz
+$(eval $(call fetch,libcpp,$(LIBCPP_URL)))
+
+################################################################################
+# Helpers
+################################################################################
+LIBCPP_EXTRACTED=$(LIBCPP_ORIGIN)/libcxx-$(LIBCPP_VERSION).src
+
+################################################################################
+# Library includes
+################################################################################
+CINCLUDES-$(CONFIG_LIBCPP) += -I$(LIBCPP_BASE)/include -I$(LIBCPP_EXTRACTED)/include
+CXXINCLUDES-$(CONFIG_LIBCPP) += -I$(LIBCPP_BASE)/include -I$(LIBCPP_EXTRACTED)/include
+
+################################################################################
+# Global flags
+################################################################################
+LIBCPP_CFLAGS-y       += -DMISSING_SYSCALL_NAMES -DMALLOC_PROVIDED 
+LIBCPP_CXXFLAGS-y     += -D_LIBCPP_HAS_NO_THREADS -D_HAVE_LONG_DOUBLE -D_LDBL_EQ_DBL
+
+# Suppress some warnings to make the build process look neater
+LIBCPP_SUPPRESS_FLAGS += 
+
+LIBCPP_CFLAGS-y   += $(LIBCPP_SUPPRESS_FLAGS)
+LIBCPP_CXXFLAGS-y += $(LIBCPP_SUPPRESS_FLAGS)
+
+################################################################################
+# OS dependencies code - Glue between Unicore and newlib
+################################################################################
+
+
+################################################################################
+# 
+################################################################################
+LIBCPP_SRCS-y += $(LIBCPP_EXTRACTED)/src/algorithm.cpp

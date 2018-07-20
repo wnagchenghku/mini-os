@@ -1,0 +1,5 @@
+menuconfig LIBCPP
+	bool "libcpp - A C++ standard library"
+	default n
+	select LIBNOLIBC if !HAVE_LIBC
+	select LIBUCALLOC

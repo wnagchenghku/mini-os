@@ -213,7 +213,7 @@ endif
 define _extracttoorigin_tgz =
 $(BUILD_DIR)/$(1)/.origin: $(2)
 	$(call verbose_cmd,UNTAR,$(1)':' $(notdir $(2)), \
-	  $(TAR) -xzf $(2) \
+	  $(TAR) xf $(2) \
 	         -C $(BUILD_DIR)/$(1)/origin && \
 	  $(TOUCH) $(BUILD_DIR)/$(1)/.origin)
 endef
@@ -250,7 +250,7 @@ endef
 #
 # unarchive $libname,$archive_fname,$dir_with_patches(optional)
 define unarchive =
-$(if $(filter %.tar.gz %.tgz,$(2)),$(call _extracttoorigin_tgz,$(1),$(2)),\
+$(if $(filter %tar.xz %.tar.gz %.tgz,$(2)),$(call _extracttoorigin_tgz,$(1),$(2)),\
 $(if $(filter %.zip,$(2)),$(call          _extracttoorigin_zip,$(1),$(2)),\
 $(error $(2): missing extraction rule for archive type)\
 ))
@@ -358,7 +358,7 @@ define buildrule =
 $(if $(filter %.S,  $(2)),$(call buildrule_S ,$(1),$(2),$(3),$(4)),\
 $(if $(filter %.c,  $(2)),$(call buildrule_c ,$(1),$(2),$(3),$(4)),\
 $(if $(filter %.cc, $(2)),$(call buildrule_cc,$(1),$(2),$(3),$(4)),\
-$(if $(filter 5.cpp,$(2)),$(call buildrule_cc,$(1),$(2),$(3),$(4)),\
+$(if $(filter %.cpp,$(2)),$(call buildrule_cc,$(1),$(2),$(3),$(4)),\
 $(error $(3): missing build rule for source type $(suffix $(2))) \
 ))))
 endef
