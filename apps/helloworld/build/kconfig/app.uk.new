@@ -1,0 +1,2 @@
+# external application
+source "/home/cheng/unikraft/apps/helloworld/Config.uk"

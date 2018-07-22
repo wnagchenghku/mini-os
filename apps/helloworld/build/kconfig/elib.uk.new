@@ -1,0 +1,2 @@
+# external libraries
+source "/home/cheng/unikraft/libs/newlib/Config.uk"

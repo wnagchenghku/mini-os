@@ -1,0 +1,58 @@
+deps_config := \
+	/home/cheng/unikraft/apps/helloworld/Config.uk \
+	/home/cheng/unikraft/apps/helloworld/build/kconfig/app.uk \
+	/home/cheng/unikraft/libs/newlib/Config.uk \
+	/home/cheng/unikraft/apps/helloworld/build/kconfig/elib.uk \
+	lib/ukbus/Config.uk \
+	lib/ukswrand/Config.uk \
+	lib/ukmpi/Config.uk \
+	lib/uklock/Config.uk \
+	lib/fdt/Config.uk \
+	lib/ukschedcoop/Config.uk \
+	lib/uksched/Config.uk \
+	lib/ukallocbbuddy/Config.uk \
+	lib/ukalloc/Config.uk \
+	lib/nolibc/Config.uk \
+	lib/uktimeconv/Config.uk \
+	lib/ukargparse/Config.uk \
+	lib/ukdebug/Config.uk \
+	lib/ukboot/Config.uk \
+	lib/Config.uk \
+	plat/linuxu/Config.uk \
+	plat/kvm/Config.uk \
+	plat/xen/Config.uk \
+	plat/Config.uk \
+	arch/arm/arm/Config.uk \
+	arch/x86/x86_64/Config.uk \
+	arch/Config.uk \
+	/home/cheng/unikraft/unikraft/Config.uk
+
+/home/cheng/unikraft/apps/helloworld/build/kconfig/auto.conf: \
+	$(deps_config)
+
+ifneq "$(UK_NAME)" "helloworld"
+/home/cheng/unikraft/apps/helloworld/build/kconfig/auto.conf: FORCE
+endif
+ifneq "$(UK_APP)" "/home/cheng/unikraft/apps/helloworld"
+/home/cheng/unikraft/apps/helloworld/build/kconfig/auto.conf: FORCE
+endif
+ifneq "$(UK_BASE)" "/home/cheng/unikraft/unikraft"
+/home/cheng/unikraft/apps/helloworld/build/kconfig/auto.conf: FORCE
+endif
+ifneq "$(UK_ARCH)" "x86_64"
+/home/cheng/unikraft/apps/helloworld/build/kconfig/auto.conf: FORCE
+endif
+ifneq "$(UK_CODENAME)" "Titan"
+/home/cheng/unikraft/apps/helloworld/build/kconfig/auto.conf: FORCE
+endif
+ifneq "$(UK_FULLVERSION)" "0.2~cdb5bbc"
+/home/cheng/unikraft/apps/helloworld/build/kconfig/auto.conf: FORCE
+endif
+ifneq "$(KCONFIG_ELIB_IN)" "/home/cheng/unikraft/apps/helloworld/build/kconfig/elib.uk"
+/home/cheng/unikraft/apps/helloworld/build/kconfig/auto.conf: FORCE
+endif
+ifneq "$(KCONFIG_APP_IN)" "/home/cheng/unikraft/apps/helloworld/build/kconfig/app.uk"
+/home/cheng/unikraft/apps/helloworld/build/kconfig/auto.conf: FORCE
+endif
+
+$(deps_config): ;
