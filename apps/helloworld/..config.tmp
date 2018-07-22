@@ -45,7 +45,7 @@ endif
 ifneq "$(UK_CODENAME)" "Titan"
 /home/cheng/unikraft/apps/helloworld/build/kconfig/auto.conf: FORCE
 endif
-ifneq "$(UK_FULLVERSION)" "0.2~cdb5bbc"
+ifneq "$(UK_FULLVERSION)" "0.2~9353a17"
 /home/cheng/unikraft/apps/helloworld/build/kconfig/auto.conf: FORCE
 endif
 ifneq "$(KCONFIG_ELIB_IN)" "/home/cheng/unikraft/apps/helloworld/build/kconfig/elib.uk"

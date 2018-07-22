@@ -10,7 +10,8 @@ APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/src/main.c
 APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/src/init.c
 APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/src/convolution-inference.c
 APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/src/x86_64-fma/softmax.c
-APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/deps/pthreadpool/src/threadpool-pthreads.c
+APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/NNPACK/deps/pthreadpool/src/threadpool-pthreads.c
+APPHELLOWORLD_THREADPOOL-PTHREADS_FLAGS-y += -DDEBUG=1
 APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/deps/cpuinfo/deps/clog/src/clog.c
 APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/deps/cpuinfo/src/deps_cpuinfo_src_init.c
 APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/deps/cpuinfo/src/api.c
