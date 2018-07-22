@@ -32,6 +32,3 @@ APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/deps/cpuinfo/src/linux/multiline.c
 APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/deps/cpuinfo/src/linux/current.c
 APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/deps/cpuinfo/src/linux/cpulist.c
 APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/deps/cpuinfo/src/linux/processors.c
-
-
-
