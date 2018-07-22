@@ -66,6 +66,7 @@ LIBNEWLIB_LIBM = $(LIBNEWLIBC_ORIGIN)/$(LIBNEWLIB_SUBDIR)/newlib/libm
 # Library includes
 ################################################################################
 CINCLUDES-$(CONFIG_LIBNEWLIBC)   += -I$(LIBNEWLIBC_BASE)/include
+#CINCLUDES-$(CONFIG_LIBNEWLIBC)   += -I$(LIBNEWLIB_LIBC)/sys/linux/include
 CINCLUDES-$(CONFIG_LIBNEWLIBC)   += -I$(LIBNEWLIB_LIBC)/include
 CXXINCLUDES-$(CONFIG_LIBNEWLIBC) += -I$(LIBNEWLIBC_BASE)/include
 CXXINCLUDES-$(CONFIG_LIBNEWLIBC) += -I$(LIBNEWLIB_LIBC)/include
@@ -81,7 +82,7 @@ LIBNEWLIBM_CXXINCLUDES += -I$(LIBNEWLIB_LIBM)/common
 ################################################################################
 # Global flags
 ################################################################################
-LIBNEWLIBC_CFLAGS-y       += -DMISSING_SYSCALL_NAMES -DMALLOC_PROVIDED
+LIBNEWLIBC_CFLAGS-y       += -DMISSING_SYSCALL_NAMES -DMALLOC_PROVIDED -D_POSIX_THREADS
 
 # Suppress some warnings to make the build process look neater
 SUPPRESS_FLAGS += -Wno-unused-parameter -Wno-unused-variable -Wno-nonnull	\
