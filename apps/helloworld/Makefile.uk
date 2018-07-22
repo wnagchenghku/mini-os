@@ -6,9 +6,6 @@ APPHELLOWORLD_CFLAGS-y += -D__linux__ -D_POSIX_THREADS -D_POSIX_MONOTONIC_CLOCK 
 
 APPHELLOWORLD_OBJS-y += $(APPHELLOWORLD_BASE)/lib/2d-fourier-8x8.py.o $(APPHELLOWORLD_BASE)/lib/2d-fourier-16x16.py.o $(APPHELLOWORLD_BASE)/lib/2d-winograd-8x8-3x3.py.o $(APPHELLOWORLD_BASE)/lib/blas/s8gemm.py.o $(APPHELLOWORLD_BASE)/lib/blas/c8gemm.py.o $(APPHELLOWORLD_BASE)/lib/blas/s4c6gemm.py.o $(APPHELLOWORLD_BASE)/lib/blas/conv1x1.py.o $(APPHELLOWORLD_BASE)/lib/blas/sgemm.py.o $(APPHELLOWORLD_BASE)/lib/max-pooling.py.o $(APPHELLOWORLD_BASE)/lib/relu.py.o $(APPHELLOWORLD_BASE)/lib/softmax.py.o $(APPHELLOWORLD_BASE)/lib/blas/sdotxf.py.o $(APPHELLOWORLD_BASE)/lib/blas/shdotxf.py.o
 
-
-#$(APPHELLOWORLD_BASE)/lib/libnnpack.a $(APPHELLOWORLD_BASE)/lib/libcpuinfo.a $(APPHELLOWORLD_BASE)/lib/libclog.a $(APPHELLOWORLD_BASE)/lib/libpthreadpool.a 
-
 APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/src/main.c
 APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/src/init.c
 APPHELLOWORLD_SRCS-y += $(APPHELLOWORLD_BASE)/src/convolution-inference.c
