@@ -163,21 +163,41 @@ APP_O=$(OBJ_DIR)/$(TARGET)_app.o
 endif
 
 $(OBJ_DIR)/$(TARGET): links include/list.h $(OBJS) $(APP_O) arch_lib
-	$(LD) -r $(LDFLAGS) $(HEAD_OBJ) $(APP_O) $(OBJS) $(LDARCHLIB) $(LDLIBS) -o $@.o
-	$(OBJCOPY) -w -G $(GLOBAL_PREFIX)* -G _start $@.o $@.o
-	$(LD) $(LDFLAGS) $(LDFLAGS_FINAL) $@.o $(EXTRA_OBJS) -o $@
+	$(LD) $(LDFLAGS) $(LDFLAGS_FINAL) $(HEAD_OBJ) $(APP_O) $(OBJS) $(LDARCHLIB) $(NEWS_OBJS) $(LDLIBS) -o $@
+	$(OBJCOPY) -w -G $(GLOBAL_PREFIX)* -G _start $@ $@
+	$(OBJDUMP) -S $@ > $@.asm
 	gzip -f -9 -c $@ >$@.gz
+
+# for build mini-os in a specific folder (so that not bother dropbox)
+OBJ_MINIOS=obj-minios
+$(OBJ_MINIOS): 
+	[ -d $@ ] || \
+	for i in $$(cd $(CURDIR) ; find . -type d) ; do \
+                mkdir -p $@/$$i ; \
+	done
+
+# we can use #make obj# to gen all objs in obj-mininos dir 
+.PHONY: obj obj-clean
+obj: $(OBJ_MINIOS)
+	$(MAKE) DESTDIR= OBJ_DIR=$(CURDIR)/$<
+	ln -sf ../domain_config $(CURDIR)/$<
+	ln -sf ../../../tools/libxl/xl $(CURDIR)/$</xl-test
+
+obj-clean:
+	rm -fr $(OBJ_MINIOS)
 
 .PHONY: clean arch_clean
 
 arch_clean:
 	$(MAKE) --directory=$(TARGET_ARCH_DIR) OBJ_DIR=$(OBJ_DIR)/$(TARGET_ARCH_DIR) clean || exit 1;
 
-clean:	arch_clean
+clean:	arch_clean obj-clean
 	for dir in $(addprefix $(OBJ_DIR)/,$(SUBDIRS)); do \
-		rm -f $$dir/*.o; \
+		rm -f $$dir/*.o $$dir/*.o.*; \
 	done
 	rm -f include/list.h
+	rm -fr include/x86/mini-os
+	rm -f $(OBJ_DIR)/*.o.* $(OBJ_DIR)/*.asm
 	rm -f $(OBJ_DIR)/*.o *~ $(OBJ_DIR)/core $(OBJ_DIR)/$(TARGET).elf $(OBJ_DIR)/$(TARGET).raw $(OBJ_DIR)/$(TARGET) $(OBJ_DIR)/$(TARGET).gz
 	find . $(OBJ_DIR) -type l | xargs rm -f
 	$(RM) $(OBJ_DIR)/lwip.a $(LWO)
