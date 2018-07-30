@@ -1,0 +1,696 @@
+diff -uNr newlib-1.18.0/newlib/iconvdata/Makefile.in newlib-1.18.0-new/newlib/iconvdata/Makefile.in
+--- newlib-1.18.0/newlib/iconvdata/Makefile.in	2009-10-21 06:43:47.000000000 +0800
++++ newlib-1.18.0-new/newlib/iconvdata/Makefile.in	2015-10-22 23:53:28.780009290 +0800
+@@ -89,7 +89,7 @@
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	--mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+diff -uNr newlib-1.18.0/newlib/libc/locale/Makefile.in newlib-1.18.0-new/newlib/libc/locale/Makefile.in
+--- newlib-1.18.0/newlib/libc/locale/Makefile.in	2009-10-21 06:43:50.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/locale/Makefile.in	2015-10-22 23:09:30.888009277 +0800
+@@ -85,7 +85,7 @@
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	--mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+diff -uNr newlib-1.18.0/newlib/libc/misc/Makefile.in newlib-1.18.0-new/newlib/libc/misc/Makefile.in
+--- newlib-1.18.0/newlib/libc/misc/Makefile.in	2009-10-21 06:44:08.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/misc/Makefile.in	2015-10-22 23:41:31.972006467 +0800
+@@ -74,7 +74,7 @@
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	--mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+diff -uNr newlib-1.18.0/newlib/libc/posix/Makefile.in newlib-1.18.0-new/newlib/libc/posix/Makefile.in
+--- newlib-1.18.0/newlib/libc/posix/Makefile.in	2009-10-21 06:44:09.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/posix/Makefile.in	2015-10-22 23:25:30.716008458 +0800
+@@ -111,7 +111,7 @@
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	--mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+diff -uNr newlib-1.18.0/newlib/libc/stdio/Makefile.in newlib-1.18.0-new/newlib/libc/stdio/Makefile.in
+--- newlib-1.18.0/newlib/libc/stdio/Makefile.in	2009-10-21 06:44:09.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/stdio/Makefile.in	2015-10-22 22:19:36.224009408 +0800
+@@ -204,7 +204,7 @@
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	--mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+diff -uNr newlib-1.18.0/newlib/libc/stdio64/Makefile.in newlib-1.18.0-new/newlib/libc/stdio64/Makefile.in
+--- newlib-1.18.0/newlib/libc/stdio64/Makefile.in	2009-10-21 06:44:09.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/stdio64/Makefile.in	2015-10-22 23:39:56.896009607 +0800
+@@ -88,7 +88,7 @@
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	--mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+diff -uNr newlib-1.18.0/newlib/libc/stdlib/Makefile.in newlib-1.18.0-new/newlib/libc/stdlib/Makefile.in
+--- newlib-1.18.0/newlib/libc/stdlib/Makefile.in	2009-10-21 06:44:10.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/stdlib/Makefile.in	2015-10-22 23:39:02.316009100 +0800
+@@ -173,7 +173,7 @@
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	--mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+diff -uNr newlib-1.18.0/newlib/libc/sys/linux/argp/Makefile.in newlib-1.18.0-new/newlib/libc/sys/linux/argp/Makefile.in
+--- newlib-1.18.0/newlib/libc/sys/linux/argp/Makefile.in	2008-09-29 23:40:43.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/sys/linux/argp/Makefile.in	2015-10-22 23:33:43.580009026 +0800
+@@ -78,7 +78,7 @@
+ am__depfiles_maybe =
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+-LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
++LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) \
+ 	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+ 	$(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+diff -uNr newlib-1.18.0/newlib/libc/sys/linux/dl/Makefile.in newlib-1.18.0-new/newlib/libc/sys/linux/dl/Makefile.in
+--- newlib-1.18.0/newlib/libc/sys/linux/dl/Makefile.in	2008-09-29 23:40:43.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/sys/linux/dl/Makefile.in	2015-10-22 22:21:51.268007338 +0800
+@@ -86,7 +86,7 @@
+ am__depfiles_maybe =
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+-LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
++LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) \
+ 	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+ 	$(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+diff -uNr newlib-1.18.0/newlib/libc/sys/linux/iconv/Makefile.in newlib-1.18.0-new/newlib/libc/sys/linux/iconv/Makefile.in
+--- newlib-1.18.0/newlib/libc/sys/linux/iconv/Makefile.in	2008-09-29 23:40:43.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/sys/linux/iconv/Makefile.in	2015-10-22 23:31:33.164009199 +0800
+@@ -84,7 +84,7 @@
+ am__depfiles_maybe =
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+-LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
++LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) \
+ 	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+ 	$(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+@@ -400,43 +400,43 @@
+ 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-gconv_cache.obj `if test -f 'gconv_cache.c'; then $(CYGPATH_W) 'gconv_cache.c'; else $(CYGPATH_W) '$(srcdir)/gconv_cache.c'; fi`
+ 
+ libiconv_la-iconv_open.lo: iconv_open.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-iconv_open.lo `test -f 'iconv_open.c' || echo '$(srcdir)/'`iconv_open.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-iconv_open.lo `test -f 'iconv_open.c' || echo '$(srcdir)/'`iconv_open.c
+ 
+ libiconv_la-iconv.lo: iconv.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-iconv.lo `test -f 'iconv.c' || echo '$(srcdir)/'`iconv.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-iconv.lo `test -f 'iconv.c' || echo '$(srcdir)/'`iconv.c
+ 
+ libiconv_la-iconv_close.lo: iconv_close.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-iconv_close.lo `test -f 'iconv_close.c' || echo '$(srcdir)/'`iconv_close.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-iconv_close.lo `test -f 'iconv_close.c' || echo '$(srcdir)/'`iconv_close.c
+ 
+ libiconv_la-gconv_open.lo: gconv_open.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_open.lo `test -f 'gconv_open.c' || echo '$(srcdir)/'`gconv_open.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_open.lo `test -f 'gconv_open.c' || echo '$(srcdir)/'`gconv_open.c
+ 
+ libiconv_la-gconv.lo: gconv.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv.lo `test -f 'gconv.c' || echo '$(srcdir)/'`gconv.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv.lo `test -f 'gconv.c' || echo '$(srcdir)/'`gconv.c
+ 
+ libiconv_la-gconv_close.lo: gconv_close.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_close.lo `test -f 'gconv_close.c' || echo '$(srcdir)/'`gconv_close.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_close.lo `test -f 'gconv_close.c' || echo '$(srcdir)/'`gconv_close.c
+ 
+ libiconv_la-gconv_db.lo: gconv_db.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_db.lo `test -f 'gconv_db.c' || echo '$(srcdir)/'`gconv_db.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_db.lo `test -f 'gconv_db.c' || echo '$(srcdir)/'`gconv_db.c
+ 
+ libiconv_la-gconv_dl.lo: gconv_dl.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_dl.lo `test -f 'gconv_dl.c' || echo '$(srcdir)/'`gconv_dl.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_dl.lo `test -f 'gconv_dl.c' || echo '$(srcdir)/'`gconv_dl.c
+ 
+ libiconv_la-gconv_conf.lo: gconv_conf.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_conf.lo `test -f 'gconv_conf.c' || echo '$(srcdir)/'`gconv_conf.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_conf.lo `test -f 'gconv_conf.c' || echo '$(srcdir)/'`gconv_conf.c
+ 
+ libiconv_la-gconv_builtin.lo: gconv_builtin.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_builtin.lo `test -f 'gconv_builtin.c' || echo '$(srcdir)/'`gconv_builtin.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_builtin.lo `test -f 'gconv_builtin.c' || echo '$(srcdir)/'`gconv_builtin.c
+ 
+ libiconv_la-gconv_simple.lo: gconv_simple.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_simple.lo `test -f 'gconv_simple.c' || echo '$(srcdir)/'`gconv_simple.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_simple.lo `test -f 'gconv_simple.c' || echo '$(srcdir)/'`gconv_simple.c
+ 
+ libiconv_la-gconv_trans.lo: gconv_trans.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_trans.lo `test -f 'gconv_trans.c' || echo '$(srcdir)/'`gconv_trans.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_trans.lo `test -f 'gconv_trans.c' || echo '$(srcdir)/'`gconv_trans.c
+ 
+ libiconv_la-gconv_cache.lo: gconv_cache.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_cache.lo `test -f 'gconv_cache.c' || echo '$(srcdir)/'`gconv_cache.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libiconv_la_CFLAGS) $(CFLAGS) -c -o libiconv_la-gconv_cache.lo `test -f 'gconv_cache.c' || echo '$(srcdir)/'`gconv_cache.c
+ 
+ mostlyclean-libtool:
+ 	-rm -f *.lo
+diff -uNr newlib-1.18.0/newlib/libc/sys/linux/intl/Makefile.in newlib-1.18.0-new/newlib/libc/sys/linux/intl/Makefile.in
+--- newlib-1.18.0/newlib/libc/sys/linux/intl/Makefile.in	2008-09-29 23:40:43.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/sys/linux/intl/Makefile.in	2015-10-22 23:22:43.780008853 +0800
+@@ -84,7 +84,7 @@
+ am__depfiles_maybe =
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+-LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
++LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) \
+ 	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+ 	$(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+diff -uNr newlib-1.18.0/newlib/libc/sys/linux/linuxthreads/Makefile.in newlib-1.18.0-new/newlib/libc/sys/linux/linuxthreads/Makefile.in
+--- newlib-1.18.0/newlib/libc/sys/linux/linuxthreads/Makefile.in	2009-10-21 06:44:13.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/sys/linux/linuxthreads/Makefile.in	2015-10-22 21:59:17.848008833 +0800
+@@ -203,7 +203,7 @@
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	--mode=compile $(CC) -include stddef.h -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+diff -uNr newlib-1.18.0/newlib/libc/sys/linux/linuxthreads/signalpearo.h newlib-1.18.0-new/newlib/libc/sys/linux/linuxthreads/signalpearo.h
+--- newlib-1.18.0/newlib/libc/sys/linux/linuxthreads/signalpearo.h	1970-01-01 07:00:00.000000000 +0700
++++ newlib-1.18.0-new/newlib/libc/sys/linux/linuxthreads/signalpearo.h	2015-10-22 21:46:08.820008698 +0800
+@@ -0,0 +1,7 @@
++#ifndef __THROWNL
++#define __THROWNL __attribute__ ((__nothrow__))
++#endif
++
++#ifndef __THROW
++#define __THROW __attribute__ ((__nothrow__, __leaf__))
++#endif
+diff -uNr newlib-1.18.0/newlib/libc/sys/linux/linuxthreads/signals.c newlib-1.18.0-new/newlib/libc/sys/linux/linuxthreads/signals.c
+--- newlib-1.18.0/newlib/libc/sys/linux/linuxthreads/signals.c	2003-05-29 06:04:37.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/sys/linux/linuxthreads/signals.c	2015-10-22 21:46:39.028009013 +0800
+@@ -18,6 +18,7 @@
+ #include <signal.h>
+ #include "pthread.h"
+ #include "internals.h"
++#include "signalpearo.h"
+ #include "spinlock.h"
+ #include <ucontext.h>
+ #include <sigcontextinfo.h>
+diff -uNr newlib-1.18.0/newlib/libc/sys/linux/machine/i386/Makefile.in newlib-1.18.0-new/newlib/libc/sys/linux/machine/i386/Makefile.in
+--- newlib-1.18.0/newlib/libc/sys/linux/machine/i386/Makefile.in	2009-10-21 06:44:17.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/sys/linux/machine/i386/Makefile.in	2015-10-22 23:37:25.664009499 +0800
+@@ -87,7 +87,7 @@
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	--mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+diff -uNr newlib-1.18.0/newlib/libc/sys/linux/Makefile.in newlib-1.18.0-new/newlib/libc/sys/linux/Makefile.in
+--- newlib-1.18.0/newlib/libc/sys/linux/Makefile.in	2009-10-21 06:44:13.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/sys/linux/Makefile.in	2015-10-22 23:14:00.172009154 +0800
+@@ -179,7 +179,7 @@
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	--mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+diff -uNr newlib-1.18.0/newlib/libc/sys/linux/net/Makefile.in newlib-1.18.0-new/newlib/libc/sys/linux/net/Makefile.in
+--- newlib-1.18.0/newlib/libc/sys/linux/net/Makefile.in	2008-09-29 23:40:44.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/sys/linux/net/Makefile.in	2015-10-22 22:53:37.648009015 +0800
+@@ -181,7 +181,7 @@
+ am__depfiles_maybe =
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+-LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
++LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) \
+ 	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+ 	$(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+@@ -1079,319 +1079,319 @@
+ 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-ifname.obj `if test -f 'ifname.c'; then $(CYGPATH_W) 'ifname.c'; else $(CYGPATH_W) '$(srcdir)/ifname.c'; fi`
+ 
+ libnet_la-addr2ascii.lo: addr2ascii.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-addr2ascii.lo `test -f 'addr2ascii.c' || echo '$(srcdir)/'`addr2ascii.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-addr2ascii.lo `test -f 'addr2ascii.c' || echo '$(srcdir)/'`addr2ascii.c
+ 
+ libnet_la-ascii2addr.lo: ascii2addr.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ascii2addr.lo `test -f 'ascii2addr.c' || echo '$(srcdir)/'`ascii2addr.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ascii2addr.lo `test -f 'ascii2addr.c' || echo '$(srcdir)/'`ascii2addr.c
+ 
+ libnet_la-alias-lookup.lo: alias-lookup.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-alias-lookup.lo `test -f 'alias-lookup.c' || echo '$(srcdir)/'`alias-lookup.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-alias-lookup.lo `test -f 'alias-lookup.c' || echo '$(srcdir)/'`alias-lookup.c
+ 
+ libnet_la-base64.lo: base64.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-base64.lo `test -f 'base64.c' || echo '$(srcdir)/'`base64.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-base64.lo `test -f 'base64.c' || echo '$(srcdir)/'`base64.c
+ 
+ libnet_la-check_pf.lo: check_pf.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-check_pf.lo `test -f 'check_pf.c' || echo '$(srcdir)/'`check_pf.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-check_pf.lo `test -f 'check_pf.c' || echo '$(srcdir)/'`check_pf.c
+ 
+ libnet_la-digits_dots.lo: digits_dots.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-digits_dots.lo `test -f 'digits_dots.c' || echo '$(srcdir)/'`digits_dots.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-digits_dots.lo `test -f 'digits_dots.c' || echo '$(srcdir)/'`digits_dots.c
+ 
+ libnet_la-ether_aton.lo: ether_aton.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_aton.lo `test -f 'ether_aton.c' || echo '$(srcdir)/'`ether_aton.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_aton.lo `test -f 'ether_aton.c' || echo '$(srcdir)/'`ether_aton.c
+ 
+ libnet_la-ether_aton_r.lo: ether_aton_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_aton_r.lo `test -f 'ether_aton_r.c' || echo '$(srcdir)/'`ether_aton_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_aton_r.lo `test -f 'ether_aton_r.c' || echo '$(srcdir)/'`ether_aton_r.c
+ 
+ libnet_la-ether_hton.lo: ether_hton.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_hton.lo `test -f 'ether_hton.c' || echo '$(srcdir)/'`ether_hton.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_hton.lo `test -f 'ether_hton.c' || echo '$(srcdir)/'`ether_hton.c
+ 
+ libnet_la-ether_line.lo: ether_line.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_line.lo `test -f 'ether_line.c' || echo '$(srcdir)/'`ether_line.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_line.lo `test -f 'ether_line.c' || echo '$(srcdir)/'`ether_line.c
+ 
+ libnet_la-ether_ntoa.lo: ether_ntoa.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_ntoa.lo `test -f 'ether_ntoa.c' || echo '$(srcdir)/'`ether_ntoa.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_ntoa.lo `test -f 'ether_ntoa.c' || echo '$(srcdir)/'`ether_ntoa.c
+ 
+ libnet_la-ether_ntoa_r.lo: ether_ntoa_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_ntoa_r.lo `test -f 'ether_ntoa_r.c' || echo '$(srcdir)/'`ether_ntoa_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_ntoa_r.lo `test -f 'ether_ntoa_r.c' || echo '$(srcdir)/'`ether_ntoa_r.c
+ 
+ libnet_la-ether_ntoh.lo: ether_ntoh.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_ntoh.lo `test -f 'ether_ntoh.c' || echo '$(srcdir)/'`ether_ntoh.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ether_ntoh.lo `test -f 'ether_ntoh.c' || echo '$(srcdir)/'`ether_ntoh.c
+ 
+ libnet_la-ethers-lookup.lo: ethers-lookup.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ethers-lookup.lo `test -f 'ethers-lookup.c' || echo '$(srcdir)/'`ethers-lookup.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ethers-lookup.lo `test -f 'ethers-lookup.c' || echo '$(srcdir)/'`ethers-lookup.c
+ 
+ libnet_la-getaddrinfo.lo: getaddrinfo.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getaddrinfo.lo `test -f 'getaddrinfo.c' || echo '$(srcdir)/'`getaddrinfo.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getaddrinfo.lo `test -f 'getaddrinfo.c' || echo '$(srcdir)/'`getaddrinfo.c
+ 
+ libnet_la-getaliasent.lo: getaliasent.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getaliasent.lo `test -f 'getaliasent.c' || echo '$(srcdir)/'`getaliasent.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getaliasent.lo `test -f 'getaliasent.c' || echo '$(srcdir)/'`getaliasent.c
+ 
+ libnet_la-getaliasent_r.lo: getaliasent_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getaliasent_r.lo `test -f 'getaliasent_r.c' || echo '$(srcdir)/'`getaliasent_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getaliasent_r.lo `test -f 'getaliasent_r.c' || echo '$(srcdir)/'`getaliasent_r.c
+ 
+ libnet_la-getaliasname.lo: getaliasname.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getaliasname.lo `test -f 'getaliasname.c' || echo '$(srcdir)/'`getaliasname.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getaliasname.lo `test -f 'getaliasname.c' || echo '$(srcdir)/'`getaliasname.c
+ 
+ libnet_la-getaliasname_r.lo: getaliasname_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getaliasname_r.lo `test -f 'getaliasname_r.c' || echo '$(srcdir)/'`getaliasname_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getaliasname_r.lo `test -f 'getaliasname_r.c' || echo '$(srcdir)/'`getaliasname_r.c
+ 
+ libnet_la-gethstbyad.lo: gethstbyad.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstbyad.lo `test -f 'gethstbyad.c' || echo '$(srcdir)/'`gethstbyad.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstbyad.lo `test -f 'gethstbyad.c' || echo '$(srcdir)/'`gethstbyad.c
+ 
+ libnet_la-gethstbyad_r.lo: gethstbyad_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstbyad_r.lo `test -f 'gethstbyad_r.c' || echo '$(srcdir)/'`gethstbyad_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstbyad_r.lo `test -f 'gethstbyad_r.c' || echo '$(srcdir)/'`gethstbyad_r.c
+ 
+ libnet_la-gethstbynm2.lo: gethstbynm2.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstbynm2.lo `test -f 'gethstbynm2.c' || echo '$(srcdir)/'`gethstbynm2.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstbynm2.lo `test -f 'gethstbynm2.c' || echo '$(srcdir)/'`gethstbynm2.c
+ 
+ libnet_la-gethstbynm2_r.lo: gethstbynm2_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstbynm2_r.lo `test -f 'gethstbynm2_r.c' || echo '$(srcdir)/'`gethstbynm2_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstbynm2_r.lo `test -f 'gethstbynm2_r.c' || echo '$(srcdir)/'`gethstbynm2_r.c
+ 
+ libnet_la-gethstbynm.lo: gethstbynm.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstbynm.lo `test -f 'gethstbynm.c' || echo '$(srcdir)/'`gethstbynm.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstbynm.lo `test -f 'gethstbynm.c' || echo '$(srcdir)/'`gethstbynm.c
+ 
+ libnet_la-gethstbynm_r.lo: gethstbynm_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstbynm_r.lo `test -f 'gethstbynm_r.c' || echo '$(srcdir)/'`gethstbynm_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstbynm_r.lo `test -f 'gethstbynm_r.c' || echo '$(srcdir)/'`gethstbynm_r.c
+ 
+ libnet_la-gethstent.lo: gethstent.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstent.lo `test -f 'gethstent.c' || echo '$(srcdir)/'`gethstent.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstent.lo `test -f 'gethstent.c' || echo '$(srcdir)/'`gethstent.c
+ 
+ libnet_la-gethstent_r.lo: gethstent_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstent_r.lo `test -f 'gethstent_r.c' || echo '$(srcdir)/'`gethstent_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-gethstent_r.lo `test -f 'gethstent_r.c' || echo '$(srcdir)/'`gethstent_r.c
+ 
+ libnet_la-getnameinfo.lo: getnameinfo.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnameinfo.lo `test -f 'getnameinfo.c' || echo '$(srcdir)/'`getnameinfo.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnameinfo.lo `test -f 'getnameinfo.c' || echo '$(srcdir)/'`getnameinfo.c
+ 
+ libnet_la-getnetbyad.lo: getnetbyad.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetbyad.lo `test -f 'getnetbyad.c' || echo '$(srcdir)/'`getnetbyad.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetbyad.lo `test -f 'getnetbyad.c' || echo '$(srcdir)/'`getnetbyad.c
+ 
+ libnet_la-getnetbyad_r.lo: getnetbyad_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetbyad_r.lo `test -f 'getnetbyad_r.c' || echo '$(srcdir)/'`getnetbyad_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetbyad_r.lo `test -f 'getnetbyad_r.c' || echo '$(srcdir)/'`getnetbyad_r.c
+ 
+ libnet_la-getnetbynm.lo: getnetbynm.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetbynm.lo `test -f 'getnetbynm.c' || echo '$(srcdir)/'`getnetbynm.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetbynm.lo `test -f 'getnetbynm.c' || echo '$(srcdir)/'`getnetbynm.c
+ 
+ libnet_la-getnetbynm_r.lo: getnetbynm_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetbynm_r.lo `test -f 'getnetbynm_r.c' || echo '$(srcdir)/'`getnetbynm_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetbynm_r.lo `test -f 'getnetbynm_r.c' || echo '$(srcdir)/'`getnetbynm_r.c
+ 
+ libnet_la-getnetent.lo: getnetent.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetent.lo `test -f 'getnetent.c' || echo '$(srcdir)/'`getnetent.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetent.lo `test -f 'getnetent.c' || echo '$(srcdir)/'`getnetent.c
+ 
+ libnet_la-getnetent_r.lo: getnetent_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetent_r.lo `test -f 'getnetent_r.c' || echo '$(srcdir)/'`getnetent_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetent_r.lo `test -f 'getnetent_r.c' || echo '$(srcdir)/'`getnetent_r.c
+ 
+ libnet_la-getnetgrent.lo: getnetgrent.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetgrent.lo `test -f 'getnetgrent.c' || echo '$(srcdir)/'`getnetgrent.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetgrent.lo `test -f 'getnetgrent.c' || echo '$(srcdir)/'`getnetgrent.c
+ 
+ libnet_la-getnetgrent_r.lo: getnetgrent_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetgrent_r.lo `test -f 'getnetgrent_r.c' || echo '$(srcdir)/'`getnetgrent_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnetgrent_r.lo `test -f 'getnetgrent_r.c' || echo '$(srcdir)/'`getnetgrent_r.c
+ 
+ libnet_la-getnssent.lo: getnssent.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnssent.lo `test -f 'getnssent.c' || echo '$(srcdir)/'`getnssent.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnssent.lo `test -f 'getnssent.c' || echo '$(srcdir)/'`getnssent.c
+ 
+ libnet_la-getnssent_r.lo: getnssent_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnssent_r.lo `test -f 'getnssent_r.c' || echo '$(srcdir)/'`getnssent_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getnssent_r.lo `test -f 'getnssent_r.c' || echo '$(srcdir)/'`getnssent_r.c
+ 
+ libnet_la-getproto.lo: getproto.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getproto.lo `test -f 'getproto.c' || echo '$(srcdir)/'`getproto.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getproto.lo `test -f 'getproto.c' || echo '$(srcdir)/'`getproto.c
+ 
+ libnet_la-getproto_r.lo: getproto_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getproto_r.lo `test -f 'getproto_r.c' || echo '$(srcdir)/'`getproto_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getproto_r.lo `test -f 'getproto_r.c' || echo '$(srcdir)/'`getproto_r.c
+ 
+ libnet_la-getprtent.lo: getprtent.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getprtent.lo `test -f 'getprtent.c' || echo '$(srcdir)/'`getprtent.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getprtent.lo `test -f 'getprtent.c' || echo '$(srcdir)/'`getprtent.c
+ 
+ libnet_la-getprtent_r.lo: getprtent_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getprtent_r.lo `test -f 'getprtent_r.c' || echo '$(srcdir)/'`getprtent_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getprtent_r.lo `test -f 'getprtent_r.c' || echo '$(srcdir)/'`getprtent_r.c
+ 
+ libnet_la-getprtname.lo: getprtname.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getprtname.lo `test -f 'getprtname.c' || echo '$(srcdir)/'`getprtname.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getprtname.lo `test -f 'getprtname.c' || echo '$(srcdir)/'`getprtname.c
+ 
+ libnet_la-getprtname_r.lo: getprtname_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getprtname_r.lo `test -f 'getprtname_r.c' || echo '$(srcdir)/'`getprtname_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getprtname_r.lo `test -f 'getprtname_r.c' || echo '$(srcdir)/'`getprtname_r.c
+ 
+ libnet_la-getrpcbyname.lo: getrpcbyname.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getrpcbyname.lo `test -f 'getrpcbyname.c' || echo '$(srcdir)/'`getrpcbyname.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getrpcbyname.lo `test -f 'getrpcbyname.c' || echo '$(srcdir)/'`getrpcbyname.c
+ 
+ libnet_la-getrpcbyname_r.lo: getrpcbyname_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getrpcbyname_r.lo `test -f 'getrpcbyname_r.c' || echo '$(srcdir)/'`getrpcbyname_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getrpcbyname_r.lo `test -f 'getrpcbyname_r.c' || echo '$(srcdir)/'`getrpcbyname_r.c
+ 
+ libnet_la-getrpcbynumber.lo: getrpcbynumber.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getrpcbynumber.lo `test -f 'getrpcbynumber.c' || echo '$(srcdir)/'`getrpcbynumber.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getrpcbynumber.lo `test -f 'getrpcbynumber.c' || echo '$(srcdir)/'`getrpcbynumber.c
+ 
+ libnet_la-getrpcbynumber_r.lo: getrpcbynumber_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getrpcbynumber_r.lo `test -f 'getrpcbynumber_r.c' || echo '$(srcdir)/'`getrpcbynumber_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getrpcbynumber_r.lo `test -f 'getrpcbynumber_r.c' || echo '$(srcdir)/'`getrpcbynumber_r.c
+ 
+ libnet_la-getrpcent.lo: getrpcent.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getrpcent.lo `test -f 'getrpcent.c' || echo '$(srcdir)/'`getrpcent.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getrpcent.lo `test -f 'getrpcent.c' || echo '$(srcdir)/'`getrpcent.c
+ 
+ libnet_la-getrpcent_r.lo: getrpcent_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getrpcent_r.lo `test -f 'getrpcent_r.c' || echo '$(srcdir)/'`getrpcent_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getrpcent_r.lo `test -f 'getrpcent_r.c' || echo '$(srcdir)/'`getrpcent_r.c
+ 
+ libnet_la-getservent.lo: getservent.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getservent.lo `test -f 'getservent.c' || echo '$(srcdir)/'`getservent.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getservent.lo `test -f 'getservent.c' || echo '$(srcdir)/'`getservent.c
+ 
+ libnet_la-getservent_r.lo: getservent_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getservent_r.lo `test -f 'getservent_r.c' || echo '$(srcdir)/'`getservent_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getservent_r.lo `test -f 'getservent_r.c' || echo '$(srcdir)/'`getservent_r.c
+ 
+ libnet_la-getsrvbynm.lo: getsrvbynm.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getsrvbynm.lo `test -f 'getsrvbynm.c' || echo '$(srcdir)/'`getsrvbynm.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getsrvbynm.lo `test -f 'getsrvbynm.c' || echo '$(srcdir)/'`getsrvbynm.c
+ 
+ libnet_la-getsrvbynm_r.lo: getsrvbynm_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getsrvbynm_r.lo `test -f 'getsrvbynm_r.c' || echo '$(srcdir)/'`getsrvbynm_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getsrvbynm_r.lo `test -f 'getsrvbynm_r.c' || echo '$(srcdir)/'`getsrvbynm_r.c
+ 
+ libnet_la-getsrvbypt.lo: getsrvbypt.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getsrvbypt.lo `test -f 'getsrvbypt.c' || echo '$(srcdir)/'`getsrvbypt.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getsrvbypt.lo `test -f 'getsrvbypt.c' || echo '$(srcdir)/'`getsrvbypt.c
+ 
+ libnet_la-getsrvbypt_r.lo: getsrvbypt_r.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getsrvbypt_r.lo `test -f 'getsrvbypt_r.c' || echo '$(srcdir)/'`getsrvbypt_r.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-getsrvbypt_r.lo `test -f 'getsrvbypt_r.c' || echo '$(srcdir)/'`getsrvbypt_r.c
+ 
+ libnet_la-grp-lookup.lo: grp-lookup.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-grp-lookup.lo `test -f 'grp-lookup.c' || echo '$(srcdir)/'`grp-lookup.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-grp-lookup.lo `test -f 'grp-lookup.c' || echo '$(srcdir)/'`grp-lookup.c
+ 
+ libnet_la-herrno.lo: herrno.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-herrno.lo `test -f 'herrno.c' || echo '$(srcdir)/'`herrno.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-herrno.lo `test -f 'herrno.c' || echo '$(srcdir)/'`herrno.c
+ 
+ libnet_la-hosts-lookup.lo: hosts-lookup.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-hosts-lookup.lo `test -f 'hosts-lookup.c' || echo '$(srcdir)/'`hosts-lookup.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-hosts-lookup.lo `test -f 'hosts-lookup.c' || echo '$(srcdir)/'`hosts-lookup.c
+ 
+ libnet_la-ifreq.lo: ifreq.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ifreq.lo `test -f 'ifreq.c' || echo '$(srcdir)/'`ifreq.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ifreq.lo `test -f 'ifreq.c' || echo '$(srcdir)/'`ifreq.c
+ 
+ libnet_la-in6_addr.lo: in6_addr.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-in6_addr.lo `test -f 'in6_addr.c' || echo '$(srcdir)/'`in6_addr.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-in6_addr.lo `test -f 'in6_addr.c' || echo '$(srcdir)/'`in6_addr.c
+ 
+ libnet_la-inet6_option.lo: inet6_option.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet6_option.lo `test -f 'inet6_option.c' || echo '$(srcdir)/'`inet6_option.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet6_option.lo `test -f 'inet6_option.c' || echo '$(srcdir)/'`inet6_option.c
+ 
+ libnet_la-inet_addr.lo: inet_addr.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_addr.lo `test -f 'inet_addr.c' || echo '$(srcdir)/'`inet_addr.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_addr.lo `test -f 'inet_addr.c' || echo '$(srcdir)/'`inet_addr.c
+ 
+ libnet_la-inet_lnaof.lo: inet_lnaof.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_lnaof.lo `test -f 'inet_lnaof.c' || echo '$(srcdir)/'`inet_lnaof.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_lnaof.lo `test -f 'inet_lnaof.c' || echo '$(srcdir)/'`inet_lnaof.c
+ 
+ libnet_la-inet_mkadr.lo: inet_mkadr.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_mkadr.lo `test -f 'inet_mkadr.c' || echo '$(srcdir)/'`inet_mkadr.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_mkadr.lo `test -f 'inet_mkadr.c' || echo '$(srcdir)/'`inet_mkadr.c
+ 
+ libnet_la-inet_net.lo: inet_net.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_net.lo `test -f 'inet_net.c' || echo '$(srcdir)/'`inet_net.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_net.lo `test -f 'inet_net.c' || echo '$(srcdir)/'`inet_net.c
+ 
+ libnet_la-inet_neta.lo: inet_neta.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_neta.lo `test -f 'inet_neta.c' || echo '$(srcdir)/'`inet_neta.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_neta.lo `test -f 'inet_neta.c' || echo '$(srcdir)/'`inet_neta.c
+ 
+ libnet_la-inet_netof.lo: inet_netof.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_netof.lo `test -f 'inet_netof.c' || echo '$(srcdir)/'`inet_netof.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_netof.lo `test -f 'inet_netof.c' || echo '$(srcdir)/'`inet_netof.c
+ 
+ libnet_la-inet_net_ntop.lo: inet_net_ntop.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_net_ntop.lo `test -f 'inet_net_ntop.c' || echo '$(srcdir)/'`inet_net_ntop.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_net_ntop.lo `test -f 'inet_net_ntop.c' || echo '$(srcdir)/'`inet_net_ntop.c
+ 
+ libnet_la-inet_net_pton.lo: inet_net_pton.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_net_pton.lo `test -f 'inet_net_pton.c' || echo '$(srcdir)/'`inet_net_pton.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_net_pton.lo `test -f 'inet_net_pton.c' || echo '$(srcdir)/'`inet_net_pton.c
+ 
+ libnet_la-inet_ntoa.lo: inet_ntoa.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_ntoa.lo `test -f 'inet_ntoa.c' || echo '$(srcdir)/'`inet_ntoa.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_ntoa.lo `test -f 'inet_ntoa.c' || echo '$(srcdir)/'`inet_ntoa.c
+ 
+ libnet_la-inet_ntop.lo: inet_ntop.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_ntop.lo `test -f 'inet_ntop.c' || echo '$(srcdir)/'`inet_ntop.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_ntop.lo `test -f 'inet_ntop.c' || echo '$(srcdir)/'`inet_ntop.c
+ 
+ libnet_la-inet_pton.lo: inet_pton.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_pton.lo `test -f 'inet_pton.c' || echo '$(srcdir)/'`inet_pton.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-inet_pton.lo `test -f 'inet_pton.c' || echo '$(srcdir)/'`inet_pton.c
+ 
+ libnet_la-issetugid-stub.lo: issetugid-stub.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-issetugid-stub.lo `test -f 'issetugid-stub.c' || echo '$(srcdir)/'`issetugid-stub.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-issetugid-stub.lo `test -f 'issetugid-stub.c' || echo '$(srcdir)/'`issetugid-stub.c
+ 
+ libnet_la-key-lookup.lo: key-lookup.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-key-lookup.lo `test -f 'key-lookup.c' || echo '$(srcdir)/'`key-lookup.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-key-lookup.lo `test -f 'key-lookup.c' || echo '$(srcdir)/'`key-lookup.c
+ 
+ libnet_la-netgrp-lookup.lo: netgrp-lookup.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-netgrp-lookup.lo `test -f 'netgrp-lookup.c' || echo '$(srcdir)/'`netgrp-lookup.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-netgrp-lookup.lo `test -f 'netgrp-lookup.c' || echo '$(srcdir)/'`netgrp-lookup.c
+ 
+ libnet_la-network-lookup.lo: network-lookup.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-network-lookup.lo `test -f 'network-lookup.c' || echo '$(srcdir)/'`network-lookup.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-network-lookup.lo `test -f 'network-lookup.c' || echo '$(srcdir)/'`network-lookup.c
+ 
+ libnet_la-nsswitch.lo: nsswitch.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-nsswitch.lo `test -f 'nsswitch.c' || echo '$(srcdir)/'`nsswitch.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-nsswitch.lo `test -f 'nsswitch.c' || echo '$(srcdir)/'`nsswitch.c
+ 
+ libnet_la-ns_name.lo: ns_name.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ns_name.lo `test -f 'ns_name.c' || echo '$(srcdir)/'`ns_name.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ns_name.lo `test -f 'ns_name.c' || echo '$(srcdir)/'`ns_name.c
+ 
+ libnet_la-ns_netint.lo: ns_netint.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ns_netint.lo `test -f 'ns_netint.c' || echo '$(srcdir)/'`ns_netint.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ns_netint.lo `test -f 'ns_netint.c' || echo '$(srcdir)/'`ns_netint.c
+ 
+ libnet_la-ns_parse.lo: ns_parse.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ns_parse.lo `test -f 'ns_parse.c' || echo '$(srcdir)/'`ns_parse.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ns_parse.lo `test -f 'ns_parse.c' || echo '$(srcdir)/'`ns_parse.c
+ 
+ libnet_la-ns_print.lo: ns_print.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ns_print.lo `test -f 'ns_print.c' || echo '$(srcdir)/'`ns_print.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ns_print.lo `test -f 'ns_print.c' || echo '$(srcdir)/'`ns_print.c
+ 
+ libnet_la-ns_samedomain.lo: ns_samedomain.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ns_samedomain.lo `test -f 'ns_samedomain.c' || echo '$(srcdir)/'`ns_samedomain.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ns_samedomain.lo `test -f 'ns_samedomain.c' || echo '$(srcdir)/'`ns_samedomain.c
+ 
+ libnet_la-ns_ttl.lo: ns_ttl.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ns_ttl.lo `test -f 'ns_ttl.c' || echo '$(srcdir)/'`ns_ttl.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ns_ttl.lo `test -f 'ns_ttl.c' || echo '$(srcdir)/'`ns_ttl.c
+ 
+ libnet_la-nsap_addr.lo: nsap_addr.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-nsap_addr.lo `test -f 'nsap_addr.c' || echo '$(srcdir)/'`nsap_addr.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-nsap_addr.lo `test -f 'nsap_addr.c' || echo '$(srcdir)/'`nsap_addr.c
+ 
+ libnet_la-proto-lookup.lo: proto-lookup.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-proto-lookup.lo `test -f 'proto-lookup.c' || echo '$(srcdir)/'`proto-lookup.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-proto-lookup.lo `test -f 'proto-lookup.c' || echo '$(srcdir)/'`proto-lookup.c
+ 
+ libnet_la-opensock.lo: opensock.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-opensock.lo `test -f 'opensock.c' || echo '$(srcdir)/'`opensock.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-opensock.lo `test -f 'opensock.c' || echo '$(srcdir)/'`opensock.c
+ 
+ libnet_la-pwd-lookup.lo: pwd-lookup.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-pwd-lookup.lo `test -f 'pwd-lookup.c' || echo '$(srcdir)/'`pwd-lookup.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-pwd-lookup.lo `test -f 'pwd-lookup.c' || echo '$(srcdir)/'`pwd-lookup.c
+ 
+ libnet_la-recv.lo: recv.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-recv.lo `test -f 'recv.c' || echo '$(srcdir)/'`recv.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-recv.lo `test -f 'recv.c' || echo '$(srcdir)/'`recv.c
+ 
+ libnet_la-res_comp.lo: res_comp.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_comp.lo `test -f 'res_comp.c' || echo '$(srcdir)/'`res_comp.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_comp.lo `test -f 'res_comp.c' || echo '$(srcdir)/'`res_comp.c
+ 
+ libnet_la-res_data.lo: res_data.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_data.lo `test -f 'res_data.c' || echo '$(srcdir)/'`res_data.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_data.lo `test -f 'res_data.c' || echo '$(srcdir)/'`res_data.c
+ 
+ libnet_la-res_debug.lo: res_debug.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_debug.lo `test -f 'res_debug.c' || echo '$(srcdir)/'`res_debug.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_debug.lo `test -f 'res_debug.c' || echo '$(srcdir)/'`res_debug.c
+ 
+ libnet_la-res_hconf.lo: res_hconf.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_hconf.lo `test -f 'res_hconf.c' || echo '$(srcdir)/'`res_hconf.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_hconf.lo `test -f 'res_hconf.c' || echo '$(srcdir)/'`res_hconf.c
+ 
+ libnet_la-res_init.lo: res_init.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_init.lo `test -f 'res_init.c' || echo '$(srcdir)/'`res_init.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_init.lo `test -f 'res_init.c' || echo '$(srcdir)/'`res_init.c
+ 
+ libnet_la-res_libc.lo: res_libc.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_libc.lo `test -f 'res_libc.c' || echo '$(srcdir)/'`res_libc.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_libc.lo `test -f 'res_libc.c' || echo '$(srcdir)/'`res_libc.c
+ 
+ libnet_la-res_mkquery.lo: res_mkquery.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_mkquery.lo `test -f 'res_mkquery.c' || echo '$(srcdir)/'`res_mkquery.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_mkquery.lo `test -f 'res_mkquery.c' || echo '$(srcdir)/'`res_mkquery.c
+ 
+ libnet_la-res_query.lo: res_query.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_query.lo `test -f 'res_query.c' || echo '$(srcdir)/'`res_query.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_query.lo `test -f 'res_query.c' || echo '$(srcdir)/'`res_query.c
+ 
+ libnet_la-res_send.lo: res_send.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_send.lo `test -f 'res_send.c' || echo '$(srcdir)/'`res_send.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-res_send.lo `test -f 'res_send.c' || echo '$(srcdir)/'`res_send.c
+ 
+ libnet_la-rexec.lo: rexec.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-rexec.lo `test -f 'rexec.c' || echo '$(srcdir)/'`rexec.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-rexec.lo `test -f 'rexec.c' || echo '$(srcdir)/'`rexec.c
+ 
+ libnet_la-rpc-lookup.lo: rpc-lookup.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-rpc-lookup.lo `test -f 'rpc-lookup.c' || echo '$(srcdir)/'`rpc-lookup.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-rpc-lookup.lo `test -f 'rpc-lookup.c' || echo '$(srcdir)/'`rpc-lookup.c
+ 
+ libnet_la-ruserpass.lo: ruserpass.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ruserpass.lo `test -f 'ruserpass.c' || echo '$(srcdir)/'`ruserpass.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ruserpass.lo `test -f 'ruserpass.c' || echo '$(srcdir)/'`ruserpass.c
+ 
+ libnet_la-send.lo: send.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-send.lo `test -f 'send.c' || echo '$(srcdir)/'`send.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-send.lo `test -f 'send.c' || echo '$(srcdir)/'`send.c
+ 
+ libnet_la-service-lookup.lo: service-lookup.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-service-lookup.lo `test -f 'service-lookup.c' || echo '$(srcdir)/'`service-lookup.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-service-lookup.lo `test -f 'service-lookup.c' || echo '$(srcdir)/'`service-lookup.c
+ 
+ libnet_la-spwd-lookup.lo: spwd-lookup.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-spwd-lookup.lo `test -f 'spwd-lookup.c' || echo '$(srcdir)/'`spwd-lookup.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-spwd-lookup.lo `test -f 'spwd-lookup.c' || echo '$(srcdir)/'`spwd-lookup.c
+ 
+ libnet_la-ifname.lo: ifname.c
+-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ifname.lo `test -f 'ifname.c' || echo '$(srcdir)/'`ifname.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-ifname.lo `test -f 'ifname.c' || echo '$(srcdir)/'`ifname.c
+ 
+ mostlyclean-libtool:
+ 	-rm -f *.lo
+diff -uNr newlib-1.18.0/newlib/libc/unix/Makefile.in newlib-1.18.0-new/newlib/libc/unix/Makefile.in
+--- newlib-1.18.0/newlib/libc/unix/Makefile.in	2009-10-21 06:44:24.000000000 +0800
++++ newlib-1.18.0-new/newlib/libc/unix/Makefile.in	2015-10-22 23:40:43.512008953 +0800
+@@ -93,7 +93,7 @@
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
++	--mode=compile $(CC) -fno-stack-protector $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
