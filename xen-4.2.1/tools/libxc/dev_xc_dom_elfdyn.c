@@ -1,4 +1,11 @@
+#include <inttypes.h>
 
+#include "xg_private.h"
+#include "xc_dom.h"
+#include "xc_bitops.h"
+#include "xg_private.h"
+#include "xg_save_restore.h"
+#include "dev_xc_dom_elfdyn.h"
 
 struct link_map {
     Elf32_Addr l_addr;		/* Base (or delta?) domU address shared object is loaded at.  */
@@ -12,6 +19,7 @@ int xc_dom_elf_dyn(struct xc_dom_image *dom)
 {
 	const elf_phdr *phdr;
 	Elf32_Phdr *ph;
+	uint32_t i;
 
 	uint32_t e_phnum;
 	uint32_t p_type, p_paddr, p_memsz, p_filesz, p_offset;
