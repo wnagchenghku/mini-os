@@ -69,6 +69,8 @@ GUEST_SRCS-$(CONFIG_IA64)    += xc_dom_ia64.c
 GUEST_SRCS-$(CONFIG_ARM)     += xc_dom_arm.c
 GUEST_SRCS-$(CONFIG_ARM)     += xc_hvm_build_arm.c
 
+GUEST_SRCS-$(CONFIG_X86)     += dev_xc_dom_elfdyn.c
+
 OSDEP_SRCS-y                 += xenctrl_osdep_ENOSYS.c
 
 -include $(XEN_TARGET_ARCH)/Makefile
