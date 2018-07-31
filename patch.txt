@@ -1,0 +1,19 @@
+======================= Patch1: libxc.patch =========================
+
+Modified:
+
+tools/libxc/Makefile
+
+tools/libxc/xc_dom_core.c
+
+New:
+
+tools/libxc/dev_xc_dom_elfdyn.c
+
+tools/libxc/dev_xc_dom_elfdyn.h
+
+======================= Patch4: minios.patch =========================
+
+Modified:
+
+extras/mini-os/Makefile
