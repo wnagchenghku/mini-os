@@ -15,6 +15,24 @@ struct link_map {
 
 typedef struct link_map map_t;
 
+//if _ns_loaded == NULL, then new_map is the main map and set _ns_loaded = new_map
+struct link_map *_ns_loaded = NULL;
+
+/* Allocate a `struct link_map' for a new object being loaded,
+and insert it into the _dl_loaded list.  */
+static inline struct link_map *
+new_map(dom_t *dom, map_t *loader)
+{
+	map_t *new_map;
+
+	DOMPRINTF_CALLED(dom->xch);
+	
+	if (!(new_map = xc_dom_malloc(dom, sizeof(*new_map))))
+		return NULL;
+
+	return new_map;
+}
+
 int xc_dom_elf_dyn(struct xc_dom_image *dom)
 {
 	const elf_phdr *phdr;
@@ -27,6 +45,10 @@ int xc_dom_elf_dyn(struct xc_dom_image *dom)
 	map_t *main_map = NULL;
 
 	struct elf_binary *elf = dom->private_loader;
+
+	DOMPRINTF_CALLED(dom->xch);
+
+	main_map = new_map(dom, NULL);
 
 	e_phnum = elf_uval(elf, elf->ehdr, e_phnum);
 	/*Scan the program header table for the dynamic section.*/
