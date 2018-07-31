@@ -13,6 +13,7 @@ struct link_map {
     Elf32_Half l_ldnum;		/* Number of dynamic segment entries.  */
 };
 
+typedef struct xc_dom_image dom_t;
 typedef struct link_map map_t;
 
 //if _ns_loaded == NULL, then new_map is the main map and set _ns_loaded = new_map
