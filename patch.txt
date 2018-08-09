@@ -1,5 +1,7 @@
 ======================= Patch1: libxc.patch =========================
 
+Linker code is for 32bit ELF. So we should use PC (Intel x86)
+
 Modified:
 
 tools/libxc/Makefile
