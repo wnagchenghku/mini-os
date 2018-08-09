@@ -100,6 +100,8 @@ src-$(CONFIG_CONSFRONT) += console/xenbus.c
 APP_OBJS :=
 OBJS := $(patsubst %.c,$(OBJ_DIR)/%.o,$(src-y))
 
+NEWS_OBJS := libnnpacks.so
+
 .PHONY: default
 default: $(OBJ_DIR)/$(TARGET)
 
@@ -163,7 +165,7 @@ APP_O=$(OBJ_DIR)/$(TARGET)_app.o
 endif
 
 $(OBJ_DIR)/$(TARGET): links include/list.h $(OBJS) $(APP_O) arch_lib
-	$(LD) $(LDFLAGS) $(LDFLAGS_FINAL) $(HEAD_OBJ) $(APP_O) $(OBJS) $(LDARCHLIB) ./libvector.so $(NEWS_OBJS) $(LDLIBS) -o $@
+	$(LD) -rpath=. $(LDFLAGS) $(LDFLAGS_FINAL) $(HEAD_OBJ) $(APP_O) $(OBJS) $(LDARCHLIB) $(NEWS_OBJS) $(LDLIBS) -o $@
 	$(OBJCOPY) -w -G $(GLOBAL_PREFIX)* -G _start $@ $@
 	$(OBJDUMP) -S $@ > $@.asm
 	gzip -f -9 -c $@ >$@.gz
