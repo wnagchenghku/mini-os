@@ -100,7 +100,7 @@ src-$(CONFIG_CONSFRONT) += console/xenbus.c
 APP_OBJS :=
 OBJS := $(patsubst %.c,$(OBJ_DIR)/%.o,$(src-y))
 
-NEWS_OBJS := libnnpacks.so
+NEWS_OBJS := libnnpack.so
 
 .PHONY: default
 default: $(OBJ_DIR)/$(TARGET)
