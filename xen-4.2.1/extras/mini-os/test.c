@@ -415,29 +415,29 @@ static void kbdfront_thread(void *p)
 
 static struct pcifront_dev *pci_dev;
 
-static void print_pcidev(unsigned int domain, unsigned int bus, unsigned int slot, unsigned int fun)
-{
-    unsigned int vendor, device, rev, class;
+// static void print_pcidev(unsigned int domain, unsigned int bus, unsigned int slot, unsigned int fun)
+// {
+//     unsigned int vendor, device, rev, class;
 
-    pcifront_conf_read(pci_dev, domain, bus, slot, fun, 0x00, 2, &vendor);
-    pcifront_conf_read(pci_dev, domain, bus, slot, fun, 0x02, 2, &device);
-    pcifront_conf_read(pci_dev, domain, bus, slot, fun, 0x08, 1, &rev);
-    pcifront_conf_read(pci_dev, domain, bus, slot, fun, 0x0a, 2, &class);
+//     pcifront_conf_read(pci_dev, domain, bus, slot, fun, 0x00, 2, &vendor);
+//     pcifront_conf_read(pci_dev, domain, bus, slot, fun, 0x02, 2, &device);
+//     pcifront_conf_read(pci_dev, domain, bus, slot, fun, 0x08, 1, &rev);
+//     pcifront_conf_read(pci_dev, domain, bus, slot, fun, 0x0a, 2, &class);
 
-    printk("%04x:%02x:%02x.%02x %04x: %04x:%04x (rev %02x)\n", domain, bus, slot, fun, class, vendor, device, rev);
-}
+//     printk("%04x:%02x:%02x.%02x %04x: %04x:%04x (rev %02x)\n", domain, bus, slot, fun, class, vendor, device, rev);
+// }
 
-static void pcifront_thread(void *p)
-{
-    pcifront_watches(NULL);
-    pci_dev = init_pcifront(NULL);
-    if (!pci_dev)
-        return;
-    printk("PCI devices:\n");
-    pcifront_scan(pci_dev, print_pcidev);
-}
+// static void pcifront_thread(void *p)
+// {
+//     pcifront_watches(NULL);
+//     pci_dev = init_pcifront(NULL);
+//     if (!pci_dev)
+//         return;
+//     printk("PCI devices:\n");
+//     pcifront_scan(pci_dev, print_pcidev);
+// }
 
-int app_main(start_info_t *si)
+__attribute__((weak)) int app_main(start_info_t *si)
 {
     printk("Test main: start_info=%p\n", si);
     create_thread("xenbus_tester", xenbus_tester, si);
@@ -446,7 +446,7 @@ int app_main(start_info_t *si)
     create_thread("blkfront", blkfront_thread, si);
     create_thread("fbfront", fbfront_thread, si);
     create_thread("kbdfront", kbdfront_thread, si);
-    create_thread("pcifront", pcifront_thread, si);
+    // create_thread("pcifront", pcifront_thread, si);
     return 0;
 }
 
@@ -464,6 +464,6 @@ void shutdown_frontends(void)
     if (kbd_dev)
         shutdown_kbdfront(kbd_dev);
 
-    if (pci_dev)
-        shutdown_pcifront(pci_dev);
+    // if (pci_dev)
+    //     shutdown_pcifront(pci_dev);
 }
