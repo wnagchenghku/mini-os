@@ -6,7 +6,7 @@
 #include <zlib.h>
 #include <assert.h>
 #include <xen/grant_table.h>
-#include <xenstore.h>
+//#include <xenstore.h>
 //#include <pthread.h>
 
 #include "xg_private.h"
@@ -1397,65 +1397,65 @@ resolve_map(dom_t *dom, const Elf32_Sym **ref, unsigned int r_type,
 }
 
 /*Based on function name, We can find really relloc addr */
-static inline Elf32_Addr update_lookup_lazy_binding(dom_t *dom, map_t *map, char *fun_name, int type ,struct r_scope_elem *scope[])
-{
-	Elf32_Sym *sym;
-	Elf32_Addr value;
-	map_t *sym_map;
+// static inline Elf32_Addr update_lookup_lazy_binding(dom_t *dom, map_t *map, char *fun_name, int type ,struct r_scope_elem *scope[])
+// {
+// 	Elf32_Sym *sym;
+// 	Elf32_Addr value;
+// 	map_t *sym_map;
 
-	const Elf32_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
-	const char *strtab = (const void *)D_PTR(map, l_info[DT_STRTAB]);
+// 	const Elf32_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
+// 	const char *strtab = (const void *)D_PTR(map, l_info[DT_STRTAB]);
 	
-	sym = symtab;
-	while (sym != NULL){
-		if (!strcmp(strtab[sym->st_name], fun_name))
-			break;
-		sym++;
-	}
+// 	sym = symtab;
+// 	while (sym != NULL){
+// 		if (!strcmp(strtab[sym->st_name], fun_name))
+// 			break;
+// 		sym++;
+// 	}
 
-	sym_map = resolve_map(dom, &sym, type, map, scope);
-	value = (sym_map == NULL)? 0:(Elf32_Addr)(sym_map->l_addr) + sym->st_value;
+// 	sym_map = resolve_map(dom, &sym, type, map, scope);
+// 	value = (sym_map == NULL)? 0:(Elf32_Addr)(sym_map->l_addr) + sym->st_value;
 	
-	return value;
-}
+// 	return value;
+// }
 
 /*Read addr from the xenstore!*/
-static inline Elf32_Addr update_readaddr_xenstore(dom_t *dom)
-{
-	struct xs_handle *xs;
-	xs_transaction_t xth;
-	char path[128];
-	char *value;
-	int len;
-	/*step 1: Get domid of the guest os*/
-	int domid = dom->guest_domid;
+// static inline Elf32_Addr update_readaddr_xenstore(dom_t *dom)
+// {
+// 	struct xs_handle *xs;
+// 	xs_transaction_t xth;
+// 	char path[128];
+// 	char *value;
+// 	int len;
+// 	/*step 1: Get domid of the guest os*/
+// 	int domid = dom->guest_domid;
 
-	/*step 2: Read /local/domain/domid/console/addr*/
-	xs = xs_daemon_open();
-	if (xs == NULL){
-		printf("Could not connect to xenstore!\n");
-		exit(1);
-	}
+// 	/*step 2: Read /local/domain/domid/console/addr*/
+// 	xs = xs_daemon_open();
+// 	if (xs == NULL){
+// 		printf("Could not connect to xenstore!\n");
+// 		exit(1);
+// 	}
 
-	xth = xs_transaction_start(xs);
-	if (xth == 0){
-		printf("Could not start xaction xenstore!\n");
-		exit(1);
-	}
+// 	xth = xs_transaction_start(xs);
+// 	if (xth == 0){
+// 		printf("Could not start xaction xenstore!\n");
+// 		exit(1);
+// 	}
 	
-	snprintf(path, sizeof(path), "/local/domain/%d/console/addr", domid);
+// 	snprintf(path, sizeof(path), "/local/domain/%d/console/addr", domid);
 
-	value = xs_read(xs, xth, path, &len);
+// 	value = xs_read(xs, xth, path, &len);
 
-	xs_transaction_end(xs, xth, 1);
-	if (xth == 0){
-		printf("Could not end xaction xenstore!\n");
-		exit(1);
-	}
-	xs_daemon_close(xs);
+// 	xs_transaction_end(xs, xth, 1);
+// 	if (xth == 0){
+// 		printf("Could not end xaction xenstore!\n");
+// 		exit(1);
+// 	}
+// 	xs_daemon_close(xs);
 	
-	return htoi(value);
-}
+// 	return htoi(value);
+// }
 
 /*Check out a list of struct lookup_relloc*/
 /*
@@ -1471,34 +1471,34 @@ static inline int update_lookup_relloc(dom_t *dom, Elf32_Addr offset)
 */
 /*Based on relloc table, Get really relocate address*/
 /*issue: need map(module ID)*/
-static inline Elf32_Addr update_relloc_address(dom_t *dom, map_t *map, int label, struct r_scope_elem *scope[])
-{
-	Elf32_Rel *reloc;
-	Elf32_Sym *sym;
-	int r_type;
-	map_t *sym_map;
-	Elf32_Addr value;
+// static inline Elf32_Addr update_relloc_address(dom_t *dom, map_t *map, int label, struct r_scope_elem *scope[])
+// {
+// 	Elf32_Rel *reloc;
+// 	Elf32_Sym *sym;
+// 	int r_type;
+// 	map_t *sym_map;
+// 	Elf32_Addr value;
 
-	/*step 1: Get address of relloc table!*/
-	const Elf32_Rel *r = D_PTR((map), l_info[DT_JMPREL]);
+// 	/*step 1: Get address of relloc table!*/
+// 	const Elf32_Rel *r = D_PTR((map), l_info[DT_JMPREL]);
 	
-	/*step 2: Get address of symtab!*/
-	const Elf32_Sym *const symtab = (const void *)D_PTR(map, l_info[DT_SYMTAB]);
+// 	/*step 2: Get address of symtab!*/
+// 	const Elf32_Sym *const symtab = (const void *)D_PTR(map, l_info[DT_SYMTAB]);
 
-	/*step 3: Get sym and relloc */
-	reloc = r + label;
-	sym = &symtab[ELF32_R_SYM(reloc->r_info)];
+// 	/*step 3: Get sym and relloc */
+// 	reloc = r + label;
+// 	sym = &symtab[ELF32_R_SYM(reloc->r_info)];
 	
-	r_type = ELF32_R_TYPE(reloc->r_info);
+// 	r_type = ELF32_R_TYPE(reloc->r_info);
 
-	sym_map = resolve_map(dom, &sym, r_type, map, scope);
-	value = (sym_map == NULL)?0:(Elf32_Addr)(sym_map->l_addr) + sym->st_value;
+// 	sym_map = resolve_map(dom, &sym, r_type, map, scope);
+// 	value = (sym_map == NULL)?0:(Elf32_Addr)(sym_map->l_addr) + sym->st_value;
 
-	return value;
-}
+// 	return value;
+// }
 
 /*Write realaddr into xenstore!*/
-static inline void update_write_xenstore(dom_t *dom, Elf32_Addr realaddr)
+/*static inline void update_write_xenstore(dom_t *dom, Elf32_Addr realaddr)
 {
 	struct xs_handle *xs;
 	char path[128];
@@ -1520,10 +1520,10 @@ static inline void update_write_xenstore(dom_t *dom, Elf32_Addr realaddr)
 	}
 
 	xs_daemon_close(xs);
-}
+}*/
 
 /*listen xenstore (xs_watch)*/
-static inline void update_watch_xenstore(dom_t *dom, map_t *map, struct r_scope_elem *scope[])
+/*static inline void update_watch_xenstore(dom_t *dom, map_t *map, struct r_scope_elem *scope[])
 {
 	struct xs_handle *xs;
 	char path[128];
@@ -1569,7 +1569,7 @@ static inline void update_watch_xenstore(dom_t *dom, map_t *map, struct r_scope_
 	}
 
 	xs_daemon_close(xs);
-}
+}*/
 
 
 /* Perform the relocation specified by RELOC and SYM (which is fully resolved).
