@@ -39,9 +39,15 @@ void _fini(void)
 {
 }
 
+int x[2] = {1, 2};
+int y[2] = {3, 4};
+int z[2];
+
 extern char __app_bss_start, __app_bss_end;
 static void call_main(void *p)
 {
+    addvec(x, y, z, 2);gsdf
+    printk("z = [%d %d]\n", z[0], z[1]);
     char *c, quote;
 #ifdef CONFIG_QEMU_XS_ARGS
     char *domargs, *msg;
@@ -183,10 +189,302 @@ void _exit(int ret)
     do_exit();
 }
 
+int htoi(char s[])
+{
+    int n = 0;
+    int i = 0;
+    while (s[i] != '\0' && s[i] != '\n') {
+        if (s[i] == '0') {
+            if (s[i+1] == 'x' || s[i+1] == 'X')
+                            i+=2;
+        }
+        if (s[i] >= '0' && s[i] <= '9') {
+            n = n * 16 + (s[i] - '0');
+        } else if (s[i] >= 'a' && s[i] <= 'f') {
+            n = n * 16 + (s[i] - 'a') + 10;
+        } else if (s[i] >= 'A' && s[i] <= 'F') {
+            n = n * 16 + (s[i] - 'A') + 10;
+        } else
+            return -1;
+        ++i;
+    }
+    return n;
+}
+unsigned long *gots;
+unsigned long *gotm = (unsigned long *)(0x9a540);
+struct timeval start, end;
+
+void update_minios_parse_sym(void)
+{
+   /*write moduleID to dom0*/
+   int domid;
+   char path[128];
+   char value[10];
+   char *msg, *realaddr;
+   int i;
+
+   gettimeofday(&start, NULL);
+   domid = xenbus_read_integer("domid");
+   snprintf(path, sizeof(path), "/local/domain/%d/console/mid", domid);
+   sprintf(value, "%p", gotm[1]);
+   xenbus_write(0, path, value);
+   gettimeofday(&end, NULL);
+
+   printk("--------parse1 dym: %ldus\n", 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec -start.tv_usec);
+   //gotm[3] = (unsigned long)0xdf1a0; 
+   //getchar();
+   gettimeofday(&start, NULL);
+   for (i=0; i<3; i++){
+       snprintf(path, sizeof(path), "/local/domain/%d/console/realaddr%d", domid, i);
+       msg = xenbus_read(XBT_NIL, path, &realaddr);
+       if (msg)
+           printk("Could not read realaddr!\n");
+       gotm[3+i] = (unsigned long)(0xfd000+htoi(realaddr));
+   }
+}
+
+void update_sotest_parse_sym(void)
+{
+   int domid, count1, i;   
+   char path[128];
+   char *msg, *val_count, *realaddr;
+
+   domid = xenbus_read_integer("domid");
+   snprintf(path, sizeof(path), "/local/domain/%d/console/count1", domid);
+   msg = xenbus_read(XBT_NIL, path, &val_count);
+   count1 = atoi(val_count);
+
+   for (i=0; i<count1; i++){
+       snprintf(path, sizeof(path), "/local/domain/%d/console/addr1_%d", domid, i);
+       msg = xenbus_read(XBT_NIL, path, &realaddr);
+       if (msg)
+           printk("Could not read realaddr!\n");
+       gots[3+i] = (unsigned long )htoi(realaddr);
+   }
+   //printf("-------realaddr = %s\n", realaddr);
+   gettimeofday(&end, NULL);
+   printk("--------rel2 dym: %ldus\n", 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec -start.tv_usec);
+}
+
+/*get updated shared library*/
+static void get_shared_library(void *p)
+{
+   /*
+   int domid;
+   char pathdomgfn[128];
+   unsigned long dom_gfn;
+   char gfn[64];
+   char *shared_addr;
+*/
+   /*step 1: get a pfn of page*/
+/* shared_addr = (char *)alloc_page();
+   dom_gfn = virt_to_pfn(shared_addr);
+   snprintf(gfn, sizeof(gfn), "%d", dom_gfn);
+*/
+   /*step 2: write pfn to xenstore*/
+   /*
+   domid = xenbus_read_integer("domid");
+   snprintf(pathdomgfn, sizeof(pathdomgfn), "/local/domain/%d/console/domgfn", domid);
+   xenbus_write(0, pathdomgfn, gfn);
+   memcpy(shared_addr, "Hello World", sizeof("Hello World"));
+   printf("shared_addr = %s\n", shared_addr);
+   */
+
+   /*
+   int server_sockfd;
+   int client_sockfd;
+   int len;
+   struct sockaddr_in my_addr; //server
+   struct sockaddr_in remote_addr; //client
+   int sin_size = sizeof(struct sockaddr_in);
+
+   //declare a struct of socket
+   memset(&my_addr, 0, sizeof(my_addr));//init sockaddr_in
+   my_addr.sin_family = AF_INET; //Set IP communication
+   my_addr.sin_addr.s_addr = INADDR_ANY;//server IP, permit any IP to connect
+   my_addr.sin_port = htons(10000);//set a server port
+
+   //build a socke, if success, return a fd of socket
+   if ((server_sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0){
+       perror("socket");
+       return 1;
+   }
+
+   //bind socket to network IP
+   if (bind(server_sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) < 0){
+       perror("bind");
+       return 1;
+   }
+
+   // listen a request
+   listen(server_sockfd, 5);
+   
+   //wait for a request
+   if ((client_sockfd = accept(server_sockfd, (struct sockaddr *)&remote_addr, &sin_size)) < 0){
+       perror("accept");
+       return 1;
+   }
+   char *buf = (char *)malloc(sizeof(char) *512);
+   char **dest = (char **)malloc(sizeof(char *)*2);
+   int i;
+   for (i=0; i<2; i++)
+       dest[i] = (char *)malloc(sizeof(char)*512);
+   i=0;
+   while ((len = recv(client_sockfd, buf, 512, 0)) > 0){
+       memcpy(dest[i], buf, 512);
+       i++;
+   }
+   for (i=0; i<512; i++)
+       printf("%p, ", dest[0][i]);
+   printf("\n\n\n");
+   close(client_sockfd);
+   close(server_sockfd);
+   return 0;
+   */
+   /*get .got.plt of libso_test2.so*/
+   int domid;
+   char path[128];
+   char *msg, *val;
+
+   domid = xenbus_read_integer("domid");
+   snprintf(path, sizeof(path), "/local/domain/%d/console/got", domid);
+   while (1){
+       msg = xenbus_read(XBT_NIL, path, &val); 
+       if (msg)
+           continue;
+       if (gots == htoi(val)+0xfd000)
+           continue;
+       //printf("-----val = %s\n", val);
+       gettimeofday(&start, NULL);
+       gots = (unsigned long *)(htoi(val)+0xfd000);
+       //printk("------------gots[0] = %p\n", gots[0]);
+       /*set moduleID in gots[1]*/
+       gots[1] = (unsigned long)0x1;       
+       /*set got[3] to update_parse_sym*/
+       gotm[3] = update_minios_parse_sym;
+       gots[3] = update_sotest_parse_sym;
+       gettimeofday(&end, NULL);
+       printk("------resolve2 time : %ldus\n", 1000000*(end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec);
+   }
+
+}
+
+
+/*parse symbol, like _dl_runtime_resolve*/
+void lazy_binding_parse_sym()
+{
+   int domid, count0, count1, i, j;
+   char path[128];
+   //char value[12];
+   //unsigned long *got = (unsigned long *)(&_edata+0xa0);
+   char *msg, *val_count, *realaddr;
+   unsigned long *got0, *got1;
+   
+   /*step 1:write addr into xenstore!*/
+   domid = xenbus_read_integer("domid");
+   snprintf(path, sizeof(path), "/local/domain/%d/console/flag", domid);
+   //sprintf(value, "%p", got[1]);
+   xenbus_write(0, path, "1");
+   //printk("value = %s\n", value);
+   /*step 2:read xenstore and set .got.plt table*/
+   //label 1: read count
+   snprintf(path, sizeof(path), "/local/domain/%d/console/count0", domid);
+   while (1) {
+       msg = xenbus_read(XBT_NIL, path, &val_count);
+       if (msg)
+           continue;
+       break;
+   }
+   count0 = atoi(val_count);
+   //printf("count = %d\n", count);
+   //printf("val_count = %s\n", val_count);
+   //label 2: read addr
+   //find .plt.got
+   //printf("----------------count = %d\n", count);
+   snprintf(path, sizeof(path), "/local/domain/%d/console/count1", domid);
+   msg = xenbus_read(XBT_NIL, path, &val_count);
+   count1 = atoi(val_count);
+   
+   for (j=0; j<2; j++){
+       snprintf(path, sizeof(path), "/local/domain/%d/console/r_got%d", domid, j);
+       if (j == 0){
+           msg = xenbus_read(XBT_NIL, path, &realaddr);
+           if (msg)
+               printk("Could not read realaddr1!\n");
+           got0 = (unsigned long *)htoi(realaddr);
+           //printf("-------------got0 = %p\n", got0);
+       }
+       if (j == 1){
+           msg = xenbus_read(XBT_NIL, path, &realaddr);
+           if (msg)
+               printk("Could not read realaddr2!\n");
+           got1 = (unsigned long *)(htoi(realaddr)+0xdd000);
+           //printf("-------------got1 = %p\n", got1);
+       }
+   }
+   
+   for (i=0; i<count0; i++){
+       snprintf(path, sizeof(path), "/local/domain/%d/console/addr0_%d", domid, i);
+       msg = xenbus_read(XBT_NIL, path, &realaddr);
+       if (msg)
+           printk("Could not read realaddr3!\n");
+       //printf("realaddr = %p\n", htoi(realaddr));
+       got0[i+3] = (unsigned long)htoi(realaddr);
+   }
+   for (i=0; i<count1; i++){
+       snprintf(path, sizeof(path), "/local/domain/%d/console/addr1_%d", domid, i);
+       msg = xenbus_read(XBT_NIL, path, &realaddr);
+       if (msg)
+           printk("Could not read realaddr4!\n");
+       //printf("realaddr = %p\n", htoi(realaddr));
+       got1[i+3] = (unsigned long)htoi(realaddr);
+   }
+   //__asm __volatile ("call %0" :: "m" (got0[3]));
+}
+
+
+/*define plt_func*/
+/*
+void plt_func(void)
+{
+   __asm __volatile ("call lazy_binding_parse_sym");
+}
+*/
+
+/*init .plt.got, make it to point plt_func*/
+/*
+void init_plt_got(unsigned long *got)
+{
+   got[3] = (unsigned long)plt_func;
+}
+*/
+
 int app_main(start_info_t *si)
 {
+   /*step 1: init .plt.got*/
+   unsigned long *got = (unsigned long *)(0x9a540);
+// unsigned long *gotl = (unsigned long *)(0xde2b0);
+
+/* 
+   unsigned long *got1 = (unsigned long *)0xce2b0;
+   got0[3] = (unsigned long)0xcd1a0;
+*/
+   //got[3] = (unsigned long)0xdd1a0;
+   got[3] = lazy_binding_parse_sym;
+// gotl[3] = lazy_binding_parse_sym;
+// lazy_binding_parse_sym();
+// lazy_thread = create_thread("lazy", lazy_binding_parse_sym, NULL);
+// sleep(10);
+// init_plt_got(got);
+   /*step 2: */
+   //printk("--------got[1] = %p\n", got[1]);
+   /*update shared library!*/
+
+
     printk("Dummy main: start_info=%p\n", si);
     main_thread = create_thread("main", call_main, si);
+    update_thread = create_thread("update", get_shared_library, NULL);
+
     return 0;
 }
 #endif
