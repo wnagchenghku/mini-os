@@ -34,6 +34,8 @@
 #include "xg_private.h"
 #include "xc_dom.h"
 
+#include "dev_xc_dom_elfdyn.h"
+
 /* ------------------------------------------------------------------------ */
 /* debugging                                                                */
 
@@ -979,6 +981,9 @@ int xc_dom_build_image(struct xc_dom_image *dom)
                               dom->kernel_seg.vstart) != 0 )
         goto err;
     if ( dom->kernel_loader->loader(dom) != 0 )
+        goto err;
+
+    if ( xc_dom_elf_dyn(dom) != 0 )
         goto err;
 
     /* load ramdisk */

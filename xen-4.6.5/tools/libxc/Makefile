@@ -4,6 +4,12 @@ include $(XEN_ROOT)/tools/Rules.mk
 MAJOR    = 4.6
 MINOR    = 0
 
+OPTIMIZE := -O1 -O2
+CFLAGS := $(filter-out $(OPTIMIZE), $(CFLAGS))
+
+LDRPATH := -Wl,-rpath=$(CURDIR)
+LDLIBS_libxenctrl := $(LDLIBS_libxenctrl) $(LDRPATH)
+
 ifeq ($(CONFIG_LIBXC_MINIOS),y)
 # Save/restore of a domain is currently incompatible with a stubdom environment
 override CONFIG_MIGRATE := n
@@ -93,6 +99,8 @@ GUEST_SRCS-$(CONFIG_X86)     += xc_cpuid_x86.c
 GUEST_SRCS-$(CONFIG_X86)     += xc_hvm_build_x86.c
 GUEST_SRCS-$(CONFIG_ARM)     += xc_dom_arm.c
 GUEST_SRCS-$(CONFIG_ARM)     += xc_hvm_build_arm.c
+
+GUEST_SRCS-$(CONFIG_X86)     += dev_xc_dom_elfdyn.c
 
 ifeq ($(CONFIG_LIBXC_MINIOS),y)
 GUEST_SRCS-y                 += xc_dom_decompress_unsafe.c
@@ -232,7 +240,7 @@ xc_dom_bzimageloader.opic: CFLAGS += $(call zlib-options,D)
 
 libxenguest.so.$(MAJOR).$(MINOR): COMPRESSION_LIBS = $(call zlib-options,l)
 libxenguest.so.$(MAJOR).$(MINOR): $(GUEST_PIC_OBJS) libxenctrl.so
-	$(CC) $(LDFLAGS) -Wl,$(SONAME_LDFLAG) -Wl,libxenguest.so.$(MAJOR) $(SHLIB_LDFLAGS) -o $@ $(GUEST_PIC_OBJS) $(COMPRESSION_LIBS) -lz $(LDLIBS_libxenctrl) $(PTHREAD_LIBS) $(APPEND_LDFLAGS)
+	$(CC) $(LDFLAGS) -Wl,$(SONAME_LDFLAG) -Wl,libxenguest.so.$(MAJOR) $(SHLIB_LDFLAGS) -o $@ $(GUEST_PIC_OBJS) $(COMPRESSION_LIBS) -lz -lxenstore -lpthread $(LDLIBS_libxenctrl) $(PTHREAD_LIBS) $(APPEND_LDFLAGS)
 
 xenctrl_osdep_ENOSYS.so: $(OSDEP_PIC_OBJS) libxenctrl.so
 	$(CC) $(LDFLAGS) $(SHLIB_LDFLAGS) -o $@ $(OSDEP_PIC_OBJS) $(LDLIBS_libxenctrl) $(APPEND_LDFLAGS)
