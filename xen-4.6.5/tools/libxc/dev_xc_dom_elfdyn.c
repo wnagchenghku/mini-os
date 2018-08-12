@@ -333,7 +333,8 @@ get_dynamic_info(dom_t *dom, map_t *map)
 	}
 	//elf_get_ptr() turns guest pa to host va.
 	//so we directly compute the delta
-	delta = (uint32_t)elf->dest - elf->pstart;
+	//delta = (uint32_t)elf->dest - elf->pstart;
+	delta = (uint32_t)elf->dest_base - elf->pstart;
 	//printf("---------------------.plt.got = %p\n", info[DT_PLTGOT]->d_un.d_ptr);
 //	printf("---------------------delta = %p\n", delta);
 //	printf("---------------------virt_offset = %p\n", dom->parms.virt_offset);
@@ -500,7 +501,8 @@ do {                                            \
 
 static inline int elf_load_dynamic(struct elf_binary *elf, char *filename)
 {
-	const elf_phdr *phdr;
+	//const elf_phdr *phdr;
+	ELF_HANDLE_DECL(elf_phdr) phdr;
 	uint64_t i, count, paddr, offset, filesz, memsz;
 	char *dest;
 	char *maddr;
