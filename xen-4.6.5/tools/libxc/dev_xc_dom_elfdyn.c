@@ -1099,7 +1099,7 @@ machine_rel_relative (dom_t *dom, Elf64_Addr l_addr, const Elf64_Rel *reloc,
 	DOMPRINTF_CALLED(dom->xch);
 	//the following condition is necessary in glibc since l_addr's type is ElfW(Addr).
 	//but here it is actually can be omitted...
-	if (ELF32_R_TYPE(reloc->r_info) == R_386_RELATIVE) {
+	if (ELF64_R_TYPE(reloc->r_info) == R_386_RELATIVE) {
     		*(Elf64_Addr *) reloc_addr = (Elf64_Addr)l_addr;
 	} 
 }
@@ -1187,7 +1187,7 @@ static inline const Elf64_Sym *
 check_sym_match (dom_t *dom, const Elf64_Sym *sym, const Elf64_Sym *ref, 
 		const char *strtab, const char *undef_name, int type_class)
 {
-	unsigned int stt = ELF32_ST_TYPE(sym->st_info);
+	unsigned int stt = ELF64_ST_TYPE(sym->st_info);
 	if ( (sym->st_value == 0 && stt != STT_TLS)
 			|| (type_class & (sym->st_shndx == SHN_UNDEF))) //__builtin_expect 0
 		return NULL;
@@ -1280,7 +1280,7 @@ do_lookup_x (dom_t *dom, const char *undef_name, uint_fast32_t new_hash,
 		if (sym != NULL) {
 found_it:	DOMPRINTF("found sym! str: %s, value: %08x\n", 
 					strtab + sym->st_name, map->l_addr + sym->st_value);
-			switch (ELF32_ST_BIND(sym->st_info)) { //__builtin_expect: STB_GLOBAL
+			switch (ELF64_ST_BIND(sym->st_info)) { //__builtin_expect: STB_GLOBAL
 			case STB_WEAK:
 				/*
 				xc_dom_panic(dom->xch, XC_INTERNAL_ERROR,
@@ -1375,7 +1375,7 @@ resolve_map(dom_t *dom, const Elf64_Sym **ref, unsigned int r_type,
 	int _tc;
 
 	DOMPRINTF_CALLED(dom->xch);
-	if (ELF32_ST_BIND((*ref)->st_info) == STB_LOCAL) {
+	if (ELF64_ST_BIND((*ref)->st_info) == STB_LOCAL) {
 		return l;
 	}
 	else if ((*ref) == l->l_lookup_cache.sym 
@@ -1487,9 +1487,9 @@ static inline int update_lookup_relloc(dom_t *dom, Elf64_Addr offset)
 
 // 	/*step 3: Get sym and relloc */
 // 	reloc = r + label;
-// 	sym = &symtab[ELF32_R_SYM(reloc->r_info)];
+// 	sym = &symtab[ELF64_R_SYM(reloc->r_info)];
 	
-// 	r_type = ELF32_R_TYPE(reloc->r_info);
+// 	r_type = ELF64_R_TYPE(reloc->r_info);
 
 // 	sym_map = resolve_map(dom, &sym, r_type, map, scope);
 // 	value = (sym_map == NULL)?0:(Elf64_Addr)(sym_map->l_addr) + sym->st_value;
@@ -1581,7 +1581,7 @@ machine_rel(dom_t *dom, map_t *map, const Elf64_Rel *reloc, const Elf64_Sym *sym
 	Elf64_Addr *const reloc_addr = xc_dom_vaddr_to_ptr(dom, (Elf64_Addr)reloc_addr_arg);
 
 	//Elf64_Addr *const reloc_addr = reloc_addr_arg;
-	const unsigned int r_type = ELF32_R_TYPE(reloc->r_info);
+	const unsigned int r_type = ELF64_R_TYPE(reloc->r_info);
 	map_t *sym_map;
 	Elf64_Addr value;
 
@@ -1598,7 +1598,7 @@ machine_rel(dom_t *dom, map_t *map, const Elf64_Rel *reloc, const Elf64_Sym *sym
 
 		value = (sym_map == NULL) ? 0 : (Elf64_Addr)(sym_map->l_addr) + sym->st_value;
 
-		if (sym != NULL	&& ELF32_ST_TYPE(sym->st_info) == STT_GNU_IFUNC && sym->st_shndx != SHN_UNDEF)
+		if (sym != NULL	&& ELF64_ST_TYPE(sym->st_info) == STT_GNU_IFUNC && sym->st_shndx != SHN_UNDEF)
 			value = ((Elf64_Addr(*) (void)) value) ();
 
 		switch (r_type) {
@@ -1646,7 +1646,7 @@ static inline void machine_rel_init_kylinx_got(dom_t *dom, map_t *map, const Elf
 	/*Step 1: convert r_offset into reloc_addr_arg in dom0*/
 	Elf64_Addr *const reloc_addr = xc_dom_vaddr_to_ptr(dom, (Elf64_Addr)reloc_addr_arg);
 	Elf64_Addr *got = (void *)D_PTR(map, l_info[DT_PLTGOT]);
-	const unsigned int r_type = ELF32_R_TYPE(reloc->r_info);
+	const unsigned int r_type = ELF64_R_TYPE(reloc->r_info);
 	map_t *sym_map;
 	Elf64_Addr value;
 
@@ -1772,7 +1772,7 @@ dynamic_do_Rel(dom_t *dom, map_t *map, Elf64_Addr reladdr, Elf64_Addr relsize, s
 
 /*	if (l_addr != 0)
 		for (; relative < r; ++relative) //this handles the first nrelative Elf64_Rela
-			machine_rel_relative(dom, l_addr, relative, (void *)(l_addr + relative->r_offset));&symtab[ELF32_R_SYM(r->r_info)],
+			machine_rel_relative(dom, l_addr, relative, (void *)(l_addr + relative->r_offset));&symtab[ELF64_R_SYM(r->r_info)],
 */
 /*---------------------------------------------------------------------------------*/
 	for (; r < end; ++r){
@@ -1785,7 +1785,7 @@ dynamic_do_Rel(dom_t *dom, map_t *map, Elf64_Addr reladdr, Elf64_Addr relsize, s
 		*/
 		
 		/*step 2: Let r_offset point to an item of .kylinx.got*/
-		machine_rel_init_kylinx_got(dom, map, r, &symtab[ELF32_R_SYM(r->r_info)],(void *)(l_addr + r->r_offset), scope, moduleID);
+		machine_rel_init_kylinx_got(dom, map, r, &symtab[ELF64_R_SYM(r->r_info)],(void *)(l_addr + r->r_offset), scope, moduleID);
 		count[moduleID]++;
 	}
 /*---------------------------------------------------------------------------------*/
@@ -1824,7 +1824,7 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 		const Elf64_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
 		for (; r < end; ++r){
 			Elf64_Addr *reloc_addr =  xc_dom_vaddr_to_ptr(dom, (Elf64_Addr)(r->r_offset));
-			const unsigned int r_type = ELF32_R_TYPE(r->r_info);
+			const unsigned int r_type = ELF64_R_TYPE(r->r_info);
 			map_t *sym_map;
 			Elf64_Addr value;
 
@@ -1837,11 +1837,11 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 				return;
 			} 
 			else {
-				const Elf64_Sym *sym = &symtab[ELF32_R_SYM(r->r_info)];
+				const Elf64_Sym *sym = &symtab[ELF64_R_SYM(r->r_info)];
 				sym_map = resolve_map(dom, &sym, r_type, map, scope);
 				value = (sym_map == NULL) ? 0 : (Elf64_Addr)(sym_map->l_addr) + sym->st_value;
 
-				if (sym != NULL	&& ELF32_ST_TYPE(sym->st_info) == STT_GNU_IFUNC && sym->st_shndx != SHN_UNDEF)
+				if (sym != NULL	&& ELF64_ST_TYPE(sym->st_info) == STT_GNU_IFUNC && sym->st_shndx != SHN_UNDEF)
 					value = ((Elf64_Addr(*) (void)) value) ();
 
 				switch (r_type) {
