@@ -44,11 +44,11 @@ struct libname_list
 };
 /*-------------------------------------------*/
 /*define a map from label of relloc table to realaddr*/
-Elf32_Addr sym_value[128][128];
+Elf64_Addr sym_value[128][128];
 int count[2];
 
 /*define an array to .got.plt*/
-Elf32_Addr r_got[10];
+Elf64_Addr r_got[10];
 int got_num = 0;
 
 /*--------------------------------------------*/
@@ -57,7 +57,7 @@ int got_num = 0;
 /*define a link table(offset->reference of relloc tabel)*/
 /*
 struct lookup_relloc {
-	Elf32_Addr offset;
+	Elf64_Addr offset;
 	int label;
 	struct lookup_relloc *next;
 };
@@ -71,10 +71,10 @@ struct link_map {
     /* These first few members are part of the protocol with the debugger.
        This is the same format used in SVR4.  */
 
-    Elf32_Addr l_addr;		/* Base (or delta?) domU address shared object is loaded at.  */
+    Elf64_Addr l_addr;		/* Base (or delta?) domU address shared object is loaded at.  */
     char *l_name;		/* Absolute file name object was found in.  */
-    Elf32_Dyn *l_ld;		/* Dynamic section of the shared object.  */
-    Elf32_Half l_ldnum;		/* Number of dynamic segment entries.  */
+    Elf64_Dyn *l_ld;		/* Dynamic section of the shared object.  */
+    Elf64_Half l_ldnum;		/* Number of dynamic segment entries.  */
 	
     struct link_map *l_next, *l_prev; /* Chain of loaded objects.  */
 
@@ -97,7 +97,7 @@ struct link_map {
        [DT_NUM+DT_THISPROCNUM+DT_VERSIONTAGNUM+DT_EXTRANUM+DT_VALNUM,
 	DT_NUM+DT_THISPROCNUM+DT_VERSIONTAGNUM+DT_EXTRANUM+DT_VALNUM+DT_ADDRNUM)
        are indexed by DT_ADDRTAGIDX(tagvalue), see <elf.h>.  */
-    Elf32_Dyn *l_info[DT_NUM];
+    Elf64_Dyn *l_info[DT_NUM];
 	//we use elf to replace the following
 	struct elf_binary *elf;
     //const Elf64_Phdr *l_phdr;	/* Pointer to program header table in domU.  */
@@ -115,15 +115,15 @@ struct link_map {
 
     /* Symbol hash table.*/ 
     Elf_Symndx l_nbuckets;
-    Elf32_Word l_gnu_bitmask_idxbits;
-    Elf32_Word l_gnu_shift;
-    const Elf32_Addr *l_gnu_bitmask;
+    Elf64_Word l_gnu_bitmask_idxbits;
+    Elf64_Word l_gnu_shift;
+    const Elf64_Addr *l_gnu_bitmask;
     union {
-      const Elf32_Word *l_gnu_buckets;
+      const Elf64_Word *l_gnu_buckets;
       const Elf_Symndx *l_chain;
     };
     union {
-      const Elf32_Word *l_gnu_chain_zero;
+      const Elf64_Word *l_gnu_chain_zero;
       const Elf_Symndx *l_buckets;
     };
 
@@ -144,9 +144,9 @@ struct link_map {
 
     /* Start and finish of memory map for this object.  l_map_start
        need not be the same as l_addr.  */
-    Elf32_Addr l_map_start, l_map_end;
+    Elf64_Addr l_map_start, l_map_end;
     /* End of the executable part of the mapping.  */
-    Elf32_Addr l_text_end;
+    Elf64_Addr l_text_end;
 
     /* Default array for 'l_scope'.  */
     //struct r_scope_elem *l_scope_mem[4];
@@ -160,10 +160,10 @@ struct link_map {
     struct link_map **l_initfini;
 
     struct {
-      const Elf32_Sym *sym;
+      const Elf64_Sym *sym;
       int type_class;
       struct link_map *value;
-      const Elf32_Sym *ret;
+      const Elf64_Sym *ret;
     } l_lookup_cache;
 
 	unsigned long l_serial; //num in the list of _ns_loaded
@@ -296,9 +296,9 @@ add_to_namespace_list (dom_t *dom, map_t *new_map)
 static inline int  //__attribute__ ((unused, always_inline))
 get_dynamic_info(dom_t *dom, map_t *map)
 {
-	Elf32_Dyn *dyn = map->l_ld;
-	Elf32_Dyn **info;
-	Elf32_Addr delta = 0;
+	Elf64_Dyn *dyn = map->l_ld;
+	Elf64_Dyn **info;
+	Elf64_Addr delta = 0;
 	const struct elf_binary *elf = map->elf;
 
 /*
@@ -315,14 +315,14 @@ get_dynamic_info(dom_t *dom, map_t *map)
 	
 	while (dyn->d_tag != DT_NULL)
 	{
-		if ((Elf32_Word)dyn->d_tag < DT_NUM)
+		if ((Elf64_Word)dyn->d_tag < DT_NUM)
 			info[dyn->d_tag] = dyn;
 		/*
 		else if (dyn->d_tag >= DT_LOPROC && dyn->d_tag < DT_LOPROC+16)
 			info[dyn->d_tag-DT_LOPROC+DT_NUM] = dyn;
-		else if ((Elf32_Word)(DT_VERNEEDNUM-(dyn->d_tag))< 16)
+		else if ((Elf64_Word)(DT_VERNEEDNUM-(dyn->d_tag))< 16)
 			info[(DT_NUM + 16 + (DT_VERNEEDNUM - (dyn->d_tag)))] = dyn;
-		else if ((Elf32_Word)(DT_ADDRRNGHI-(dyn->d_tag))<16)
+		else if ((Elf64_Word)(DT_ADDRRNGHI-(dyn->d_tag))<16)
 			info[(DT_NUM + 32 + (DT_ADDRRNGHI-(dyn->d_tag)))] = dyn;
 		else{
 			++dyn;
@@ -364,10 +364,10 @@ get_dynamic_info(dom_t *dom, map_t *map)
 			|| info[DT_PLTREL]->d_un.d_val == DT_RELA);	
 	}
 	if (info[DT_RELA] != NULL)
-		assert (info[DT_RELAENT]->d_un.d_val == sizeof(Elf32_Rela));
+		assert (info[DT_RELAENT]->d_un.d_val == sizeof(Elf64_Rela));
 
 	if (info[DT_REL] != NULL)
-		assert (info[DT_RELENT]->d_un.d_val == sizeof(Elf32_Rel));
+		assert (info[DT_RELENT]->d_un.d_val == sizeof(Elf64_Rel));
 
 	return 0;
 
@@ -379,7 +379,7 @@ static inline void
 setup_hash (const dom_t *dom, map_t *map)
 {
 	Elf_Symndx *hash;
-	Elf32_Dyn **info = map->l_info;
+	Elf64_Dyn **info = map->l_info;
 	
 	DOMPRINTF_CALLED(dom->xch);
 	if (!info[DT_HASH]) 
@@ -616,8 +616,8 @@ parse_elf_so_map(dom_t *dom, map_t *l, void *blob, size_t size, char *filename)
 		p_filesz = elf_uval(elf, phdr, p_filesz);
 		p_memsz = elf_uval(elf, phdr, p_memsz);
 
-		l->l_ld = (Elf32_Dyn *)elf_get_ptr(elf, p_paddr);
-		l->l_ldnum = ((Elf32_Phdr *)phdr)->p_memsz / sizeof(Elf32_Dyn);
+		l->l_ld = (Elf64_Dyn *)elf_get_ptr(elf, p_paddr);
+		l->l_ldnum = ((Elf64_Phdr *)phdr)->p_memsz / sizeof(Elf64_Dyn);
 		
 		DOMPRINTF("%s: l_ld = 0x%p, l_ldnum = %d", __FUNCTION__, 
 				l->l_ld, l->l_ldnum);
@@ -888,7 +888,7 @@ load_objects(dom_t *dom, map_t *map, map_list_t *known)
 
 		if (l->l_info[DT_NEEDED]) { //|| l->l_info[AUXTAG] || l->l_info[FILTERTAG]
 			const char *strtab = (const void *) (l->l_info[DT_STRTAB]->d_un.d_ptr);
-			const Elf32_Dyn *d;
+			const Elf64_Dyn *d;
 			char *realrpath = (char *)(l->l_info[DT_STRTAB]->d_un.d_ptr) + l->l_info[DT_RPATH]->d_un.d_val;
 			int i = 1;
 			
@@ -1091,21 +1091,21 @@ err:
 #define D_PTR(map, i) (map)->i->d_un.d_ptr
 
 static inline void
-machine_rel_relative (dom_t *dom, Elf32_Addr l_addr, const Elf32_Rel *reloc, 
+machine_rel_relative (dom_t *dom, Elf64_Addr l_addr, const Elf64_Rel *reloc, 
 		void *const reloc_addr_arg)
 {
-	Elf32_Addr *const reloc_addr = xc_dom_vaddr_to_ptr(dom, (uint32_t)reloc_addr_arg);
+	Elf64_Addr *const reloc_addr = xc_dom_vaddr_to_ptr(dom, (uint32_t)reloc_addr_arg);
 
 	DOMPRINTF_CALLED(dom->xch);
 	//the following condition is necessary in glibc since l_addr's type is ElfW(Addr).
 	//but here it is actually can be omitted...
 	if (ELF32_R_TYPE(reloc->r_info) == R_386_RELATIVE) {
-    		*(Elf32_Addr *) reloc_addr = (Elf32_Addr)l_addr;
+    		*(Elf64_Addr *) reloc_addr = (Elf64_Addr)l_addr;
 	} 
 }
 
 struct sym_val {
-    const Elf32_Sym *s;
+    const Elf64_Sym *s;
     struct link_map *m;
 };
 
@@ -1183,8 +1183,8 @@ code/data definitions.  */
 
 /* Nested routine to check whether the symbol matches.  */
 //zym: now we should have no version or verstab at all
-static inline const Elf32_Sym *
-check_sym_match (dom_t *dom, const Elf32_Sym *sym, const Elf32_Sym *ref, 
+static inline const Elf64_Sym *
+check_sym_match (dom_t *dom, const Elf64_Sym *sym, const Elf64_Sym *ref, 
 		const char *strtab, const char *undef_name, int type_class)
 {
 	unsigned int stt = ELF32_ST_TYPE(sym->st_info);
@@ -1210,7 +1210,7 @@ check_sym_match (dom_t *dom, const Elf32_Sym *sym, const Elf32_Sym *ref,
    something bad happened.  */
 static int
 do_lookup_x (dom_t *dom, const char *undef_name, uint_fast32_t new_hash,
-		unsigned long int *old_hash, const Elf32_Sym *ref,
+		unsigned long int *old_hash, const Elf64_Sym *ref,
 		struct sym_val *result, struct r_scope_elem *scope, size_t i,
 		int flags, map_t *skip, int type_class, map_t *undef_map)
 {
@@ -1222,10 +1222,10 @@ do_lookup_x (dom_t *dom, const char *undef_name, uint_fast32_t new_hash,
 	map_t **list = scope->r_list;
 	Elf_Symndx symidx;
 	map_t *map;
-	const Elf32_Sym *symtab;
+	const Elf64_Sym *symtab;
 	const char *strtab;
-	const Elf32_Sym *sym;
-	const Elf32_Addr *bitmask;
+	const Elf64_Sym *sym;
+	const Elf64_Addr *bitmask;
 
 	DOMPRINTF_CALLED(dom->xch);
 	do {
@@ -1314,7 +1314,7 @@ found_it:	DOMPRINTF("found sym! str: %s, value: %08x\n",
 
 static inline map_t *
 lookup_symbol_x(dom_t *dom, const char *undef_name, map_t *undef_map,
-		const Elf32_Sym **ref, struct r_scope_elem *symbol_scope[],
+		const Elf64_Sym **ref, struct r_scope_elem *symbol_scope[],
 		int type_class, int flags, map_t *skip_map)
 {
 	const uint_fast32_t new_hash = calc_new_hash(undef_name);
@@ -1367,7 +1367,7 @@ lookup_symbol_x(dom_t *dom, const char *undef_name, map_t *undef_map,
 }
 
 static inline map_t *
-resolve_map(dom_t *dom, const Elf32_Sym **ref, unsigned int r_type, 
+resolve_map(dom_t *dom, const Elf64_Sym **ref, unsigned int r_type, 
 		map_t *l, struct r_scope_elem *scope[])
 {
 	map_t *_lr;
@@ -1397,13 +1397,13 @@ resolve_map(dom_t *dom, const Elf32_Sym **ref, unsigned int r_type,
 }
 
 /*Based on function name, We can find really relloc addr */
-// static inline Elf32_Addr update_lookup_lazy_binding(dom_t *dom, map_t *map, char *fun_name, int type ,struct r_scope_elem *scope[])
+// static inline Elf64_Addr update_lookup_lazy_binding(dom_t *dom, map_t *map, char *fun_name, int type ,struct r_scope_elem *scope[])
 // {
-// 	Elf32_Sym *sym;
-// 	Elf32_Addr value;
+// 	Elf64_Sym *sym;
+// 	Elf64_Addr value;
 // 	map_t *sym_map;
 
-// 	const Elf32_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
+// 	const Elf64_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
 // 	const char *strtab = (const void *)D_PTR(map, l_info[DT_STRTAB]);
 	
 // 	sym = symtab;
@@ -1414,13 +1414,13 @@ resolve_map(dom_t *dom, const Elf32_Sym **ref, unsigned int r_type,
 // 	}
 
 // 	sym_map = resolve_map(dom, &sym, type, map, scope);
-// 	value = (sym_map == NULL)? 0:(Elf32_Addr)(sym_map->l_addr) + sym->st_value;
+// 	value = (sym_map == NULL)? 0:(Elf64_Addr)(sym_map->l_addr) + sym->st_value;
 	
 // 	return value;
 // }
 
 /*Read addr from the xenstore!*/
-// static inline Elf32_Addr update_readaddr_xenstore(dom_t *dom)
+// static inline Elf64_Addr update_readaddr_xenstore(dom_t *dom)
 // {
 // 	struct xs_handle *xs;
 // 	xs_transaction_t xth;
@@ -1459,7 +1459,7 @@ resolve_map(dom_t *dom, const Elf32_Sym **ref, unsigned int r_type,
 
 /*Check out a list of struct lookup_relloc*/
 /*
-static inline int update_lookup_relloc(dom_t *dom, Elf32_Addr offset)
+static inline int update_lookup_relloc(dom_t *dom, Elf64_Addr offset)
 {
 	for (current_lr = head_lr; current_lr != NULL; current_lr = current_lr->next)
 	{
@@ -1471,19 +1471,19 @@ static inline int update_lookup_relloc(dom_t *dom, Elf32_Addr offset)
 */
 /*Based on relloc table, Get really relocate address*/
 /*issue: need map(module ID)*/
-// static inline Elf32_Addr update_relloc_address(dom_t *dom, map_t *map, int label, struct r_scope_elem *scope[])
+// static inline Elf64_Addr update_relloc_address(dom_t *dom, map_t *map, int label, struct r_scope_elem *scope[])
 // {
-// 	Elf32_Rel *reloc;
-// 	Elf32_Sym *sym;
+// 	Elf64_Rel *reloc;
+// 	Elf64_Sym *sym;
 // 	int r_type;
 // 	map_t *sym_map;
-// 	Elf32_Addr value;
+// 	Elf64_Addr value;
 
 // 	/*step 1: Get address of relloc table!*/
-// 	const Elf32_Rel *r = D_PTR((map), l_info[DT_JMPREL]);
+// 	const Elf64_Rel *r = D_PTR((map), l_info[DT_JMPREL]);
 	
 // 	/*step 2: Get address of symtab!*/
-// 	const Elf32_Sym *const symtab = (const void *)D_PTR(map, l_info[DT_SYMTAB]);
+// 	const Elf64_Sym *const symtab = (const void *)D_PTR(map, l_info[DT_SYMTAB]);
 
 // 	/*step 3: Get sym and relloc */
 // 	reloc = r + label;
@@ -1492,13 +1492,13 @@ static inline int update_lookup_relloc(dom_t *dom, Elf32_Addr offset)
 // 	r_type = ELF32_R_TYPE(reloc->r_info);
 
 // 	sym_map = resolve_map(dom, &sym, r_type, map, scope);
-// 	value = (sym_map == NULL)?0:(Elf32_Addr)(sym_map->l_addr) + sym->st_value;
+// 	value = (sym_map == NULL)?0:(Elf64_Addr)(sym_map->l_addr) + sym->st_value;
 
 // 	return value;
 // }
 
 /*Write realaddr into xenstore!*/
-// static inline void update_write_xenstore(dom_t *dom, Elf32_Addr realaddr)
+// static inline void update_write_xenstore(dom_t *dom, Elf64_Addr realaddr)
 // {
 // 	struct xs_handle *xs;
 // 	char path[128];
@@ -1532,7 +1532,7 @@ static inline int update_lookup_relloc(dom_t *dom, Elf32_Addr offset)
 // 	fd_set set;
 // 	char **vec;
 // 	unsigned int num;
-// 	Elf32_Addr offset, realaddr;
+// 	Elf64_Addr offset, realaddr;
 // 	struct timeval tv;
 // 	int label;
 
@@ -1575,15 +1575,15 @@ static inline int update_lookup_relloc(dom_t *dom, Elf32_Addr offset)
 /* Perform the relocation specified by RELOC and SYM (which is fully resolved).
    MAP is the object containing the reloc.  */
 static inline void 
-machine_rel(dom_t *dom, map_t *map, const Elf32_Rel *reloc, const Elf32_Sym *sym, void *const reloc_addr_arg, struct r_scope_elem *scope[])
+machine_rel(dom_t *dom, map_t *map, const Elf64_Rel *reloc, const Elf64_Sym *sym, void *const reloc_addr_arg, struct r_scope_elem *scope[])
 {	
-	//reloc_addr_arg is guest addr, and reloc_addr is host addr const Elf32_Sym *sym, 
-	Elf32_Addr *const reloc_addr = xc_dom_vaddr_to_ptr(dom, (Elf32_Addr)reloc_addr_arg);
+	//reloc_addr_arg is guest addr, and reloc_addr is host addr const Elf64_Sym *sym, 
+	Elf64_Addr *const reloc_addr = xc_dom_vaddr_to_ptr(dom, (Elf64_Addr)reloc_addr_arg);
 
-	//Elf32_Addr *const reloc_addr = reloc_addr_arg;
+	//Elf64_Addr *const reloc_addr = reloc_addr_arg;
 	const unsigned int r_type = ELF32_R_TYPE(reloc->r_info);
 	map_t *sym_map;
-	Elf32_Addr value;
+	Elf64_Addr value;
 
 	DOMPRINTF_CALLED(dom->xch);
 
@@ -1596,10 +1596,10 @@ machine_rel(dom_t *dom, map_t *map, const Elf32_Rel *reloc, const Elf32_Sym *sym
   	else {
 		sym_map = resolve_map(dom, &sym, r_type, map, scope);
 
-		value = (sym_map == NULL) ? 0 : (Elf32_Addr)(sym_map->l_addr) + sym->st_value;
+		value = (sym_map == NULL) ? 0 : (Elf64_Addr)(sym_map->l_addr) + sym->st_value;
 
 		if (sym != NULL	&& ELF32_ST_TYPE(sym->st_info) == STT_GNU_IFUNC && sym->st_shndx != SHN_UNDEF)
-			value = ((Elf32_Addr(*) (void)) value) ();
+			value = ((Elf64_Addr(*) (void)) value) ();
 
 		switch (r_type) {
 		case R_386_GLOB_DAT:
@@ -1622,12 +1622,12 @@ machine_rel(dom_t *dom, map_t *map, const Elf32_Rel *reloc, const Elf32_Sym *sym
 			break;	
 			
 		case R_386_PC32:
-			*reloc_addr += (value - (Elf32_Addr) reloc_addr);
+			*reloc_addr += (value - (Elf64_Addr) reloc_addr);
 			break;
 
 		case R_386_IRELATIVE:
 			value = map->l_addr + *reloc_addr;
-			value = ((Elf32_Addr (*) (void)) value) ();
+			value = ((Elf64_Addr (*) (void)) value) ();
 			*reloc_addr = value;
 			break;
 
@@ -1641,14 +1641,14 @@ machine_rel(dom_t *dom, map_t *map, const Elf32_Rel *reloc, const Elf32_Sym *sym
 
 /*---------------------------------------------------------------------------------*/
 /*Let r_offset point to .kylinx.got table*/
-static inline void machine_rel_init_kylinx_got(dom_t *dom, map_t *map, const Elf32_Rel *reloc, const Elf32_Sym *sym, void *const reloc_addr_arg, struct r_scope_elem *scope[], int moduleID)
+static inline void machine_rel_init_kylinx_got(dom_t *dom, map_t *map, const Elf64_Rel *reloc, const Elf64_Sym *sym, void *const reloc_addr_arg, struct r_scope_elem *scope[], int moduleID)
 {
 	/*Step 1: convert r_offset into reloc_addr_arg in dom0*/
-	Elf32_Addr *const reloc_addr = xc_dom_vaddr_to_ptr(dom, (Elf32_Addr)reloc_addr_arg);
-	Elf32_Addr *got = (void *)D_PTR(map, l_info[DT_PLTGOT]);
+	Elf64_Addr *const reloc_addr = xc_dom_vaddr_to_ptr(dom, (Elf64_Addr)reloc_addr_arg);
+	Elf64_Addr *got = (void *)D_PTR(map, l_info[DT_PLTGOT]);
 	const unsigned int r_type = ELF32_R_TYPE(reloc->r_info);
 	map_t *sym_map;
-	Elf32_Addr value;
+	Elf64_Addr value;
 
 	/*step 2: Declare a struct */
 	//struct kylinx kl;
@@ -1661,13 +1661,13 @@ static inline void machine_rel_init_kylinx_got(dom_t *dom, map_t *map, const Elf
 	printf("--------dom0_kernel = %p\n", elf->dest[2]);
 	*/
 	/*set got[1]*/
-	got[1] = (Elf32_Addr)moduleID;
+	got[1] = (Elf64_Addr)moduleID;
 	//printf("-------------got[1] = %p", got[1]);
 	sym_map = resolve_map(dom, &sym, r_type, map, scope);
-	value = (sym_map == NULL)?0:(Elf32_Addr)(sym_map->l_addr) + sym->st_value;
+	value = (sym_map == NULL)?0:(Elf64_Addr)(sym_map->l_addr) + sym->st_value;
 	/*keep value in sym_value*/
 	sym_value[moduleID][count[moduleID]] = value;
-	Elf32_Addr *strtab = (Elf32_Addr)D_PTR(map, l_info[DT_STRTAB]);
+	Elf64_Addr *strtab = (Elf64_Addr)D_PTR(map, l_info[DT_STRTAB]);
 	/*
 	if (moduleID == 0){
 		printf("--------sym = %s\n", strtab + sym->st_name);	
@@ -1752,21 +1752,21 @@ void watch_map(dom_t *dom)
    relocations; they should be set up to call _dl_runtime_resolve, rather
    than fully resolved now.  */
 static inline void //__attribute__ ((always_inline))
-dynamic_do_Rel(dom_t *dom, map_t *map, Elf32_Addr reladdr, Elf32_Addr relsize, struct r_scope_elem *scope[], int moduleID)
+dynamic_do_Rel(dom_t *dom, map_t *map, Elf64_Addr reladdr, Elf64_Addr relsize, struct r_scope_elem *scope[], int moduleID)
 {
 	//unsigned long id_addr;
 	int ret;
-  	const Elf32_Rel *r = (const void *) reladdr;
-  	const Elf32_Rel *end = (const void *) (reladdr + relsize);
+  	const Elf64_Rel *r = (const void *) reladdr;
+  	const Elf64_Rel *end = (const void *) (reladdr + relsize);
 	/*rellocate to plt table, count stands for a lable of plt*/
-  	Elf32_Addr l_addr = map->l_addr; //elf_get_ptr(map->elf, 0); 
+  	Elf64_Addr l_addr = map->l_addr; //elf_get_ptr(map->elf, 0); 
 	count[moduleID] = 0;
 
   	/* We never bind lazily during ld.so bootstrap.  Unfortunately gcc is
      not clever enough to see through all the function calls to realize that.  */
-//	Elf32_Addr *strtab = (Elf32_Addr)D_PTR(map, l_info[DT_STRTAB]);
-//	const Elf32_Rel *relative = r;
-	const Elf32_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
+//	Elf64_Addr *strtab = (Elf64_Addr)D_PTR(map, l_info[DT_STRTAB]);
+//	const Elf64_Rel *relative = r;
+	const Elf64_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
 	DOMPRINTF_CALLED(dom->xch);
 //	r += nrelative;
 
@@ -1803,7 +1803,7 @@ static inline void
 relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int moduleID)
 {
     	struct { 
-		Elf32_Addr start, size;					      
+		Elf64_Addr start, size;					      
 	}ranges[2] = { { 0, 0}, { 0, 0} };			      
 
 	DOMPRINTF_CALLED(dom->xch);
@@ -1819,14 +1819,14 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 			ranges[0].size = map->l_info[DT_RELSZ]->d_un.d_val;
 	//	dynamic_do_Rel(dom, map, ranges[0].start, ranges[0].size, scope);
 /*
-		const Elf32_Rel *r = (const void *) ranges[0].start;
-		const Elf32_Rel *end = (const void *) (ranges[0].start + ranges[0].size);
-		const Elf32_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
+		const Elf64_Rel *r = (const void *) ranges[0].start;
+		const Elf64_Rel *end = (const void *) (ranges[0].start + ranges[0].size);
+		const Elf64_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
 		for (; r < end; ++r){
-			Elf32_Addr *reloc_addr =  xc_dom_vaddr_to_ptr(dom, (Elf32_Addr)(r->r_offset));
+			Elf64_Addr *reloc_addr =  xc_dom_vaddr_to_ptr(dom, (Elf64_Addr)(r->r_offset));
 			const unsigned int r_type = ELF32_R_TYPE(r->r_info);
 			map_t *sym_map;
-			Elf32_Addr value;
+			Elf64_Addr value;
 
 			DOMPRINTF_CALLED(dom->xch);
 
@@ -1837,12 +1837,12 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 				return;
 			} 
 			else {
-				const Elf32_Sym *sym = &symtab[ELF32_R_SYM(r->r_info)];
+				const Elf64_Sym *sym = &symtab[ELF32_R_SYM(r->r_info)];
 				sym_map = resolve_map(dom, &sym, r_type, map, scope);
-				value = (sym_map == NULL) ? 0 : (Elf32_Addr)(sym_map->l_addr) + sym->st_value;
+				value = (sym_map == NULL) ? 0 : (Elf64_Addr)(sym_map->l_addr) + sym->st_value;
 
 				if (sym != NULL	&& ELF32_ST_TYPE(sym->st_info) == STT_GNU_IFUNC && sym->st_shndx != SHN_UNDEF)
-					value = ((Elf32_Addr(*) (void)) value) ();
+					value = ((Elf64_Addr(*) (void)) value) ();
 
 				switch (r_type) {
 				case R_386_GLOB_DAT:
@@ -1863,12 +1863,12 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 					break;	
 			
 				case R_386_PC32:
-					*reloc_addr += (value - (Elf32_Addr) reloc_addr);
+					*reloc_addr += (value - (Elf64_Addr) reloc_addr);
 					break;
 
 				case R_386_IRELATIVE:
 					value = map->l_addr + *reloc_addr;
-					value = ((Elf32_Addr (*) (void)) value) ();
+					value = ((Elf64_Addr (*) (void)) value) ();
 					*reloc_addr = value;
 					break;
 
@@ -1922,13 +1922,13 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 int xc_dom_elf_dyn(struct xc_dom_image *dom)
 {
 	const elf_phdr *phdr;
-	Elf32_Phdr *ph;
+	Elf64_Phdr *ph;
     	uint32_t i;	
 	uint32_t e_phnum;
 	uint32_t p_type, p_paddr, p_memsz, p_filesz, p_offset;	
 	map_t *main_map = NULL, *l;
-	//Elf32_Addr mapstart;
-	//Elf32_Addr allocend;
+	//Elf64_Addr mapstart;
+	//Elf64_Addr allocend;
 
 	struct elf_binary *elf = dom->private_loader;
 
@@ -1951,12 +1951,12 @@ int xc_dom_elf_dyn(struct xc_dom_image *dom)
 	for (i = 0; i < e_phnum; i++) {
 		phdr = elf_phdr_by_index(elf, i);
 		p_type = elf_uval(elf, phdr, p_type);
-		ph = (Elf32_Phdr *)phdr;
+		ph = (Elf64_Phdr *)phdr;
 		switch (p_type)
 		{
 			case PT_PHDR:
 				/*Find out the load address.*/
-				//main_map->l_addr = (Elf32_Addr)elf->dest - elf->pstart - dom->parms.virt_offset;
+				//main_map->l_addr = (Elf64_Addr)elf->dest - elf->pstart - dom->parms.virt_offset;
 				main_map->l_addr = dom->kernel_seg.vstart - dom->parms.virt_kstart;
 				DOMPRINTF("%s:main_map->l_addr = 0x%x", __FUNCTION__, main_map->l_addr);
 				break;
@@ -1968,8 +1968,8 @@ int xc_dom_elf_dyn(struct xc_dom_image *dom)
 				/*This tells us where to find the dynamic section,
 				 which tells us everything we need to do.				
 				*/
-				main_map->l_ld = (Elf32_Dyn *)elf_get_ptr(elf, p_paddr);
-				main_map->l_ldnum = ph->p_memsz/sizeof(Elf32_Dyn);
+				main_map->l_ld = (Elf64_Dyn *)elf_get_ptr(elf, p_paddr);
+				main_map->l_ldnum = ph->p_memsz/sizeof(Elf64_Dyn);
 				DOMPRINTF("%s:l_ld = 0x%p, l_ldnum = %d", __FUNCTION__, main_map->l_ld, main_map->l_ldnum);
 				break;
 	//		case PT_LOAD:
