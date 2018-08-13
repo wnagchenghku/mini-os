@@ -1574,7 +1574,7 @@ static inline int update_lookup_relloc(dom_t *dom, Elf64_Addr offset)
 
 /* Perform the relocation specified by RELOC and SYM (which is fully resolved).
    MAP is the object containing the reloc.  */
-static inline void 
+/*static inline void 
 machine_rel(dom_t *dom, map_t *map, const Elf64_Rel *reloc, const Elf64_Sym *sym, void *const reloc_addr_arg, struct r_scope_elem *scope[])
 {	
 	//reloc_addr_arg is guest addr, and reloc_addr is host addr const Elf64_Sym *sym, 
@@ -1637,7 +1637,7 @@ machine_rel(dom_t *dom, map_t *map, const Elf64_Rel *reloc, const Elf64_Sym *sym
 	  		break;
 		}
 	}
-}
+}*/
 
 /*---------------------------------------------------------------------------------*/
 /*Let r_offset point to .kylinx.got table*/
@@ -1824,7 +1824,7 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 		const Elf64_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
 		for (; r < end; ++r){
 			Elf64_Addr *reloc_addr =  xc_dom_vaddr_to_ptr(dom, (Elf64_Addr)(r->r_offset));
-			const unsigned int r_type = ELF64_R_TYPE(r->r_info);
+			const unsigned long int r_type = ELF64_R_TYPE(r->r_info);
 			map_t *sym_map;
 			Elf64_Addr value;
 
@@ -1845,29 +1845,17 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 					value = ((Elf64_Addr(*) (void)) value) ();
 
 				switch (r_type) {
-				case R_386_GLOB_DAT:
-	  				*reloc_addr = value;
+				case R_X86_64_GLOB_DAT:
+	  				*reloc_addr = value + r->r_addend;
 					break;
 			
-				case R_386_TLS_DTPMOD32:
-				case R_386_TLS_DTPOFF32:
-				case R_386_TLS_DESC:
-				case R_386_TLS_TPOFF32:
-					if (sym_map != NULL) {
-						DOMPRINTF("%s: case %d not supported yet", __FUNCTION__, r_type);
-					}
-					break;
-			
-				case R_386_32:
-					*reloc_addr +=  value;
-					break;	
-			
-				case R_386_PC32:
-					*reloc_addr += (value - (Elf64_Addr) reloc_addr);
+				case R_X86_64_PC32:
+					value += r->r_addend - (Elf64_Addr) reloc_addr;
+					*(unsigned int *) reloc_addr = value;
 					break;
 
-				case R_386_IRELATIVE:
-					value = map->l_addr + *reloc_addr;
+				case R_X86_64_IRELATIVE:
+					value = map->l_addr + r->r_addend;
 					value = ((Elf64_Addr (*) (void)) value) ();
 					*reloc_addr = value;
 					break;
