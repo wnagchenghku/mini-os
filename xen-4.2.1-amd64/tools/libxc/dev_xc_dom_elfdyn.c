@@ -1677,7 +1677,7 @@ static inline void machine_rel_init_kylinx_got(dom_t *dom, map_t *map, const Elf
 	/*
 	printf("---------------value = %p\n", value);
 	*/
-	//*reloc_addr = value;
+	*reloc_addr = value;
 	//printf("---------------sym_value[%d][%d] = %p\n", moduleID, count[moduleID], sym_value[moduleID][count[moduleID]]);
 //void (*plt[1024])(void *);
 	/*
@@ -1818,7 +1818,7 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 			ranges[0].start = D_PTR(map, l_info[DT_REL]);		      
 			ranges[0].size = map->l_info[DT_RELSZ]->d_un.d_val;
 	//	dynamic_do_Rel(dom, map, ranges[0].start, ranges[0].size, scope);
-/*
+
 		const Elf64_Rel *r = (const void *) ranges[0].start;
 		const Elf64_Rel *end = (const void *) (ranges[0].start + ranges[0].size);
 		const Elf64_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
@@ -1878,7 +1878,7 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 				}	
 			}
 		}
-*/
+
 	}									      
 
 	if (map->l_info[DT_PLTREL] && (map->l_info[DT_PLTREL]->d_un.d_val == DT_REL))									      
