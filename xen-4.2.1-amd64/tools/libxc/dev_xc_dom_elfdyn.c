@@ -1824,7 +1824,7 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 		const Elf64_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
 		for (; r < end; ++r){
 			Elf64_Addr *reloc_addr =  xc_dom_vaddr_to_ptr(dom, (Elf64_Addr)(r->r_offset));
-			const unsigned long int r_type = ELF64_R_TYPE(r->r_info);
+			const unsigned int r_type = ELF64_R_TYPE(r->r_info);
 			map_t *sym_map;
 			Elf64_Addr value;
 
@@ -1846,16 +1846,15 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 
 				switch (r_type) {
 				case R_X86_64_GLOB_DAT:
-	  				*reloc_addr = value + r->r_addend;
+	  				*reloc_addr = value;
 					break;
 			
 				case R_X86_64_PC32:
-					value += r->r_addend - (Elf64_Addr) reloc_addr;
-					*(unsigned int *) reloc_addr = value;
+					*reloc_addr += (value - (Elf64_Addr) reloc_addr);
 					break;
 
 				case R_X86_64_IRELATIVE:
-					value = map->l_addr + r->r_addend;
+					value = map->l_addr + *reloc_addr;
 					value = ((Elf64_Addr (*) (void)) value) ();
 					*reloc_addr = value;
 					break;
