@@ -1816,7 +1816,7 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 	/* Do the actual relocation of the object's GOT and other data.  */									      
     	if (map->l_info[DT_RELA]) {									      
 			ranges[0].start = D_PTR(map, l_info[DT_RELA]);		      
-			ranges[0].size = map->l_info[DT_RELSZ]->d_un.d_val;
+			ranges[0].size = map->l_info[DT_RELASZ]->d_un.d_val;
 	//	dynamic_do_Rel(dom, map, ranges[0].start, ranges[0].size, scope);
 
 		const Elf64_Rela *r = (const void *) ranges[0].start;
