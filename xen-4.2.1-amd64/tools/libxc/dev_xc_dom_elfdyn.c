@@ -333,7 +333,7 @@ get_dynamic_info(dom_t *dom, map_t *map)
 	}
 	//elf_get_ptr() turns guest pa to host va.
 	//so we directly compute the delta
-	delta = (uint32_t)elf->dest - elf->pstart;
+	delta = (uint64_t)elf->dest - elf->pstart;
 	//printf("---------------------.plt.got = %p\n", info[DT_PLTGOT]->d_un.d_ptr);
 //	printf("---------------------delta = %p\n", delta);
 //	printf("---------------------virt_offset = %p\n", dom->parms.virt_offset);
@@ -1090,7 +1090,7 @@ err:
 
 #define D_PTR(map, i) (map)->i->d_un.d_ptr
 
-static inline void
+/*static inline void
 machine_rel_relative (dom_t *dom, Elf64_Addr l_addr, const Elf64_Rel *reloc, 
 		void *const reloc_addr_arg)
 {
@@ -1102,7 +1102,7 @@ machine_rel_relative (dom_t *dom, Elf64_Addr l_addr, const Elf64_Rel *reloc,
 	if (ELF64_R_TYPE(reloc->r_info) == R_386_RELATIVE) {
     		*(Elf64_Addr *) reloc_addr = (Elf64_Addr)l_addr;
 	} 
-}
+}*/
 
 struct sym_val {
     const Elf64_Sym *s;
@@ -1641,7 +1641,7 @@ machine_rel(dom_t *dom, map_t *map, const Elf64_Rel *reloc, const Elf64_Sym *sym
 
 /*---------------------------------------------------------------------------------*/
 /*Let r_offset point to .kylinx.got table*/
-static inline void machine_rel_init_kylinx_got(dom_t *dom, map_t *map, const Elf64_Rel *reloc, const Elf64_Sym *sym, void *const reloc_addr_arg, struct r_scope_elem *scope[], int moduleID)
+static inline void machine_rel_init_kylinx_got(dom_t *dom, map_t *map, const Elf64_Rela *reloc, const Elf64_Sym *sym, void *const reloc_addr_arg, struct r_scope_elem *scope[], int moduleID)
 {
 	/*Step 1: convert r_offset into reloc_addr_arg in dom0*/
 	Elf64_Addr *const reloc_addr = xc_dom_vaddr_to_ptr(dom, (Elf64_Addr)reloc_addr_arg);
@@ -1677,7 +1677,7 @@ static inline void machine_rel_init_kylinx_got(dom_t *dom, map_t *map, const Elf
 	/*
 	printf("---------------value = %p\n", value);
 	*/
-	*reloc_addr = value;
+	*reloc_addr = value + reloc->r_addend;
 	//printf("---------------sym_value[%d][%d] = %p\n", moduleID, count[moduleID], sym_value[moduleID][count[moduleID]]);
 //void (*plt[1024])(void *);
 	/*
@@ -1756,8 +1756,8 @@ dynamic_do_Rel(dom_t *dom, map_t *map, Elf64_Addr reladdr, Elf64_Addr relsize, s
 {
 	//unsigned long id_addr;
 	int ret;
-  	const Elf64_Rel *r = (const void *) reladdr;
-  	const Elf64_Rel *end = (const void *) (reladdr + relsize);
+  	const Elf64_Rela *r = (const void *) reladdr;
+  	const Elf64_Rela *end = (const void *) (reladdr + relsize);
 	/*rellocate to plt table, count stands for a lable of plt*/
   	Elf64_Addr l_addr = map->l_addr; //elf_get_ptr(map->elf, 0); 
 	count[moduleID] = 0;
@@ -1814,26 +1814,27 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 	assert(map->l_info[DT_TEXTREL] == NULL);
 	
 	/* Do the actual relocation of the object's GOT and other data.  */									      
-    	if (map->l_info[DT_REL]) {									      
-			ranges[0].start = D_PTR(map, l_info[DT_REL]);		      
+    	if (map->l_info[DT_RELA]) {									      
+			ranges[0].start = D_PTR(map, l_info[DT_RELA]);		      
 			ranges[0].size = map->l_info[DT_RELSZ]->d_un.d_val;
 	//	dynamic_do_Rel(dom, map, ranges[0].start, ranges[0].size, scope);
 
-		const Elf64_Rel *r = (const void *) ranges[0].start;
-		const Elf64_Rel *end = (const void *) (ranges[0].start + ranges[0].size);
+		const Elf64_Rela *r = (const void *) ranges[0].start;
+		const Elf64_Rela *end = (const void *) (ranges[0].start + ranges[0].size);
 		const Elf64_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
 		for (; r < end; ++r){
-			Elf64_Addr *reloc_addr =  xc_dom_vaddr_to_ptr(dom, (Elf64_Addr)(r->r_offset));
+			Elf64_Addr l_addr = map->l_addr;
+			Elf64_Addr *reloc_addr =  xc_dom_vaddr_to_ptr(dom, l_addr + (Elf64_Addr)(r->r_offset));
 			const unsigned int r_type = ELF64_R_TYPE(r->r_info);
 			map_t *sym_map;
 			Elf64_Addr value;
 
 			DOMPRINTF_CALLED(dom->xch);
 
-			if (r_type == R_386_RELATIVE) {
+			if (r_type == R_X86_64_RELATIVE) {
 				*(reloc_addr) += map->l_addr;
     			}
-			else if (r_type == R_386_NONE) {
+			else if (r_type == R_X86_64_NONE) {
 				return;
 			} 
 			else {
@@ -1846,7 +1847,7 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 
 				switch (r_type) {
 				case R_X86_64_GLOB_DAT:
-	  				*reloc_addr = value;
+	  				*reloc_addr = value + r->r_addend;
 					break;
 			
 				case R_X86_64_PC32:
@@ -1868,7 +1869,7 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 
 	}									      
 
-	if (map->l_info[DT_PLTREL] && (map->l_info[DT_PLTREL]->d_un.d_val == DT_REL))									      
+	if (map->l_info[DT_PLTREL] && (map->l_info[DT_PLTREL]->d_un.d_val == DT_RELA))									      
 	{	
 	 	ranges[1].start = D_PTR((map), l_info[DT_JMPREL]);		      
 		ranges[1].size = (map)->l_info[DT_PLTRELSZ]->d_un.d_val;
