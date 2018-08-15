@@ -9,3 +9,7 @@ cp ~/xen/xen-4.2.1-amd64/tools/libxc/dev_xc_dom_elfdyn.h ~/xen-4.2.1/tools/libxc
 cp ~/xen/xen-4.2.1-amd64/extras/mini-os/Makefile ~/xen-4.2.1/extras/mini-os
 cp ~/xen/xen-4.2.1-amd64/extras/mini-os/minios.mk ~/xen-4.2.1/extras/mini-os
 cp ~/xen/xen-4.2.1-amd64/extras/mini-os/test.c ~/xen-4.2.1/extras/mini-os
+
+
+# build shared library
+# gcc -nostdlib -Wl,-hash-style=sysv -shared -fPIC -o libnnpack.so addvec.c
