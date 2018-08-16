@@ -1854,6 +1854,10 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 					*reloc_addr += (value - (Elf64_Addr) reloc_addr);
 					break;
 
+				case R_X86_64_64:
+					*reloc_addr = value + r->r_addend;
+					break;
+				
 				case R_X86_64_IRELATIVE:
 					value = map->l_addr + *reloc_addr;
 					value = ((Elf64_Addr (*) (void)) value) ();
