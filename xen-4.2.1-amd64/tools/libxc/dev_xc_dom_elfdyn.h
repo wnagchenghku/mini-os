@@ -34,14 +34,14 @@ enum {
    define the value.
    ELF_RTYPE_CLASS_NOCOPY iff TYPE should not be allowed to resolve to one
    of the main executable's symbols, as for a COPY reloc.  */
-#define elf_machine_type_class(type)					      \
-  ((((type) == R_386_JUMP_SLOT					      \
-     || (type) == R_386_TLS_DTPMOD32					      \
-     || (type) == R_386_TLS_DTPOFF32					      \
-     || (type) == R_386_TLS_TPOFF32					      \
-     || (type) == R_386_TLS_DESC)					      \
-    * ELF_RTYPE_CLASS_PLT)						      \
-   | (((type) == R_386_COPY) * ELF_RTYPE_CLASS_COPY))
+#define elf_machine_type_class(type)                \
+  ((((type) == R_X86_64_JUMP_SLOT               \
+     || (type) == R_X86_64_DTPMOD64               \
+     || (type) == R_X86_64_DTPOFF64               \
+     || (type) == R_X86_64_TPOFF64                \
+     || (type) == R_X86_64_TLSDESC)               \
+    * ELF_RTYPE_CLASS_PLT)                  \
+   | (((type) == R_X86_64_COPY) * ELF_RTYPE_CLASS_COPY))
 
 /* AMD x86-64 relocations.  */
 #define R_X86_64_NONE		0	/* No reloc */
