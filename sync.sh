@@ -18,3 +18,6 @@ cp ~/xen/xen-4.2.1-amd64/extras/mini-os/test.c ~/xen-4.2.1/extras/mini-os
 # To change to x86_64:
 # dl-machine.h: The x86-64 never uses Elf64_Rel relocations.
 # dynamic-link.h -> do-rel.h -> dl-machine.h
+
+
+# verified in i386 that chain .so works
