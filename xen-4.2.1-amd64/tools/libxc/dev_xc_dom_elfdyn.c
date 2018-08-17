@@ -544,7 +544,7 @@ parse_elf_so_map(dom_t *dom, map_t *l, void *blob, size_t size, char *filename)
 	struct xc_dom_seg dyn_seg; //we dont save it after this func, ok?
 	size_t seg_size;
 	uint32_t e_phnum;
-	uint32_t p_type, p_paddr, p_memsz, p_filesz, p_offset;	
+	uint64_t p_type, p_paddr, p_memsz, p_filesz, p_offset;	
 	
 	const elf_phdr *phdr;
     uint32_t i;	
@@ -1822,8 +1822,8 @@ relocate_object_rel(dom_t *dom, map_t *map, struct r_scope_elem *scope[], int mo
 		const Elf64_Rela *r = (const void *) ranges[0].start;
 		const Elf64_Rela *end = (const void *) (ranges[0].start + ranges[0].size);
 		const Elf64_Sym *const symtab = (const void*)D_PTR(map, l_info[DT_SYMTAB]);
+		Elf64_Addr l_addr = map->l_addr;
 		for (; r < end; ++r){
-			Elf64_Addr l_addr = map->l_addr;
 			Elf64_Addr *reloc_addr =  xc_dom_vaddr_to_ptr(dom, l_addr + (Elf64_Addr)(r->r_offset));
 			const unsigned int r_type = ELF64_R_TYPE(r->r_info);
 			map_t *sym_map;
@@ -1917,7 +1917,7 @@ int xc_dom_elf_dyn(struct xc_dom_image *dom)
 	Elf64_Phdr *ph;
     	uint32_t i;	
 	uint32_t e_phnum;
-	uint32_t p_type, p_paddr, p_memsz, p_filesz, p_offset;	
+	uint64_t p_type, p_paddr, p_memsz, p_filesz, p_offset;	
 	map_t *main_map = NULL, *l;
 	//Elf64_Addr mapstart;
 	//Elf64_Addr allocend;
