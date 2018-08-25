@@ -21,3 +21,11 @@ cp ~/xen/xen-4.2.1-amd64/extras/mini-os/test.c ~/xen-4.2.1/extras/mini-os
 
 
 # verified in i386 that chain .so works
+
+# to change minios stack size
+# extras/mini-os/include/x86/arch_limits.h 
+# #define __STACK_SIZE_PAGE_ORDER  14
+
+# to enable sse and avx
+# 1. fpu_init and sse_init in minios
+# 2. cpu_detection in libhermit
