@@ -13,6 +13,8 @@ cp ~/xen/xen-4.2.1-i386/extras/mini-os/test.c ~/xen-4.2.1/extras/mini-os
 
 # build shared library
 # gcc -nostdlib -Wl,-hash-style=sysv -shared -fPIC -o libnnpack.so addvec.c
+# so similarly
+# gcc -I /home/cheng/NNPACK/include/ -I /home/cheng/NNPACK/deps/pthreadpool/include/ -nostdlib -Wl,-hash-style=sysv -shared -fPIC -o conv_1.so conv_1.c
 
 # remember to change mini-os/Makefile -rpath=/home/cheng/xen-4.2.1/extras/mini-os/ 
 
