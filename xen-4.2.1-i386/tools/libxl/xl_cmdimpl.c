@@ -1839,8 +1839,10 @@ static int create_domain(struct domain_create *dom_info)
         config_source = "<saved>";
     }
 
+    struct timeval tv;
+    gettimeofday(&tv, 0);
     if (!dom_info->quiet)
-        printf("Parsing config from %s\n", config_source);
+        printf("%lu.%06lu: Parsing config from %s\n", tv.tv_sec, tv.tv_usec, config_source);
 
     parse_config_data(config_source, config_data, config_len, &d_config, dom_info);
 
@@ -1961,7 +1963,8 @@ start:
 
         child1 = xl_fork(child_waitdaemon);
         if (child1) {
-            printf("Daemon running with PID %d\n", child1);
+            gettimeofday(&tv, 0);
+            printf("%lu.%06lu: Daemon running with PID %d\n", tv.tv_sec, tv.tv_usec, child1);
 
             for (;;) {
                 got_child = xl_waitpid(child_waitdaemon, &status, 0);
