@@ -79,6 +79,12 @@ static inline int time_values_up_to_date(void)
 	return (shadow.version == src->version);
 }
 
+static inline int wc_values_up_to_date(void)
+{
+       shared_info_t *s= HYPERVISOR_shared_info;
+
+       return (shadow_ts_version == s->wc_version);
+}
 
 /*
  * Scale a 64-bit delta by scaling and multiplying by a 32-bit fraction,
@@ -188,6 +194,8 @@ int gettimeofday(struct timeval *tv, void *tz)
     uint64_t nsec = monotonic_clock();
     nsec += shadow_ts.tv_nsec;
     
+    if (!wc_values_up_to_date())
+    	update_wallclock();
     
     tv->tv_sec = shadow_ts.tv_sec;
     tv->tv_sec += NSEC_TO_SEC(nsec);
@@ -216,8 +224,8 @@ void block_domain(s_time_t until)
  */
 static void timer_handler(evtchn_port_t ev, struct pt_regs *regs, void *ign)
 {
-    get_time_values_from_xen();
-    update_wallclock();
+    // get_time_values_from_xen();
+    // update_wallclock();
 }
 
 
