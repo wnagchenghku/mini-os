@@ -841,8 +841,15 @@ int xc_dom_build_image(struct xc_dom_image *dom)
     if ( dom->kernel_loader->loader(dom) != 0 )
         goto err;
 
+    struct timeval start, end;
+    gettimeofday(&start, 0);
+
     if ( xc_dom_elf_dyn(dom) != 0 )
         goto err;
+
+    gettimeofday(&end, 0);
+    unsigned long e_usec = ((end.tv_sec * 1000000) + end.tv_usec) - ((start.tv_sec * 1000000) + start.tv_usec);
+    printf("xc_dom_elf_dyn time: %lu microseconds\n", e_usec);
 
     /* load ramdisk */
     if ( dom->ramdisk_blob )
