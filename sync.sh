@@ -37,3 +37,8 @@ cp ~/xen/xen-4.2.1-i386/extras/mini-os/test.c ~/xen-4.2.1/extras/mini-os
 # to enable sse and avx
 # 1. fpu_init and sse_init in minios
 # 2. cpu_detection in libhermit
+
+
+# if we change the stack to 14 in minios x86-64
+# it reports "cannot handle page request order 14"
+# then just increase domain memory to e.g., 2048
