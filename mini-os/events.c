@@ -46,7 +46,8 @@ void unbind_all_ports(void)
 
     for ( i = 0; i < NR_EVS; i++ )
     {
-        if ( i == console_evtchn || i == xenbus_evtchn )
+        if ( i == start_info.console.domU.evtchn ||
+             i == start_info.store_evtchn)
             continue;
 
         if ( test_and_clear_bit(i, bound_ports) )

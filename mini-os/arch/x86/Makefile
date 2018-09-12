@@ -3,14 +3,18 @@
 # It's is used for x86_32, x86_32y and x86_64
 #
 
-TOPLEVEL_DIR = $(CURDIR)/../..
+XEN_ROOT = $(CURDIR)/../../../..
+include $(XEN_ROOT)/Config.mk
 include ../../Config.mk
 
+# include arch.mk has to be before mini-os.mk!
+
+include arch.mk
 include ../../minios.mk
 
-# Sources here are all *.c *.S without $(MINIOS_TARGET_ARCH).S
+# Sources here are all *.c *.S without $(XEN_TARGET_ARCH).S
 # This is handled in $(HEAD_ARCH_OBJ)
-ARCH_SRCS := $(sort $(wildcard *.c))
+ARCH_SRCS := $(wildcard *.c)
 
 # The objects built from the sources.
 ARCH_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.o,$(ARCH_SRCS))
@@ -24,5 +28,4 @@ $(OBJ_DIR)/$(ARCH_LIB): $(ARCH_OBJS) $(OBJ_DIR)/$(HEAD_ARCH_OBJ)
 
 clean:
 	rm -f $(OBJ_DIR)/$(ARCH_LIB) $(ARCH_OBJS) $(OBJ_DIR)/$(HEAD_ARCH_OBJ)
-	rm -f minios-x86_32.lds minios-x86_64.lds
 

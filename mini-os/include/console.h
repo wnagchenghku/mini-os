@@ -43,7 +43,6 @@
 #include <xenbus.h>
 #include <xen/io/console.h>
 #include <stdarg.h>
-#include <stdbool.h>
 
 struct consfront_dev {
     domid_t dom;
@@ -57,25 +56,22 @@ struct consfront_dev {
 
     xenbus_event_queue events;
 
-    bool is_raw;
-
 #ifdef HAVE_LIBC
     int fd;
 #endif
 };
 
-extern uint32_t console_evtchn;
+
 
 void print(int direct, const char *fmt, va_list args);
-void printk(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
-void xprintk(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+void printk(const char *fmt, ...);
+void xprintk(const char *fmt, ...);
 
 #define tprintk(_fmt, _args...) printk("[%s] " _fmt, current->name, ##_args) 
 
 void xencons_rx(char *buf, unsigned len, struct pt_regs *regs);
 void xencons_tx(void);
 
-void get_console(void *p);
 void init_console(void);
 void console_print(struct consfront_dev *dev, char *data, int length);
 void fini_console(struct consfront_dev *dev);

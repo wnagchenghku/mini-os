@@ -96,31 +96,42 @@ static inline int xennet_rxidx(RING_IDX idx)
 void network_rx(struct netfront_dev *dev)
 {
     RING_IDX rp,cons,req_prod;
-    int nr_consumed, more, i, notify;
-    int dobreak;
+    struct netif_rx_response *rx;
+    int nr_consumed, some, more, i, notify;
 
-    nr_consumed = 0;
+
 moretodo:
     rp = dev->rx.sring->rsp_prod;
     rmb(); /* Ensure we see queued responses up to 'rp'. */
+    cons = dev->rx.rsp_cons;
 
-    dobreak = 0;
-    for (cons = dev->rx.rsp_cons; cons != rp && !dobreak; nr_consumed++, cons++)
+    for (nr_consumed = 0, some = 0;
+         (cons != rp) && !some;
+         nr_consumed++, cons++)
     {
         struct net_buffer* buf;
         unsigned char* page;
         int id;
 
-        struct netif_rx_response *rx = RING_GET_RESPONSE(&dev->rx, cons);
+        rx = RING_GET_RESPONSE(&dev->rx, cons);
+
+        if (rx->flags & NETRXF_extra_info)
+        {
+            printk("+++++++++++++++++++++ we have extras!\n");
+            continue;
+        }
+
+
+        if (rx->status == NETIF_RSP_NULL) continue;
 
         id = rx->id;
-        BUG_ON(id >= NET_RX_RING_SIZE);
+        BUG_ON(id >= NET_TX_RING_SIZE);
 
         buf = &dev->rx_buffers[id];
         page = (unsigned char*)buf->page;
         gnttab_end_access(buf->gref);
 
-        if (rx->status > NETIF_RSP_NULL)
+        if(rx->status>0)
         {
 #ifdef HAVE_LIBC
 	    if (dev->netif_rx == NETIF_SELECT_RX) {
@@ -130,8 +141,7 @@ moretodo:
 		    len = dev->len;
 		memcpy(dev->data, page+rx->offset, len);
 		dev->rlen = len;
-		/* No need to receive the rest for now */
-		dobreak = 1;
+		some = 1;
 	    } else
 #endif
 		dev->netif_rx(page+rx->offset,rx->status);
@@ -140,7 +150,7 @@ moretodo:
     dev->rx.rsp_cons=cons;
 
     RING_FINAL_CHECK_FOR_RESPONSES(&dev->rx,more);
-    if(more && !dobreak) goto moretodo;
+    if(more && !some) goto moretodo;
 
     req_prod = dev->rx.req_prod_pvt;
 
@@ -317,8 +327,8 @@ struct netfront_dev *init_netfront(char *_nodename, void (*thenetif_rx)(unsigned
     dev->fd = -1;
 #endif
 
-    printk("net TX ring size %lu\n", (unsigned long) NET_TX_RING_SIZE);
-    printk("net RX ring size %lu\n", (unsigned long) NET_RX_RING_SIZE);
+    printk("net TX ring size %d\n", NET_TX_RING_SIZE);
+    printk("net RX ring size %d\n", NET_RX_RING_SIZE);
     init_SEMAPHORE(&dev->tx_sem, NET_TX_RING_SIZE);
     for(i=0;i<NET_TX_RING_SIZE;i++)
     {

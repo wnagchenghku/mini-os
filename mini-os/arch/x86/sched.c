@@ -73,7 +73,7 @@ void dump_stack(struct thread *thread)
     printk("The stack for \"%s\"\n", thread->name);
     for(count = 0; count < 25 && pointer < bottom; count ++)
     {
-        printk("[0x%p] 0x%lx\n", pointer, *pointer);
+        printk("[0x%lx] 0x%lx\n", pointer, *pointer);
         pointer++;
     }
     
@@ -101,7 +101,7 @@ struct thread* arch_create_thread(char *name, void (*function)(void *),
     /* We can't use lazy allocation here since the trap handler runs on the stack */
     thread->stack = (char *)alloc_pages(STACK_SIZE_PAGE_ORDER);
     thread->name = name;
-    printk("Thread \"%s\": pointer: 0x%p, stack: 0x%p\n", name, thread, 
+    printk("Thread \"%s\": pointer: 0x%lx, stack: 0x%lx\n", name, thread, 
             thread->stack);
     
     thread->sp = (unsigned long)thread->stack + STACK_SIZE;
@@ -135,33 +135,5 @@ void run_idle_thread(void)
 #endif
 }
 
-unsigned long __local_irq_save(void)
-{
-    unsigned long flags;
 
-    local_irq_save(flags);
-    return flags;
-}
 
-void __local_irq_restore(unsigned long flags)
-{
-    local_irq_restore(flags);
-}
-
-unsigned long __local_save_flags(void)
-{
-    unsigned long flags;
-
-    local_save_flags(flags);
-    return flags;
-}
-
-void __local_irq_disable(void)
-{
-    local_irq_disable();
-}
-
-void __local_irq_enable(void)
-{
-    local_irq_enable();
-}

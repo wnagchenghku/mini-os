@@ -17,6 +17,10 @@
 #include <mini-os/lib.h>
 #include <fcntl.h>
 
+#ifndef HAVE_LIBC
+#define strtoul simple_strtoul
+#endif
+
 /* Note: we generally don't need to disable IRQs since we hardly do anything in
  * the interrupt handler.  */
 
@@ -232,7 +236,7 @@ done:
     }
     unmask_evtchn(dev->evtchn);
 
-    printk("%lu sectors of %u bytes\n", (unsigned long) dev->info.sectors, dev->info.sector_size);
+    printk("%u sectors of %u bytes\n", dev->info.sectors, dev->info.sector_size);
     printk("**************************\n");
 
     return dev;

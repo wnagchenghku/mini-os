@@ -4,13 +4,54 @@
 # Makefile and a arch.mk.
 #
 
-OBJ_DIR=$(CURDIR)
-TOPLEVEL_DIR=$(CURDIR)
+export XEN_ROOT = $(CURDIR)/../..
+include $(XEN_ROOT)/Config.mk
+OBJ_DIR ?= $(CURDIR)
 
+ifeq ($(MINIOS_CONFIG),)
 include Config.mk
+else
+EXTRA_DEPS += $(MINIOS_CONFIG)
+include $(MINIOS_CONFIG)
+endif
+
+# Configuration defaults
+CONFIG_START_NETWORK ?= y
+CONFIG_SPARSE_BSS ?= y
+CONFIG_QEMU_XS_ARGS ?= n
+CONFIG_TEST ?= n
+CONFIG_PCIFRONT ?= n
+CONFIG_BLKFRONT ?= y
+CONFIG_TPMFRONT ?= n
+CONFIG_TPM_TIS ?= n
+CONFIG_TPMBACK ?= n
+CONFIG_NETFRONT ?= y
+CONFIG_FBFRONT ?= y
+CONFIG_KBDFRONT ?= y
+CONFIG_CONSFRONT ?= y
+CONFIG_XENBUS ?= y
+CONFIG_XC ?=y
+CONFIG_LWIP ?= $(lwip)
+
+# Export config items as compiler directives
+flags-$(CONFIG_START_NETWORK) += -DCONFIG_START_NETWORK
+flags-$(CONFIG_SPARSE_BSS) += -DCONFIG_SPARSE_BSS
+flags-$(CONFIG_QEMU_XS_ARGS) += -DCONFIG_QEMU_XS_ARGS
+flags-$(CONFIG_PCIFRONT) += -DCONFIG_PCIFRONT
+flags-$(CONFIG_BLKFRONT) += -DCONFIG_BLKFRONT
+flags-$(CONFIG_TPMFRONT) += -DCONFIG_TPMFRONT
+flags-$(CONFIG_TPM_TIS) += -DCONFIG_TPM_TIS
+flags-$(CONFIG_TPMBACK) += -DCONFIG_TPMBACK
+flags-$(CONFIG_NETFRONT) += -DCONFIG_NETFRONT
+flags-$(CONFIG_KBDFRONT) += -DCONFIG_KBDFRONT
+flags-$(CONFIG_FBFRONT) += -DCONFIG_FBFRONT
+flags-$(CONFIG_CONSFRONT) += -DCONFIG_CONSFRONT
+flags-$(CONFIG_XENBUS) += -DCONFIG_XENBUS
+
+DEF_CFLAGS += $(flags-y)
 
 # Symlinks and headers that must be created before building the C files
-GENERATED_HEADERS := include/list.h $(ARCH_LINKS) include/mini-os include/$(TARGET_ARCH_FAM)/mini-os
+GENERATED_HEADERS := include/list.h $(ARCH_LINKS) include/mini-os include/xen include/$(TARGET_ARCH_FAM)/mini-os
 
 EXTRA_DEPS += $(GENERATED_HEADERS)
 
@@ -24,7 +65,7 @@ include minios.mk
 LDLIBS := 
 APP_LDLIBS := 
 LDARCHLIB := -L$(OBJ_DIR)/$(TARGET_ARCH_DIR) -l$(ARCH_LIB_NAME)
-LDFLAGS_FINAL := -T $(OBJ_DIR)/$(TARGET_ARCH_DIR)/minios-$(MINIOS_TARGET_ARCH).lds $(ARCH_LDFLAGS_FINAL)
+LDFLAGS_FINAL := -T $(TARGET_ARCH_DIR)/minios-$(XEN_TARGET_ARCH).lds
 
 # Prefix for global API names. All other symbols are localised before
 # linking with EXTRA_OBJS.
@@ -54,7 +95,6 @@ src-$(CONFIG_NETFRONT) += netfront.c
 src-$(CONFIG_PCIFRONT) += pcifront.c
 src-y += sched.c
 src-$(CONFIG_TEST) += test.c
-src-$(CONFIG_BALLOON) += balloon.c
 
 src-y += lib/ctype.c
 src-y += lib/math.c
@@ -85,13 +125,16 @@ $(ARCH_LINKS):
 	$(arch_links)
 endif
 
-include/list.h: include/minios-external/bsd-sys-queue-h-seddery include/minios-external/bsd-sys-queue.h
+include/list.h: $(XEN_ROOT)/tools/include/xen-external/bsd-sys-queue-h-seddery $(XEN_ROOT)/tools/include/xen-external/bsd-sys-queue.h
 	perl $^ --prefix=minios  >$@.new
 	$(call move-if-changed,$@.new,$@)
 
 # Used by stubdom's Makefile
 .PHONY: links
 links: $(GENERATED_HEADERS)
+
+include/xen:
+	ln -sf ../../../xen/include/public $@
 
 include/mini-os:
 	ln -sf . $@
@@ -105,7 +148,7 @@ arch_lib:
 
 ifeq ($(CONFIG_LWIP),y)
 # lwIP library
-LWC	:= $(sort $(shell find $(LWIPDIR)/src -type f -name '*.c'))
+LWC	:= $(shell find $(LWIPDIR)/src -type f -name '*.c')
 LWC	:= $(filter-out %6.c %ip6_addr.c %ethernetif.c, $(LWC))
 LWO	:= $(patsubst %.c,%.o,$(LWC))
 LWO	+= $(OBJ_DIR)/lwip-arch.o
@@ -124,23 +167,7 @@ OBJS := $(filter-out $(OBJ_DIR)/lwip%.o $(LWO), $(OBJS))
 
 ifeq ($(libc),y)
 ifeq ($(CONFIG_XC),y)
-APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/toolcore -whole-archive -lxentoolcore -no-whole-archive
-LIBS += $(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/toolcore/libxentoolcore.a
-APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/toollog -whole-archive -lxentoollog -no-whole-archive
-LIBS += $(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/toollog/libxentoollog.a
-APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/evtchn -whole-archive -lxenevtchn -no-whole-archive
-LIBS += $(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/evtchn/libxenevtchn.a
-APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/gnttab -whole-archive -lxengnttab -no-whole-archive
-LIBS += $(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/gnttab/libxengnttab.a
-APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/call -whole-archive -lxencall -no-whole-archive
-LIBS += $(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/call/libxencall.a
-APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/foreignmemory -whole-archive -lxenforeignmemory -no-whole-archive
-LIBS += $(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/foreignmemory/libxenforeignmemory.a
-APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/devicemodel -whole-archive -lxendevicemodel -no-whole-archive
-LIBS += $(XEN_ROOT)/stubdom/libs-$(MINIOS_TARGET_ARCH)/devicemodel/libxendevicemodel.a
-APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libxc-$(MINIOS_TARGET_ARCH) -whole-archive -lxenguest -lxenctrl -no-whole-archive
-LIBS += $(XEN_ROOT)/stubdom/libxc-$(MINIOS_TARGET_ARCH)/libxenctrl.a
-LIBS += $(XEN_ROOT)/stubdom/libxc-$(MINIOS_TARGET_ARCH)/libxenguest.a
+APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libxc-$(XEN_TARGET_ARCH) -whole-archive -lxenguest -lxenctrl -no-whole-archive
 endif
 APP_LDLIBS += -lpci
 APP_LDLIBS += -lz
@@ -152,27 +179,18 @@ ifneq ($(APP_OBJS)-$(lwip),-y)
 OBJS := $(filter-out $(OBJ_DIR)/daytime.o, $(OBJS))
 endif
 
-$(OBJ_DIR)/$(TARGET)_app.o: $(APP_OBJS) app.lds $(LIBS)
-	$(LD) -r -d $(LDFLAGS) -\( $(APP_OBJS) -T app.lds -\) $(APP_LDLIBS) --undefined main -o $@
+$(OBJ_DIR)/$(TARGET)_app.o: $(APP_OBJS) app.lds
+	$(LD) -r -d $(LDFLAGS) -\( $^ -\) $(APP_LDLIBS) --undefined main -o $@
 
 ifneq ($(APP_OBJS),)
 APP_O=$(OBJ_DIR)/$(TARGET)_app.o 
 endif
 
-# Special rule for x86 for now
-$(OBJ_DIR)/arch/x86/minios-x86%.lds:  arch/x86/minios-x86.lds.S
-	$(CPP) $(ASFLAGS) -P $< -o $@
-
-$(OBJ_DIR)/$(TARGET): $(OBJS) $(APP_O) arch_lib $(OBJ_DIR)/$(TARGET_ARCH_DIR)/minios-$(MINIOS_TARGET_ARCH).lds
+$(OBJ_DIR)/$(TARGET): $(OBJS) $(APP_O) arch_lib
 	$(LD) -r $(LDFLAGS) $(HEAD_OBJ) $(APP_O) $(OBJS) $(LDARCHLIB) $(LDLIBS) -o $@.o
 	$(OBJCOPY) -w -G $(GLOBAL_PREFIX)* -G _start $@.o $@.o
 	$(LD) $(LDFLAGS) $(LDFLAGS_FINAL) $@.o $(EXTRA_OBJS) -o $@
-	gzip -n -f -9 -c $@ >$@.gz
-
-.PHONY: config
-CONFIG_FILE ?= $(CURDIR)/minios-config.mk
-config:
-	echo "$(DEFINES-y)" >$(CONFIG_FILE)
+	gzip -f -9 -c $@ >$@.gz
 
 .PHONY: clean arch_clean
 
@@ -189,19 +207,9 @@ clean:	arch_clean
 	$(RM) $(OBJ_DIR)/lwip.a $(LWO)
 	rm -f tags TAGS
 
-.PHONY: testbuild
-TEST_CONFIGS := $(wildcard $(CURDIR)/$(TARGET_ARCH_DIR)/testbuild/*)
-testbuild:
-	for arch in $(MINIOS_TARGET_ARCHS); do \
-		for conf in $(TEST_CONFIGS); do \
-			$(MAKE) clean; \
-			MINIOS_TARGET_ARCH=$$arch MINIOS_CONFIG=$$conf $(MAKE) || exit 1; \
-		done; \
-	done
-	$(MAKE) clean
 
 define all_sources
-     ( find . -name '*.[chS]' -print )
+     ( find . -follow -name SCCS -prune -o -name '*.[chS]' -print )
 endef
 
 .PHONY: cscope
@@ -216,7 +224,3 @@ tags:
 .PHONY: TAGS
 TAGS:
 	$(all_sources) | xargs etags
-
-.PHONY: gtags
-gtags:
-	$(all_sources) | gtags -f -

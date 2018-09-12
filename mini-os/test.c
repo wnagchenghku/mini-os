@@ -129,7 +129,7 @@ static void blk_read_completed(struct blkfront_aiocb *aiocb, int ret)
 {
     struct blk_req *req = aiocb->data;
     if (ret)
-        printk("got error code %d when reading at offset %ld\n", ret, (long) aiocb->aio_offset);
+        printk("got error code %d when reading at offset %ld\n", ret, aiocb->aio_offset);
     else
         blk_size_read += blk_info.sector_size;
     free(aiocb->aio_buf);
@@ -250,9 +250,7 @@ static void blkfront_thread(void *p)
         blkfront_aio_poll(blk_dev);
         gettimeofday(&tv, NULL);
         if (tv.tv_sec > lasttime + 10) {
-            printk("%llu read, %llu write\n",
-                    (unsigned long long) blk_size_read,
-                    (unsigned long long) blk_size_write);
+            printk("%llu read, %llu write\n", blk_size_read, blk_size_write);
             lasttime = tv.tv_sec;
         }
 
@@ -552,28 +550,28 @@ static void shutdown_thread(void *p)
 }
 #endif
 
-int app_main(void *p)
+int app_main(start_info_t *si)
 {
-    printk("Test main: par=%p\n", p);
+    printk("Test main: start_info=%p\n", si);
 #ifdef CONFIG_XENBUS
-    create_thread("xenbus_tester", xenbus_tester, p);
+    create_thread("xenbus_tester", xenbus_tester, si);
 #endif
-    create_thread("periodic_thread", periodic_thread, p);
+    create_thread("periodic_thread", periodic_thread, si);
 #ifdef CONFIG_NETFRONT
-    create_thread("netfront", netfront_thread, p);
+    create_thread("netfront", netfront_thread, si);
 #endif
 #ifdef CONFIG_BLKFRONT
-    create_thread("blkfront", blkfront_thread, p);
+    create_thread("blkfront", blkfront_thread, si);
 #endif
 #if defined(CONFIG_FBFRONT) && defined(CONFIG_KBDFRONT)
-    create_thread("fbfront", fbfront_thread, p);
-    create_thread("kbdfront", kbdfront_thread, p);
+    create_thread("fbfront", fbfront_thread, si);
+    create_thread("kbdfront", kbdfront_thread, si);
 #endif
 #ifdef CONFIG_PCIFRONT
-    create_thread("pcifront", pcifront_thread, p);
+    create_thread("pcifront", pcifront_thread, si);
 #endif
 #ifdef CONFIG_XENBUS
-    create_thread("shutdown", shutdown_thread, p);
+    create_thread("shutdown", shutdown_thread, si);
 #endif
     return 0;
 }

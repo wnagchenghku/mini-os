@@ -30,22 +30,18 @@
 #include <mini-os/lib.h> /* for printk, memcpy */
 #include <mini-os/kernel.h>
 #include <xen/xen.h>
-#include <xen/arch-x86/cpuid.h>
-#include <xen/arch-x86/hvm/start_info.h>
-
-#ifdef CONFIG_PARAVIRT
-/*
- * This structure contains start-of-day info, such as pagetable base pointer,
- * address of the shared_info structure, and things like that.
- */
-union start_info_union start_info_union;
-#endif
 
 /*
  * Shared page for communicating with the hypervisor.
  * Events flags go here, for example.
  */
 shared_info_t *HYPERVISOR_shared_info;
+
+/*
+ * This structure contains start-of-day info, such as pagetable base pointer,
+ * address of the shared_info structure, and things like that.
+ */
+union start_info_union start_info_union;
 
 /*
  * Just allocate the kernel stack here. SS:ESP is set up to point here
@@ -55,12 +51,30 @@ char stack[2*STACK_SIZE];
 
 extern char shared_info[PAGE_SIZE];
 
+/* Assembler interface fns in entry.S. */
+void hypervisor_callback(void);
+void failsafe_callback(void);
+
 #if defined(__x86_64__)
 #define __pte(x) ((pte_t) { (x) } )
 #else
 #define __pte(x) ({ unsigned long long _x = (x);        \
     ((pte_t) {(unsigned long)(_x), (unsigned long)(_x>>32)}); })
 #endif
+
+static
+shared_info_t *map_shared_info(unsigned long pa)
+{
+    int rc;
+
+	if ( (rc = HYPERVISOR_update_va_mapping(
+              (unsigned long)shared_info, __pte(pa | 7), UVMF_INVLPG)) )
+	{
+		printk("Failed to map shared_info!! rc=%d\n", rc);
+		do_exit();
+	}
+	return (shared_info_t *)shared_info;
+}
 
 static inline void fpu_init(void) {
 	asm volatile("fninit");
@@ -75,103 +89,15 @@ static inline void sse_init(void) {
 #define sse_init()
 #endif
 
-#ifdef CONFIG_PARAVIRT
-#define hpc_init()
-
-shared_info_t *map_shared_info(void *p)
-{
-    int rc;
-    start_info_t *si = p;
-    unsigned long pa = si->shared_info;
-
-    if ( (rc = HYPERVISOR_update_va_mapping((unsigned long)shared_info,
-                                            __pte(pa | 7), UVMF_INVLPG)) )
-    {
-        printk("Failed to map shared_info!! rc=%d\n", rc);
-        do_exit();
-    }
-    return (shared_info_t *)shared_info;
-}
-
-static void get_cmdline(void *p)
-{
-    start_info_t *si = p;
-
-    strncpy(cmdline, (char *)si->cmd_line, MAX_CMDLINE_SIZE - 1);
-}
-
-static void print_start_of_day(void *p)
-{
-    start_info_t *si = p;
-
-    printk("Xen Minimal OS (pv)!\n");
-    printk("  start_info: %p(VA)\n", si);
-    printk("    nr_pages: 0x%lx\n", si->nr_pages);
-    printk("  shared_inf: 0x%08lx(MA)\n", si->shared_info);
-    printk("     pt_base: %p(VA)\n", (void *)si->pt_base);
-    printk("nr_pt_frames: 0x%lx\n", si->nr_pt_frames);
-    printk("    mfn_list: %p(VA)\n", (void *)si->mfn_list);
-    printk("   mod_start: 0x%lx(VA)\n", si->mod_start);
-    printk("     mod_len: %lu\n", si->mod_len);
-    printk("       flags: 0x%x\n", (unsigned int)si->flags);
-    printk("    cmd_line: %s\n", cmdline);
-    printk("       stack: %p-%p\n", stack, stack + sizeof(stack));
-}
-#else
-static void hpc_init(void)
-{
-    uint32_t eax, ebx, ecx, edx, base;
-
-    for ( base = XEN_CPUID_FIRST_LEAF;
-          base < XEN_CPUID_FIRST_LEAF + 0x10000; base += 0x100 )
-    {
-        cpuid(base, &eax, &ebx, &ecx, &edx);
-
-        if ( (ebx == XEN_CPUID_SIGNATURE_EBX) &&
-             (ecx == XEN_CPUID_SIGNATURE_ECX) &&
-             (edx == XEN_CPUID_SIGNATURE_EDX) &&
-             ((eax - base) >= 2) )
-            break;
-    }
-
-    cpuid(base + 2, &eax, &ebx, &ecx, &edx);
-    wrmsrl(ebx, (unsigned long)&hypercall_page);
-    barrier();
-}
-
-static void get_cmdline(void *p)
-{
-    struct hvm_start_info *si = p;
-
-    if ( si->cmdline_paddr )
-        strncpy(cmdline, to_virt(si->cmdline_paddr), MAX_CMDLINE_SIZE - 1);
-}
-
-static void print_start_of_day(void *p)
-{
-    struct hvm_start_info *si = p;
-
-    printk("Xen Minimal OS (hvm)!\n");
-    printk("  start_info: %p(VA)\n", si);
-    printk("  shared_inf: %p(VA)\n", HYPERVISOR_shared_info);
-    printk("     modlist: 0x%lx(PA)\n", (unsigned long)si->modlist_paddr);
-    printk("  nr_modules: %u\n", si->nr_modules);
-    printk("       flags: 0x%x\n", (unsigned int)si->flags);
-    printk("    cmd_line: %s\n", cmdline);
-    printk("       stack: %p-%p\n", stack, stack + sizeof(stack));
-    arch_print_memmap();
-}
-#endif
 
 /*
  * INITIAL C ENTRY POINT.
  */
 void
-arch_init(void *par)
+arch_init(start_info_t *si)
 {
 	static char hello[] = "Bootstrapping...\n";
 
-	hpc_init();
 	(void)HYPERVISOR_console_io(CONSOLEIO_write, strlen(hello), hello);
 
 	trap_init();
@@ -182,23 +108,41 @@ arch_init(void *par)
 	/* Initialize SSE */
 	sse_init();
 
-	/* Setup memory management info from start_info. */
-	arch_mm_preinit(par);
-
+	/* Copy the start_info struct to a globally-accessible area. */
 	/* WARN: don't do printk before here, it uses information from
 	   shared_info. Use xprintk instead. */
-	get_console(par);
-	get_xenbus(par);
-	get_cmdline(par);
-
-	/* Grab the shared_info pointer and put it in a safe place. */
-	HYPERVISOR_shared_info = map_shared_info(par);
+	memcpy(&start_info, si, sizeof(*si));
 
 	/* print out some useful information  */
-	print_start_of_day(par);
+	printk("Xen Minimal OS!\n");
+	printk("  start_info: %p(VA)\n", si);
+	printk("    nr_pages: 0x%lx\n", si->nr_pages);
+	printk("  shared_inf: 0x%08lx(MA)\n", si->shared_info);
+	printk("     pt_base: %p(VA)\n", (void *)si->pt_base);
+	printk("nr_pt_frames: 0x%lx\n", si->nr_pt_frames);
+	printk("    mfn_list: %p(VA)\n", (void *)si->mfn_list);
+	printk("   mod_start: 0x%lx(VA)\n", si->mod_start);
+	printk("     mod_len: %lu\n", si->mod_len);
+	printk("       flags: 0x%x\n", (unsigned int)si->flags);
+	printk("    cmd_line: %s\n",
+			si->cmd_line ? (const char *)si->cmd_line : "NULL");
+	printk("       stack: %p-%p\n", stack, stack + sizeof(stack));
 
-#ifdef CONFIG_PARAVIRT
-	memcpy(&start_info, par, sizeof(start_info));
+	/* set up minimal memory infos */
+	phys_to_machine_mapping = (unsigned long *)start_info.mfn_list;
+
+	/* Grab the shared_info pointer and put it in a safe place. */
+	HYPERVISOR_shared_info = map_shared_info(start_info.shared_info);
+
+	    /* Set up event and failsafe callback addresses. */
+#ifdef __i386__
+	HYPERVISOR_set_callbacks(
+		__KERNEL_CS, (unsigned long)hypervisor_callback,
+		__KERNEL_CS, (unsigned long)failsafe_callback);
+#else
+	HYPERVISOR_set_callbacks(
+		(unsigned long)hypervisor_callback,
+		(unsigned long)failsafe_callback, 0);
 #endif
 
 	start_kernel();

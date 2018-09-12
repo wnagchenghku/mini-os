@@ -20,7 +20,6 @@
 
 #ifdef HAVE_LIBC
 #include <os.h>
-#include <string.h>
 #include <console.h>
 #include <sched.h>
 #include <events.h>
@@ -33,7 +32,6 @@
 #include <xenbus.h>
 #include <xenstore.h>
 #include <poll.h>
-#include <termios.h>
 
 #include <sys/types.h>
 #include <sys/unistd.h>
@@ -636,7 +634,6 @@ int closedir(DIR *dir)
 
 /* We assume that only the main thread calls select(). */
 
-#if defined(LIBC_DEBUG) || defined(LIBC_VERBOSE)
 static const char file_types[] = {
     [FTYPE_NONE]	= 'N',
     [FTYPE_CONSOLE]	= 'C',
@@ -649,7 +646,6 @@ static const char file_types[] = {
     [FTYPE_KBD]		= 'K',
     [FTYPE_FB]		= 'G',
 };
-#endif
 #ifdef LIBC_DEBUG
 static void dump_set(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
 {
@@ -1323,7 +1319,7 @@ int clock_gettime(clockid_t clk_id, struct timespec *tp)
 	    break;
 	}
 	default:
-	    print_unsupported("clock_gettime(%ld)", (long) clk_id);
+	    print_unsupported("clock_gettime(%d)", clk_id);
 	    errno = EINVAL;
 	    return -1;
     }
@@ -1425,7 +1421,7 @@ void sparse(unsigned long data, size_t size)
         mfns[i] = virtual_to_mfn(data + i * PAGE_SIZE);
     }
 
-    printk("sparsing %ldMB at %lx\n", ((long) size) >> 20, data);
+    printk("sparsing %ldMB at %lx\n", size >> 20, data);
 
     munmap((void *) data, size);
     free_physical_pages(mfns, n);
@@ -1438,82 +1434,6 @@ int nice(int inc)
     return 0;
 }
 
-/* Limited termios terminal settings support */
-const struct termios default_termios = {0,             /* iflag */
-                                        OPOST | ONLCR, /* oflag */
-                                        0,             /* lflag */
-                                        CREAD | CS8,   /* cflag */
-                                        {}};           /* cc */
-
-int tcsetattr(int fildes, int action, const struct termios *tios)
-{
-    if (fildes < 0 || fildes >= NOFILE) {
-        errno = EBADF;
-        return -1;
-    }
-
-    if (files[fildes].type != FTYPE_CONSOLE) {
-        errno = ENOTTY;
-        return -1;
-    }
-
-    if (tios == NULL) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    switch (action) {
-        case TCSANOW:
-        case TCSADRAIN:
-        case TCSAFLUSH:
-            break;
-        default:
-            errno = EINVAL;
-            return -1;
-    }
-
-    if (tios->c_oflag & OPOST)
-        files[fildes].cons.dev->is_raw = false;
-    else
-        files[fildes].cons.dev->is_raw = true;
-
-    return 0;
-}
-
-int tcgetattr(int fildes, struct termios *tios)
-{
-    if (fildes < 0 || fildes >= NOFILE) {
-        errno = EBADF;
-        return -1;
-    }
-
-    if (files[fildes].type != FTYPE_CONSOLE) {
-        errno = ENOTTY;
-        return -1;
-    }
-
-    if (tios == NULL) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    memcpy(tios, &default_termios, sizeof(struct termios));
-
-    if (files[fildes].cons.dev->is_raw)
-        tios->c_oflag &= ~OPOST;
-
-    return 0;
-}
-
-void cfmakeraw(struct termios *tios)
-{
-    tios->c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
-                       | INLCR | IGNCR | ICRNL | IXON);
-    tios->c_oflag &= ~OPOST;
-    tios->c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-    tios->c_cflag &= ~(CSIZE | PARENB);
-    tios->c_cflag |= CS8;
-}
 
 /* Not supported by FS yet.  */
 unsupported_function_crash(link);
@@ -1550,6 +1470,8 @@ unsupported_function_crash(waitpid);
 unsupported_function_crash(wait);
 unsupported_function_crash(lockf);
 unsupported_function_crash(sysconf);
+unsupported_function(int, tcsetattr, -1);
+unsupported_function(int, tcgetattr, 0);
 unsupported_function(int, grantpt, -1);
 unsupported_function(int, unlockpt, -1);
 unsupported_function(char *, ptsname, NULL);

@@ -79,12 +79,6 @@ static inline int time_values_up_to_date(void)
 	return (shadow.version == src->version);
 }
 
-static inline int wc_values_up_to_date(void)
-{
-	shared_info_t *s= HYPERVISOR_shared_info;
-
-	return (shadow_ts_version == s->wc_version);
-}
 
 /*
  * Scale a 64-bit delta by scaling and multiplying by a 32-bit fraction,
@@ -166,7 +160,7 @@ uint64_t monotonic_clock(void)
 		local_time_version = shadow.version;
 		rmb();
 		time = shadow.system_timestamp + get_nsec_offset();
-		if (!time_values_up_to_date())
+        if (!time_values_up_to_date())
 			get_time_values_from_xen();
 		rmb();
 	} while (local_time_version != shadow.version);
@@ -192,12 +186,9 @@ static void update_wallclock(void)
 int gettimeofday(struct timeval *tv, void *tz)
 {
     uint64_t nsec = monotonic_clock();
-
-    if (!wc_values_up_to_date())
-	update_wallclock();
-
     nsec += shadow_ts.tv_nsec;
-
+    
+    
     tv->tv_sec = shadow_ts.tv_sec;
     tv->tv_sec += NSEC_TO_SEC(nsec);
     tv->tv_usec = NSEC_TO_USEC(nsec % 1000000000UL);
@@ -208,24 +199,25 @@ int gettimeofday(struct timeval *tv, void *tz)
 
 void block_domain(s_time_t until)
 {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
     ASSERT(irqs_disabled());
     if(monotonic_clock() < until)
     {
         HYPERVISOR_set_timer_op(until);
-#ifdef CONFIG_PARAVIRT
         HYPERVISOR_sched_op(SCHEDOP_block, 0);
-#else
-        local_irq_enable();
-        asm volatile ( "hlt" : : : "memory" );
-#endif
         local_irq_disable();
-        HYPERVISOR_set_timer_op(0);
     }
 }
 
+
+/*
+ * Just a dummy
+ */
 static void timer_handler(evtchn_port_t ev, struct pt_regs *regs, void *ign)
 {
-    HYPERVISOR_set_timer_op(monotonic_clock() + MILLISECS(1));
+    get_time_values_from_xen();
+    update_wallclock();
 }
 
 

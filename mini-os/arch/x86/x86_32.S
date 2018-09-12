@@ -1,34 +1,23 @@
 #include <mini-os/os.h>
 #include <mini-os/x86/arch_limits.h>
-#include <mini-os/asm_macros.h>
-#include <mini-os/arch_mm.h>
-#include <mini-os/desc.h>
-#include <xen/elfnote.h>
+#include <xen/arch-x86_32.h>
 
-#ifdef CONFIG_PARAVIRT
-
-#define KERNEL_DS __KERNEL_DS
-
-ELFNOTE(Xen, XEN_ELFNOTE_GUEST_OS, .asciz "Mini-OS")
-ELFNOTE(Xen, XEN_ELFNOTE_LOADER, .asciz "generic")
-ELFNOTE(Xen, XEN_ELFNOTE_HYPERCALL_PAGE, _WORD hypercall_page)
-ELFNOTE(Xen, XEN_ELFNOTE_XEN_VERSION, .asciz "xen-3.0")
-ELFNOTE(Xen, XEN_ELFNOTE_PAE_MODE, .asciz "yes")
+.section __xen_guest
+	.ascii	"GUEST_OS=Mini-OS"
+	.ascii	",XEN_VER=xen-3.0"
+	.ascii	",VIRT_BASE=0x0" /* &_text from minios_x86_32.lds */
+	.ascii	",ELF_PADDR_OFFSET=0x0"
+	.ascii	",HYPERCALL_PAGE=0x2"
+	.ascii	",PAE=yes[extended-cr3]"
+	.ascii	",LOADER=generic"
+	.byte	0
 .text
 
-.globl _start
+.globl _start, shared_info, hypercall_page
                         
 _start:
-        lss stack_start,%esp
-#else
-
-#define KERNEL_DS __KERN_DS
-
-#include "x86_hvm.S"
-        movl stack_start,%esp
-
-#endif
         cld
+        lss stack_start,%esp
         andl $(~(__STACK_SIZE-1)), %esp
         push %esi 
         call arch_init
@@ -36,15 +25,14 @@ _start:
 stack_start:
 	.long stack+(2*__STACK_SIZE), __KERNEL_SS
 
-.globl shared_info, hypercall_page
         /* Unpleasant -- the PTE that maps this page is actually overwritten */
         /* to map the real shared-info page! :-)                             */
-        .align __PAGE_SIZE
+        .org 0x1000
 shared_info:
-        .fill __PAGE_SIZE,1,0
+        .org 0x2000
 
 hypercall_page:
-        .fill __PAGE_SIZE,1,0
+        .org 0x3000
 
 ES		= 0x20
 ORIG_EAX	= 0x24
@@ -64,7 +52,7 @@ CS		= 0x2C
 	pushl %edx; \
 	pushl %ecx; \
 	pushl %ebx; \
-	movl $(KERNEL_DS),%edx; \
+	movl $(__KERNEL_DS),%edx; \
 	movl %edx,%ds; \
 	movl %edx,%es;
 
@@ -101,7 +89,7 @@ do_exception:
 	movl ORIG_EAX(%esp), %edx	# get the error code
 	movl %eax, ORIG_EAX(%esp)
 	movl %ecx, ES(%esp)
-	movl $(KERNEL_DS), %ecx
+	movl $(__KERNEL_DS), %ecx
 	movl %ecx, %ds
 	movl %ecx, %es
 	movl %esp,%eax			# pt_regs pointer
@@ -111,10 +99,10 @@ do_exception:
     jmp ret_from_exception
     
 ret_from_exception:
+    movb CS(%esp),%cl
     addl $8,%esp
     RESTORE_ALL
 
-#ifdef CONFIG_PARAVIRT
 # A note on the "critical region" in our callback handler.
 # We want to avoid stacking callback handlers due to events occurring
 # during handling of the last event. To do this, we keep events disabled
@@ -139,7 +127,11 @@ ENTRY(hypervisor_callback)
         call do_hypervisor_callback
         add  $4,%esp
         movl HYPERVISOR_shared_info,%esi
-        movb $0,1(%esi)     # reenable event callbacks
+        xorl %eax,%eax
+        movb CS(%esp),%cl
+    	test $2,%cl          # slow return to ring 2 or 3
+        jne  safesti
+safesti:movb $0,1(%esi)     # reenable event callbacks
 scrit:  /**** START OF CRITICAL REGION ****/
         testb $0xFF,(%esi)
         jnz  14f              # process more events if necessary...
@@ -188,15 +180,6 @@ critical_fixup_table:
         .byte 0x28                            # iret
         .byte 0x00,0x00,0x00,0x00             # movb $1,1(%esi)
         .byte 0x00,0x00                       # jmp  11b
-
-#else
-
-ENTRY(hypervisor_callback)
-	pushl $0
-	pushl $do_hypervisor_callback
-	jmp do_exception
-
-#endif
        
 # Hypervisor uses this for application faults while it executes.
 ENTRY(failsafe_callback)
@@ -320,12 +303,3 @@ ENTRY(__arch_switch_threads)
     popl %ebx
     popl %ebp
     ret
-
-#ifndef CONFIG_PARAVIRT
-.data
-.globl page_table_base
-        .align __PAGE_SIZE
-page_table_base:
-        PTE(page_table_l2 + L3_PROT)
-        .align __PAGE_SIZE, 0
-#endif

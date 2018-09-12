@@ -48,7 +48,6 @@
 #include <xen/version.h>
 
 uint8_t xen_features[XENFEAT_NR_SUBMAPS * 32];
-char cmdline[MAX_CMDLINE_SIZE];
 
 void setup_xen_features(void)
 {
@@ -110,9 +109,9 @@ static void shutdown_thread(void *p)
 
 
 /* This should be overridden by the application we are linked against. */
-__attribute__((weak)) int app_main(void *p)
+__attribute__((weak)) int app_main(start_info_t *si)
 {
-    printk("kernel.c: dummy main: par=%p\n", p);
+    printk("kernel.c: dummy main: start_info=%p\n", si);
     return 0;
 }
 
@@ -149,7 +148,7 @@ void start_kernel(void)
 #endif
 
     /* Call (possibly overridden) app_main() */
-    app_main(NULL);
+    app_main(&start_info);
 
     /* Everything initialised, start idle thread */
     run_idle_thread();

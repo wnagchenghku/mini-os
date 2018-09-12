@@ -8,7 +8,6 @@
 
 #include <os.h>
 #include <time.h>
-#include <string.h>
 #include <console.h>
 #include <xmalloc.h>
 #include <lwip/sys.h>
@@ -237,9 +236,8 @@ sys_thread_t sys_thread_new(char *name, void (* thread)(void *arg), void *arg, i
 {
     struct thread *t;
     if (stacksize > STACK_SIZE) {
-        printk("Can't start lwIP thread: stack size %d is too large for our %lu\n",
-                stacksize, (unsigned long) STACK_SIZE);
-        do_exit();
+	printk("Can't start lwIP thread: stack size %d is too large for our %d\n", stacksize, STACK_SIZE);
+	do_exit();
     }
     lwip_thread = t = create_thread(name, thread, arg);
     return t;

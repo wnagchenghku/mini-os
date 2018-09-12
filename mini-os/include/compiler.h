@@ -6,6 +6,5 @@
 #endif
 #define unlikely(x)  __builtin_expect(!!(x),0)
 #define likely(x)    __builtin_expect(!!(x),1)
-#define __packed     __attribute__((__packed__))
 
 #endif /* __MINIOS_COMPILER_H_ */
