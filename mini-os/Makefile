@@ -96,6 +96,9 @@ src-$(CONFIG_PCIFRONT) += pcifront.c
 src-y += sched.c
 src-$(CONFIG_TEST) += test.c
 
+src-y += nnpback.c
+src-y += nnpfront.c
+
 src-y += lib/ctype.c
 src-y += lib/math.c
 src-y += lib/printf.c
