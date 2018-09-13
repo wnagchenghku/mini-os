@@ -114,8 +114,8 @@ static void shutdown_thread(void *p)
 /* This should be overridden by the application we are linked against. */
 __attribute__((weak)) int app_main(start_info_t *si)
 {
-    init_nnpback(NULL);
-    init_nnpfront();
+    init_nnpback();
+    init_nnpfront(NULL);
     printk("kernel.c: dummy main: start_info=%p\n", si);
     return 0;
 }
