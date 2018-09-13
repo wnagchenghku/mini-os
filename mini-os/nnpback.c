@@ -71,3 +71,8 @@ int connect_fe(void)
 
    return 0;
 }
+
+void init_nnpback(void)
+{
+   connect_fe();
+}

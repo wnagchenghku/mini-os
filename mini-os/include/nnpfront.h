@@ -12,4 +12,10 @@ struct nnpfront_dev {
    domid_t bedomid;
 };
 
+
+/*Initialize frontend */
+struct nnpfront_dev* init_nnpfront(const char* nodename);
+/*Shutdown frontend */
+void shutdown_nnpfront(struct nnpfront_dev* dev);
+
 #endif
