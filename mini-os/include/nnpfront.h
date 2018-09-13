@@ -8,7 +8,7 @@
 struct nnpfront_dev {
    grant_ref_t ring_ref;
 
-   tpmif_shared_page_t *page;
+   nnpif_shared_page_t *page;
 
    domid_t bedomid;
 };

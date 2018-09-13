@@ -29,7 +29,7 @@ struct nnpif {
    char* fe_path;
 
    /* Shared page */
-   tmpif_shared_page_t *page;
+   nnpif_shared_page_t *page;
 };
 typedef struct nnpif nnpif_t;
 
