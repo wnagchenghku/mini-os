@@ -2,6 +2,7 @@
 #define NNPFRONT_H
 
 #include <mini-os/types.h>
+#include <mini-os/nnpif.h>
 #include <xen/xen.h>
 
 struct nnpfront_dev {
