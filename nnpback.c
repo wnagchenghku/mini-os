@@ -61,12 +61,11 @@ static struct thread* eventthread = NULL;
 static nnpback_dev_t gnnpdev;
 
 void handle_backend_event(char* evstr) {
-   tpmif_t* tpmif;
    domid_t domid;
    unsigned int handle;
    int event;
 
-   TPMBACK_DEBUG("Xenbus Event: %s\n", evstr);
+   NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
 }
 
 static void event_listener(void)
