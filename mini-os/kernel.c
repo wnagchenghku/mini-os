@@ -47,6 +47,9 @@
 #include <xen/features.h>
 #include <xen/version.h>
 
+#include <mini-os/nnpfront.h>
+#include <mini-os/nnpback.h>
+
 uint8_t xen_features[XENFEAT_NR_SUBMAPS * 32];
 
 void setup_xen_features(void)
@@ -111,7 +114,7 @@ static void shutdown_thread(void *p)
 /* This should be overridden by the application we are linked against. */
 __attribute__((weak)) int app_main(start_info_t *si)
 {
-    connect_fe();
+    init_nnpback();
     init_nnpfront();
     printk("kernel.c: dummy main: start_info=%p\n", si);
     return 0;
