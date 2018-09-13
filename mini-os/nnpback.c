@@ -4,12 +4,11 @@
 #include <errno.h>
 #include <mini-os/gnttab.h>
 #include <xen/io/xenbus.h>
-#include <xen/io/nnpif.h>
 #include <xen/io/protocols.h>
 #include <mini-os/xmalloc.h>
-#include <mini-os/tpmback.h>
 #include <mini-os/lib.h>
 #include <mini-os/mm.h>
+#include <mini-os/posix/sys/mman.h>
 
 
 //#define NNPBACK_PRINT_DEBUG
@@ -27,7 +26,7 @@ struct nnpif {
    char* fe_path;
 
    /* Shared page */
-   nnpif_shared_page_t *page;
+   tmpif_shared_page_t *page;
 };
 typedef struct nnpif nnpif_t;
 
@@ -39,11 +38,10 @@ typedef struct tpmback_dev tpmback_dev_t;
 static tpmback_dev_t gtpmdev;
 
 /* Connect to frontend */
-// int connect_fe(nnpif_t* nnpif)
-int connect_fe(void)
+int connect_fe(nnpif_t* nnpif)
 {
-   char path[512];
-   char* err, *value;
+   // char path[512];
+   // char* err, *value;
    uint32_t domid;
    grant_ref_t ringref;
 
@@ -67,12 +65,13 @@ int connect_fe(void)
       return -1;
    }
 
-   NNPBACK_LOG("Frontend %u/%u connected\n", (unsigned int) nnpif->domid, nnpif->handle);
+   NNPBACK_LOG("Frontend %u connected\n", (unsigned int) nnpif->domid);
 
    return 0;
 }
 
 void init_nnpback(void)
 {
-   connect_fe();
+   nnpif_t nnpif;
+   connect_fe(&nnpif);
 }

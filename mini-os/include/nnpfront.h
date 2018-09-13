@@ -3,6 +3,7 @@
 
 #include <mini-os/types.h>
 #include <xen/xen.h>
+#include <xen/io/tpmif.h>
 
 struct nnpfront_dev {
    grant_ref_t ring_ref;
