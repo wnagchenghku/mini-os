@@ -1,5 +1,6 @@
 #include <mini-os/os.h>
 #include <mini-os/xenbus.h>
+#include <xen/io/tpmif.h>
 #include <mini-os/events.h>
 #include <errno.h>
 #include <mini-os/gnttab.h>
@@ -61,7 +62,7 @@ int connect_fe(nnpif_t* nnpif)
 
    domid = nnpif->domid;
    if((nnpif->page = gntmap_map_grant_refs(&gtpmdev.map, 1, &domid, 0, &ringref, PROT_READ | PROT_WRITE)) == NULL) {
-      NNPBACK_ERR("Failed to map grant reference %u/%u\n", (unsigned int) nnpif->domid, nnpif->handle);
+      NNPBACK_ERR("Failed to map grant reference %u\n", (unsigned int) nnpif->domid);
       return -1;
    }
 
