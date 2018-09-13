@@ -14,7 +14,7 @@ struct nnpfront_dev {
 
 
 /*Initialize frontend */
-struct nnpfront_dev* init_nnpfront(const char* nodename);
+struct nnpfront_dev* init_nnpfront();
 /*Shutdown frontend */
 void shutdown_nnpfront(struct nnpfront_dev* dev);
 
