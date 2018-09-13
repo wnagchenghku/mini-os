@@ -11,6 +11,8 @@ struct nnpfront_dev {
    nnpif_shared_page_t *page;
 
    domid_t bedomid;
+   char* bepath;
+   char* nodename;
 };
 
 

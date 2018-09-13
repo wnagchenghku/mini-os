@@ -9,6 +9,7 @@
 #include <time.h>
 #include <mini-os/nnpback.h>
 #include <mini-os/lib.h>
+#include <mini-os/sched.h>
 #include <fcntl.h>
 #include <mini-os/mm.h>
 #include <mini-os/posix/sys/mman.h>
@@ -58,6 +59,15 @@ enum { EV_NONE, EV_NEWFE, EV_STCHNG } nnp_ev_enum;
 /* Global objects */
 static struct thread* eventthread = NULL;
 static nnpback_dev_t gnnpdev;
+
+void handle_backend_event(char* evstr) {
+   tpmif_t* tpmif;
+   domid_t domid;
+   unsigned int handle;
+   int event;
+
+   TPMBACK_DEBUG("Xenbus Event: %s\n", evstr);
+}
 
 static void event_listener(void)
 {
