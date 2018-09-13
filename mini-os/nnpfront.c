@@ -23,19 +23,19 @@ static int publish_xenbus(struct nnpfront_dev* dev) {
    /* Write the grant reference to xenstore */
 again:
    if((err = xenbus_transaction_start(&xbt))) {
-      TPMFRONT_ERR("Unable to start xenbus transaction, error was %s\n", err);
+      NNPFRONT_ERR("Unable to start xenbus transaction, error was %s\n", err);
       free(err);
       return -1;
    }
 
-   if((err = xenbus_printf(xbt, dev->nodename, "ring-ref", "%u", (unsigned int) dev->ring_ref))) {
-      TPMFRONT_ERR("Unable to write %s/ring-ref, error was %s\n", dev->nodename, err);
-      free(err);
-      goto abort_transaction;
-   }
+   // if((err = xenbus_printf(xbt, dev->nodename, "ring-ref", "%u", (unsigned int) dev->ring_ref))) {
+   //    NNPFRONT_ERR("Unable to write %s/ring-ref, error was %s\n", dev->nodename, err);
+   //    free(err);
+   //    goto abort_transaction;
+   // }
 
    if((err = xenbus_transaction_end(xbt, 0, &retry))) {
-      TPMFRONT_ERR("Unable to complete xenbus transaction, error was %s\n", err);
+      NNPFRONT_ERR("Unable to complete xenbus transaction, error was %s\n", err);
       free(err);
       return -1;
    }
@@ -53,7 +53,7 @@ abort_transaction:
 
 static int nnpfront_connect(struct nnpfront_dev* dev)
 {
-   char* err;
+   // char* err;
    /* Create shared page */
    dev->page = (tpmif_shared_page_t *)alloc_page();
    if(dev->page == NULL) {
@@ -92,8 +92,8 @@ error:
 
 void shutdown_nnpfront(struct nnpfront_dev* dev)
 {
-   char* err;
-   char path[512];
+   // char* err;
+   // char path[512];
    if(dev == NULL) {
       return;
    }
