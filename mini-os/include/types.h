@@ -20,6 +20,7 @@
 #ifndef _TYPES_H_
 #define _TYPES_H_
 #include <stddef.h>
+#include <stdint.h>
 
 struct nnpif_shared_page {
     uint32_t length;         /* request/response length in bytes */

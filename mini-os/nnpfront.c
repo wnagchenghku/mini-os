@@ -55,7 +55,7 @@ static int nnpfront_connect(struct nnpfront_dev* dev)
 {
    // char* err;
    /* Create shared page */
-   dev->page = (tpmif_shared_page_t *)alloc_page();
+   dev->page = (nnpif_shared_page_t *)alloc_page();
    if(dev->page == NULL) {
       NNPFRONT_ERR("Unable to allocate page for shared memory\n");
       goto error;
