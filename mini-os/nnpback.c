@@ -1,13 +1,15 @@
 #include <mini-os/os.h>
 #include <mini-os/xenbus.h>
-#include <xen/io/tpmif.h>
 #include <mini-os/events.h>
 #include <errno.h>
 #include <mini-os/gnttab.h>
 #include <xen/io/xenbus.h>
 #include <xen/io/protocols.h>
 #include <mini-os/xmalloc.h>
+#include <time.h>
+#include <mini-os/nnpback.h>
 #include <mini-os/lib.h>
+#include <fcntl.h>
 #include <mini-os/mm.h>
 #include <mini-os/posix/sys/mman.h>
 

@@ -4,7 +4,7 @@
 #include <mini-os/events.h>
 #include <mini-os/gnttab.h>
 #include <xen/io/xenbus.h>
-#include <mini-os/tpmfront.h>
+#include <mini-os/nnpfront.h>
 #include <mini-os/lib.h>
 
 //#define NNPFRONT_PRINT_DEBUG
