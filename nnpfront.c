@@ -27,7 +27,7 @@ void init_nnpfront()
    printk("============= Init NNP Front ================\n");
 
    /* Get backend domid */
-   if((err = xenbus_read(XBT_NIL, path, &value))) {
+   if((err = xenbus_read(XBT_NIL, "/local/domain/backend-id", &value))) {
       NNPFRONT_ERR("Unable to read %s during nnpfront initialization! error = %s\n", path, err);
       free(err);
       goto error;

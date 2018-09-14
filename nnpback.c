@@ -41,9 +41,21 @@ typedef struct nnpback_dev nnpback_dev_t;
 static struct thread* eventthread = NULL;
 static nnpback_dev_t gnnpdev;
 
+void event_thread(void* p) {
+}
+
 void init_nnpback()
 {
    printk("============= Init NNP BACK ================\n");
+   char* err;
+   char value[16];
+
+   snprintf(value, 16, "%d", xenbus_get_self_id());
+   if ((err = xenbus_write(XBT_NIL, "/local/domain/backend-id", value)))
+   {
+      TPMBACK_ERR("Unable to write backend id: %s\n", err);
+      free(err);
+   }
 
    eventthread = create_thread("nnpback-listener", event_thread, NULL);
 
