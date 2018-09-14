@@ -18,6 +18,13 @@
 #define NNPFRONT_ERR(fmt,...) printk("Nnpfront:Error " fmt, ##__VA_ARGS__)
 #define NNPFRONT_LOG(fmt,...) printk("Nnpfront:Info " fmt, ##__VA_ARGS__)
 
+static inline size_t divide_round_up(size_t dividend, size_t divisor) {
+   if (dividend % divisor == 0) {
+      return dividend / divisor;
+   } else {
+      return dividend / divisor + 1;
+   }
+}
 
 struct nnpfront_dev* init_nnpfront(const char* _nodename)
 {
