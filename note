@@ -1,0 +1,4 @@
+So in order to build c-stubdom, you need to enter stubdom directory and
+run ./configure --enable-c-stubdom. You should see in the output
+c-stubdom will be built.
+
