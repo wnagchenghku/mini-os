@@ -368,7 +368,7 @@ int tpmif_change_state(tpmif_t* tpmif, enum xenbus_state state)
    }
 
    /*update xenstore*/
-   snprintf(path, 512, "backend/vtpm/%u/%u", (unsigned int) tpmif->domid, tpmif->handle);
+   snprintf(path, 512, "device/vnnp/0/", DOMIN_SELF);
    if((err = xenbus_printf(XBT_NIL, path, "state", "%u", state))) {
       TPMBACK_ERR("Error writing to xenstore %s, error was %s new state=%d\n", path, err, state);
       free(err);

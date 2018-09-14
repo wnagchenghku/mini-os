@@ -51,12 +51,12 @@ struct nnpfront_dev* init_nnpfront(const char* _nodename)
    dev->bedomid = ival;
 
    /* Get backend xenstore path */
-   snprintf(path, 512, "%s/backend", dev->nodename);
-   if((err = xenbus_read(XBT_NIL, path, &dev->bepath))) {
-      NNPFRONT_ERR("Unable to read %s during nnpfront initialization! error = %s\n", path, err);
-      free(err);
-      goto error;
-   }
+   // snprintf(path, 512, "%s/backend", dev->nodename);
+   // if((err = xenbus_read(XBT_NIL, path, &dev->bepath))) {
+   //    NNPFRONT_ERR("Unable to read %s during nnpfront initialization! error = %s\n", path, err);
+   //    free(err);
+   //    goto error;
+   // }
 
    NNPFRONT_LOG("Initialization Completed successfully\n");
 

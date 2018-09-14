@@ -105,6 +105,16 @@ void init_nnpback(void)
 {
    printk("============= Init NNP BACK ================\n");
 
+   char domid[512];
+   snprintf(domid, 512, "%u", (unsigned int)DOMID_SELF);
+
+   /*update xenstore*/
+   if((err = xenbus_write(XBT_NIL, "device/vnnp/0/backend-id", domid))) {
+      TPMBACK_ERR("Error writing to xenstore");
+      free(err);
+      return -1;
+   }
+
    eventthread = create_thread("nnpback-listener", event_thread, NULL);
 
 }
