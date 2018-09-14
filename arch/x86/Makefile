@@ -3,8 +3,7 @@
 # It's is used for x86_32, x86_32y and x86_64
 #
 
-XEN_ROOT = $(CURDIR)/../../../..
-include $(XEN_ROOT)/Config.mk
+TOPLEVEL_DIR = $(CURDIR)/../..
 include ../../Config.mk
 
 # include arch.mk has to be before mini-os.mk!
@@ -12,9 +11,9 @@ include ../../Config.mk
 include arch.mk
 include ../../minios.mk
 
-# Sources here are all *.c *.S without $(XEN_TARGET_ARCH).S
+# Sources here are all *.c *.S without $(MINIOS_TARGET_ARCH).S
 # This is handled in $(HEAD_ARCH_OBJ)
-ARCH_SRCS := $(wildcard *.c)
+ARCH_SRCS := $(sort $(wildcard *.c))
 
 # The objects built from the sources.
 ARCH_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.o,$(ARCH_SRCS))

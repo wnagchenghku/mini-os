@@ -6,7 +6,7 @@ debug = y
 
 # Define some default flags.
 # NB. '-Wcast-qual' is nasty, so I omitted it.
-DEF_CFLAGS += -fno-builtin -Wall -Wredundant-decls -Wno-format -Wno-redundant-decls
+DEF_CFLAGS += -fno-builtin -Wall -Werror -Wredundant-decls -Wno-format -Wno-redundant-decls -Wformat
 DEF_CFLAGS += $(call cc-option,$(CC),-fno-stack-protector,)
 DEF_CFLAGS += $(call cc-option,$(CC),-fgnu89-inline)
 DEF_CFLAGS += -Wstrict-prototypes -Wnested-externs -Wpointer-arith -Winline
@@ -39,12 +39,12 @@ LDFLAGS := $(DEF_LDFLAGS) $(ARCH_LDFLAGS)
 
 # Special build dependencies.
 # Rebuild all after touching this/these file(s)
-EXTRA_DEPS += $(MINI-OS_ROOT)/minios.mk
-EXTRA_DEPS += $(MINI-OS_ROOT)/$(TARGET_ARCH_DIR)/arch.mk
+EXTRA_DEPS += $(MINIOS_ROOT)/minios.mk
+EXTRA_DEPS += $(MINIOS_ROOT)/$(TARGET_ARCH_DIR)/arch.mk
 
 # Find all header files for checking dependencies.
-HDRS := $(wildcard $(MINI-OS_ROOT)/include/*.h)
-HDRS += $(wildcard $(MINI-OS_ROOT)/include/xen/*.h)
+HDRS := $(wildcard $(MINIOS_ROOT)/include/*.h)
+HDRS += $(wildcard $(MINIOS_ROOT)/include/xen/*.h)
 HDRS += $(wildcard $(ARCH_INC)/*.h)
 # For special wanted header directories.
 extra_heads := $(foreach dir,$(EXTRA_INC),$(wildcard $(dir)/*.h))
@@ -56,12 +56,12 @@ override CPPFLAGS := $(CPPFLAGS) $(extra_incl)
 # The name of the architecture specific library.
 # This is on x86_32: libx86_32.a
 # $(ARCH_LIB) has to built in the architecture specific directory.
-ARCH_LIB_NAME = $(XEN_TARGET_ARCH)
+ARCH_LIB_NAME = $(MINIOS_TARGET_ARCH)
 ARCH_LIB := lib$(ARCH_LIB_NAME).a
 
 # This object contains the entrypoint for startup from Xen.
 # $(HEAD_ARCH_OBJ) has to be built in the architecture specific directory.
-HEAD_ARCH_OBJ := $(XEN_TARGET_ARCH).o
+HEAD_ARCH_OBJ := $(MINIOS_TARGET_ARCH).o
 HEAD_OBJ := $(OBJ_DIR)/$(TARGET_ARCH_DIR)/$(HEAD_ARCH_OBJ)
 
 

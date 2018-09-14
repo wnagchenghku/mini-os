@@ -4,9 +4,8 @@
 # Makefile and a arch.mk.
 #
 
-export XEN_ROOT = $(CURDIR)/../..
-include $(XEN_ROOT)/Config.mk
-OBJ_DIR ?= $(CURDIR)
+OBJ_DIR=$(CURDIR)
+TOPLEVEL_DIR=$(CURDIR)
 
 ifeq ($(MINIOS_CONFIG),)
 include Config.mk
@@ -14,6 +13,8 @@ else
 EXTRA_DEPS += $(MINIOS_CONFIG)
 include $(MINIOS_CONFIG)
 endif
+
+include $(MINIOS_ROOT)/config/MiniOS.mk
 
 # Configuration defaults
 CONFIG_START_NETWORK ?= y
@@ -51,7 +52,7 @@ flags-$(CONFIG_XENBUS) += -DCONFIG_XENBUS
 DEF_CFLAGS += $(flags-y)
 
 # Symlinks and headers that must be created before building the C files
-GENERATED_HEADERS := include/list.h $(ARCH_LINKS) include/mini-os include/xen include/$(TARGET_ARCH_FAM)/mini-os
+GENERATED_HEADERS := include/list.h $(ARCH_LINKS) include/mini-os include/$(TARGET_ARCH_FAM)/mini-os
 
 EXTRA_DEPS += $(GENERATED_HEADERS)
 
@@ -65,7 +66,7 @@ include minios.mk
 LDLIBS := 
 APP_LDLIBS := 
 LDARCHLIB := -L$(OBJ_DIR)/$(TARGET_ARCH_DIR) -l$(ARCH_LIB_NAME)
-LDFLAGS_FINAL := -T $(TARGET_ARCH_DIR)/minios-$(XEN_TARGET_ARCH).lds
+LDFLAGS_FINAL := -T $(TARGET_ARCH_DIR)/minios-$(MINIOS_TARGET_ARCH).lds
 
 # Prefix for global API names. All other symbols are localised before
 # linking with EXTRA_OBJS.
@@ -96,9 +97,6 @@ src-$(CONFIG_PCIFRONT) += pcifront.c
 src-y += sched.c
 src-$(CONFIG_TEST) += test.c
 
-src-y += nnpback.c
-src-y += nnpfront.c
-
 src-y += lib/ctype.c
 src-y += lib/math.c
 src-y += lib/printf.c
@@ -128,16 +126,13 @@ $(ARCH_LINKS):
 	$(arch_links)
 endif
 
-include/list.h: $(XEN_ROOT)/tools/include/xen-external/bsd-sys-queue-h-seddery $(XEN_ROOT)/tools/include/xen-external/bsd-sys-queue.h
+include/list.h: include/minios-external/bsd-sys-queue-h-seddery include/minios-external/bsd-sys-queue.h
 	perl $^ --prefix=minios  >$@.new
 	$(call move-if-changed,$@.new,$@)
 
 # Used by stubdom's Makefile
 .PHONY: links
 links: $(GENERATED_HEADERS)
-
-include/xen:
-	ln -sf ../../../xen/include/public $@
 
 include/mini-os:
 	ln -sf . $@
@@ -151,7 +146,7 @@ arch_lib:
 
 ifeq ($(CONFIG_LWIP),y)
 # lwIP library
-LWC	:= $(shell find $(LWIPDIR)/src -type f -name '*.c')
+LWC	:= $(sort $(shell find $(LWIPDIR)/src -type f -name '*.c'))
 LWC	:= $(filter-out %6.c %ip6_addr.c %ethernetif.c, $(LWC))
 LWO	:= $(patsubst %.c,%.o,$(LWC))
 LWO	+= $(OBJ_DIR)/lwip-arch.o
@@ -170,7 +165,7 @@ OBJS := $(filter-out $(OBJ_DIR)/lwip%.o $(LWO), $(OBJS))
 
 ifeq ($(libc),y)
 ifeq ($(CONFIG_XC),y)
-APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libxc-$(XEN_TARGET_ARCH) -whole-archive -lxenguest -lxenctrl -no-whole-archive
+APP_LDLIBS += -L$(XEN_ROOT)/stubdom/libxc-$(MINIOS_TARGET_ARCH) -whole-archive -lxenguest -lxenctrl -no-whole-archive
 endif
 APP_LDLIBS += -lpci
 APP_LDLIBS += -lz

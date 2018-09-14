@@ -237,6 +237,7 @@ static void xenbus_thread_func(void *ign)
 		event->path = data;
 		event->token = event->path + strlen(event->path) + 1;
 
+                mb();
                 xenstore_buf->rsp_cons += msg.len + sizeof(msg);
 
                 for (watch = watches; watch; watch = watch->next)
@@ -262,9 +263,13 @@ static void xenbus_thread_func(void *ign)
                     req_info[msg.req_id].reply,
                     MASK_XENSTORE_IDX(xenstore_buf->rsp_cons),
                     msg.len + sizeof(msg));
+                mb();
                 xenstore_buf->rsp_cons += msg.len + sizeof(msg);
                 wake_up(&req_info[msg.req_id].waitq);
             }
+
+            wmb();
+            notify_remote_via_evtchn(start_info.store_evtchn);
         }
     }
 }
@@ -337,8 +342,8 @@ void init_xenbus(void)
 		      xenbus_evtchn_handler,
               NULL);
     unmask_evtchn(start_info.store_evtchn);
-    printk("xenbus initialised on irq %d mfn %#lx\n",
-	   err, start_info.store_mfn);
+    printk("xenbus initialised on irq %d mfn %#llx\n",
+	   err, (unsigned long long) start_info.store_mfn);
 }
 
 void fini_xenbus(void)

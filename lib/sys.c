@@ -634,6 +634,7 @@ int closedir(DIR *dir)
 
 /* We assume that only the main thread calls select(). */
 
+#if defined(LIBC_DEBUG) || defined(LIBC_VERBOSE)
 static const char file_types[] = {
     [FTYPE_NONE]	= 'N',
     [FTYPE_CONSOLE]	= 'C',
@@ -646,6 +647,7 @@ static const char file_types[] = {
     [FTYPE_KBD]		= 'K',
     [FTYPE_FB]		= 'G',
 };
+#endif
 #ifdef LIBC_DEBUG
 static void dump_set(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
 {
@@ -1319,7 +1321,7 @@ int clock_gettime(clockid_t clk_id, struct timespec *tp)
 	    break;
 	}
 	default:
-	    print_unsupported("clock_gettime(%d)", clk_id);
+	    print_unsupported("clock_gettime(%ld)", (long) clk_id);
 	    errno = EINVAL;
 	    return -1;
     }
@@ -1421,7 +1423,7 @@ void sparse(unsigned long data, size_t size)
         mfns[i] = virtual_to_mfn(data + i * PAGE_SIZE);
     }
 
-    printk("sparsing %ldMB at %lx\n", size >> 20, data);
+    printk("sparsing %ldMB at %lx\n", ((long) size) >> 20, data);
 
     munmap((void *) data, size);
     free_physical_pages(mfns, n);
