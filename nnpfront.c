@@ -91,8 +91,8 @@ void init_nnpfront(void)
       }
    }
 
-   int *grant_ref_arr = (int*)malloc(sizeof(int) * grant_ref_sum);
-
+   grant_ref_t *grant_ref_arr = (grant_ref_t*)malloc(sizeof(int) * grant_ref_sum);
+   int grant_ref_it = 0, i;
    for (i = 0; i < grant_entry_sum; ++i) {
       char *value;
       snprintf(grant_ref_entry, 64, "/local/domain/backend/%d/grant-ref%d", xenbus_get_self_id(), i);
@@ -100,18 +100,31 @@ void init_nnpfront(void)
          NNPFRONT_ERR("Unable to read %s during tpmfront initialization! error = %s\n", grant_ref_entry, err);
          free(err);
       }
-      while(*value) {
-         if (isdigit(*value)) {
-            grant_ref_arr[j] = simple_strtol()
-         }
-      }
+      int c, bytesread;
+      while(sscanf(value, "%d%n", &c, &bytesread) > 0) {
+        *(grant_ref_arr + grant_ref_it) = c;
+        grant_ref_it++;
+        value += bytesread;
+     }
+     free(value);
    }
+   
+   grant_ref_it = 0;
 
    for (i = 0; i < sizeof(P2D24C20E) / sizeof(struct param); ++i) {
-      if((P2D24C20E[i].param_ptr = gntmap_map_grant_refs(&gtpmdev.map, divide_round_up(P2D24C20E[i].param_size, 1024), &bedomid, 0, &ringref, PROT_READ)) == NULL) {
+      size_t page_num = divide_round_up(P2D24C20E[i].param_size, 1024);
+      grant_ref_t *grant_ref = malloc(sizeof(grant_ref_t) * page_num);
+      int j;
+      for (j = 0; j < page_num; ++j) {
+         *(grant_ref + j) = *(grant_ref_arr + grant_ref_it);
+         grant_ref_it++;
+      }
+      if((P2D24C20E[i].param_ptr = gntmap_map_grant_refs(&gtpmdev.map, page_num, &bedomid, 0, grant_ref, PROT_READ)) == NULL) {
          NNPBACK_ERR("Failed to map grant reference %u\n", (unsigned int) bedomid);
       }
+      free(grant_ref);
    }
+   free(grant_ref_arr);
 
    NNPFRONT_LOG("Initialization Completed successfully\n");
 }
