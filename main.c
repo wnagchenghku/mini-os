@@ -17,6 +17,9 @@
 #include <events.h>
 #include <mini-os/lib.h>
 
+#include <mini-os/nnpback.h>
+#include <mini-os/nnpfront.h>
+
 extern int main(int argc, char *argv[], char *envp[]);
 extern void __libc_init_array(void);
 extern void __libc_fini_array(void);
