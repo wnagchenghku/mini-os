@@ -78,9 +78,12 @@ static inline size_t divide_round_up(size_t dividend, size_t divisor) {
 
 void handle_backend_event(char* evstr) {
    domid_t domid;
-   char model[16], frontend_path[32], ring_ref_path[16];
+   char model[16], frontend_path[32];
    int event;
    char *err;
+   char grant_ref_value[1024];
+   char grant_ref_entry[64];
+   snprintf(grant_ref_value, 1024, "%s", "");
 
    NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
 
@@ -94,9 +97,10 @@ void handle_backend_event(char* evstr) {
       }
 
       int outer;
+      int grant_entry_sum = 0;
       size_t inner;
       float *page;
-      grant_ref_t ring_ref;
+      grant_ref_t grant_ref;
       if (strcmp("squeezenet1_0", model) == 0) {
          for (outer = 0; outer < sizeof(P2D24C20E) / sizeof(struct param); ++outer) {
             size_t inner_page_num = divide_round_up(P2D24C20E[outer].param_size, 1000);
@@ -106,13 +110,18 @@ void handle_backend_event(char* evstr) {
                if(page == NULL) {
                   NNPBACK_ERR("Unable to allocate page for shared memory\n");
                }
-               ring_ref = gnttab_grant_access(domid, virt_to_mfn(page), 0);
-               NNPBACK_DEBUG("grant ref is %lu\n", (unsigned long) ring_ref);
+               grant_ref = gnttab_grant_access(domid, virt_to_mfn(page), 0);
+               NNPBACK_DEBUG("grant ref is %lu\n", (unsigned long) grant_ref);
 
-               snprintf(ring_ref_path, 16, "ring-ref%lu", outer * inner_page_num + inner);
-               if((err = xenbus_printf(XBT_NIL, frontend_path, ring_ref_path, "%u", (unsigned int) ring_ref))) {
-                  NNPBACK_ERR("Unable to write ring-ref, error was %s\n", err);
-                  free(err);
+               snprintf(grant_ref_value + strlen(grant_ref_value), 1024 - strlen(grant_ref_value), "%lu ", (unsigned long) grant_ref);
+               if (strlen(grant_ref_value) > 950) { // XENSTORE_RING_SIZE is 1024
+                  snprintf(grant_ref_entry, 64, "%s/grant-ref%d", frontend_path, grant_entry_sum);
+                  if((err = xenbus_write(XBT_NIL, grant_ref_entry, grant_ref_value))) {
+                     NNPBACK_ERR("Unable to write ring-ref, error was %s\n", err);
+                     free(err);
+                  }
+                  grant_entry_sum++;
+                  snprintf(grant_ref_value, 1024, "%s", "");
                }
             }
          }
