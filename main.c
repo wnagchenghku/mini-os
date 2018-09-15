@@ -160,6 +160,9 @@ static void call_main(void *p)
         ((void((*)(void)))__CTOR_LIST__[i]) ();
     tzset();
 
+    init_nnpback();
+    init_nnpfront();
+
     exit(main(argc, argv, envp));
 }
 

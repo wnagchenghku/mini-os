@@ -29,7 +29,6 @@ void init_nnpfront(void)
    if((err = xenbus_read(XBT_NIL, "/local/domain/backend-id", &value))) {
       NNPFRONT_ERR("Unable to read %s during nnpfront initialization! error = %s\n", path, err);
       free(err);
-      goto error;
    }
    if(sscanf(value, "%llu", &ival) != 1) {
       NNPFRONT_ERR("%s has non-integer value (%s)\n", path, value);
