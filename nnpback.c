@@ -98,8 +98,8 @@ void handle_backend_event(char* evstr) {
       float *page;
       grant_ref_t ring_ref;
       if (strcmp("squeezenet1_0", model) == 0) {
-         for (outer = 0; outer < sizeof(P2D24C20E) / sizeof(float *); ++outer) {
-            size_t inner_page_num = divide_round_up(sizeof(P2D24C20E[outer]) / sizeof(float), 1000);
+         for (outer = 0; outer < sizeof(P2D24C20E) / sizeof(struct param); ++outer) {
+            size_t inner_page_num = divide_round_up(P2D24C20E[outer].param_size, 1000);
             for (inner = 0; inner < inner_page_num; ++inner) {
                /* Create shared page */
                page = (float *)alloc_page();
