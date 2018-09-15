@@ -12,6 +12,8 @@
 #include <mini-os/mm.h>
 #include <mini-os/posix/sys/mman.h>
 
+#include <mini-os/2D24C20E.h>
+
 #define NNPBACK_PRINT_DEBUG
 #ifdef NNPBACK_PRINT_DEBUG
 #define NNPBACK_DEBUG(fmt,...) printk("Nnpback:Debug("__FILE__":%d) " fmt, __LINE__, ##__VA_ARGS__)
@@ -49,7 +51,6 @@ static nnpback_dev_t gtpmdev = {
 /* parses the string that comes out of xenbus_watch_wait_return. */
 static int parse_eventstr(const char* evstr, domid_t* domid, char* model)
 {
-   int ret;
    char* err;
    char* value;
    unsigned int udomid = 0;
@@ -60,16 +61,24 @@ static int parse_eventstr(const char* evstr, domid_t* domid, char* model)
          free(err);
          return EV_NONE;
       }
-      sscanf(model, "%s", value);
+      sscanf(value, "%s", model);
       free(value);
       return EV_NEWFE;
    }
    return EV_NONE;
 }
 
+static inline size_t divide_round_up(size_t dividend, size_t divisor) {
+   if (dividend % divisor == 0) {
+      return dividend / divisor;
+   } else {
+      return dividend / divisor + 1;
+   }
+}
+
 void handle_backend_event(char* evstr) {
    domid_t domid;
-   char model[512];
+   char model[16], path[16];
    int event;
 
    NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
@@ -77,7 +86,26 @@ void handle_backend_event(char* evstr) {
    event = parse_eventstr(evstr, &domid, model);
 
    if (event == EV_NEWFE) {
-      
+      if (model == "squeezenet1_0") {
+         int i;
+         float *page;
+         for (i = 0; i < sizeof(P2D24C20E) / sizoef(float *); ++i) {
+            /* Create shared page */
+            page = (float *)alloc_page(divide_round_up(P2D24C20E[i] / sizeof(float)) / 1000);
+            if(page == NULL) {
+               NNPFRONT_ERR("Unable to allocate page for shared memory\n");
+               goto error;
+            }
+            grant_ref_t ring_ref = gnttab_grant_access(domid, virt_to_mfn(page), 0);
+            NNPFRONT_DEBUG("grant ref is %lu\n", (unsigned long) ring_ref);
+
+            snprintf(path, 16, "ring-ref%d", i);
+            if((err = xenbus_printf(xbt, evstr, path, "%u", (unsigned int) ring_ref))) {
+               NNPFRONT_ERR("Unable to write %s/ring-ref, error was %s\n", err);
+               free(err);
+            }
+         }
+      }
    }
 }
 
