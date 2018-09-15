@@ -12,6 +12,8 @@
 #include <mini-os/mm.h>
 #include <mini-os/posix/sys/mman.h>
 
+#include <mini-os/schedule.h>
+
 #define NNPBACK_PRINT_DEBUG
 #ifdef NNPBACK_PRINT_DEBUG
 #define NNPBACK_DEBUG(fmt,...) printk("Nnpback:Debug("__FILE__":%d) " fmt, __LINE__, ##__VA_ARGS__)
@@ -44,7 +46,7 @@ static nnpback_dev_t gnnpdev;
 void event_thread(void* p) {
 }
 
-void init_nnpback()
+void init_nnpback(void)
 {
    printk("============= Init NNP BACK ================\n");
    char* err;
@@ -53,7 +55,7 @@ void init_nnpback()
    snprintf(value, 16, "%d", xenbus_get_self_id());
    if ((err = xenbus_write(XBT_NIL, "/local/domain/backend-id", value)))
    {
-      TPMBACK_ERR("Unable to write backend id: %s\n", err);
+      NNPBACK_ERR("Unable to write backend id: %s\n", err);
       free(err);
    }
 
