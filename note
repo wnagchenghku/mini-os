@@ -1,3 +1,11 @@
 So in order to build c-stubdom, you need to enter stubdom directory and run ./configure --enable-c-stubdom. You should see in the output c-stubdom will be built.
 
 Remember to set node permissions.
+1. 
+sudo xenstore-write /local/domain/backend-id 0
+sudo xenstore-chmod /local/domain/backend-id b
+
+2.
+sudo xenstore-write /local/domain/frontend 0
+sudo xenstore-chmod /local/domain/frontend b
+

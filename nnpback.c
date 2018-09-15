@@ -38,18 +38,47 @@ struct nnpback_dev {
 };
 typedef struct nnpback_dev nnpback_dev_t;
 
+enum { EV_NONE, EV_NEWFE } tpm_ev_enum;
+
 /* Global objects */
 static struct thread* eventthread = NULL;
 static nnpback_dev_t gtpmdev = {
    .events = NULL,
 };
 
+/* parses the string that comes out of xenbus_watch_wait_return. */
+static int parse_eventstr(const char* evstr, domid_t* domid, char* model)
+{
+   int ret;
+   char* err;
+   char* value;
+   unsigned int udomid = 0;
+
+  if (sscanf(evstr, "/local/domain/frontend/%u", &udomid) == 1) {
+      *domid = udomid;
+      if((err = xenbus_read(XBT_NIL, evstr, &value))) {
+         free(err);
+         return EV_NONE;
+      }
+      sscanf(model, "%s", value);
+      free(value);
+      return EV_NEWFE;
+   }
+   return EV_NONE;
+}
+
 void handle_backend_event(char* evstr) {
    domid_t domid;
-   unsigned int handle;
+   char model[512];
    int event;
 
    NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
+
+   event = parse_eventstr(evstr, &domid, model);
+
+   if (event == EV_NEWFE) {
+      
+   }
 }
 
 static void event_listener(void)
@@ -69,7 +98,7 @@ static void event_listener(void)
    while(1) {
       path = xenbus_wait_for_watch_return(&gtpmdev.events);
 
-      //handle_backend_event(*path);
+      handle_backend_event(*path);
       free(path);
    }
 

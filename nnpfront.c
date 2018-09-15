@@ -40,8 +40,8 @@ void init_nnpfront(void)
    snprintf(path, 512, "%u", xenbus_get_self_id());
    char *model = "resnet18";
 
-   if((err = xenbus_printf(XBT_NIL, "/local/domain/frontend", path, "%s", model)) {
-      NNPFRONT_ERR("Unable to write to xenstore frontend id");
+   if((err = xenbus_printf(XBT_NIL, "/local/domain/frontend", path, "%s", model))) {
+      NNPFRONT_ERR("Unable to write to xenstore frontend id\n");
       free(err);
    }
 
