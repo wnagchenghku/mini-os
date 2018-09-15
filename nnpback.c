@@ -78,7 +78,7 @@ static inline size_t divide_round_up(size_t dividend, size_t divisor) {
 
 void handle_backend_event(char* evstr) {
    domid_t domid;
-   char model[16], path[16];
+   char model[16], frontend_path[32], ring_ref_path[16];
    int event;
    char *err;
 
@@ -87,14 +87,20 @@ void handle_backend_event(char* evstr) {
    event = parse_eventstr(evstr, &domid, model);
    
    if (event == EV_NEWFE) {
-      int i;
-      size_t j;
+      snprintf(frontend_path, 32, "/local/domain/backend/%d", domid);
+      if((err = xenbus_write(XBT_NIL, frontend_path, "0"))) {
+         NNPBACK_ERR("Unable to write frontend domain id, error was %s\n", err);
+         free(err);
+      }
+
+      int outer;
+      size_t inner;
       float *page;
       grant_ref_t ring_ref;
       if (strcmp("squeezenet1_0", model) == 0) {
-         for (i = 0; i < sizeof(P2D24C20E) / sizeof(float *); ++i) {
+         for (outer = 0; outer < sizeof(P2D24C20E) / sizeof(float *); ++outer) {
             size_t inner_page_num = divide_round_up(sizeof(P2D24C20E[i]) / sizeof(float), 1000);
-            for (j = 0; j < inner_page_num; ++j) {
+            for (inner = 0; inner < inner_page_num; ++inner) {
                /* Create shared page */
                page = (float *)alloc_page();
                if(page == NULL) {
@@ -103,8 +109,8 @@ void handle_backend_event(char* evstr) {
                ring_ref = gnttab_grant_access(domid, virt_to_mfn(page), 0);
                NNPBACK_DEBUG("grant ref is %lu\n", (unsigned long) ring_ref);
 
-               snprintf(path, 16, "ring-ref%lu", i * inner_page_num + j);
-               if((err = xenbus_printf(XBT_NIL, evstr, path, "%u", (unsigned int) ring_ref))) {
+               snprintf(ring_ref_path, 16, "ring-ref%lu", outer * inner_page_num + inner);
+               if((err = xenbus_printf(XBT_NIL, frontend_path, ring_ref_path, "%u", (unsigned int) ring_ref))) {
                   NNPBACK_ERR("Unable to write ring-ref, error was %s\n", err);
                   free(err);
                }
@@ -153,7 +159,7 @@ void init_nnpback(void)
    char value[16];
 
    snprintf(value, 16, "%d", xenbus_get_self_id());
-   if ((err = xenbus_write(XBT_NIL, "/local/domain/backend-id", value)))
+   if ((err = xenbus_write(XBT_NIL, "/local/domain/backend", value)))
    {
       NNPBACK_ERR("Unable to write backend id: %s\n", err);
       free(err);
