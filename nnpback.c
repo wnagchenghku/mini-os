@@ -68,22 +68,14 @@ static int parse_eventstr(const char* evstr, domid_t* domid, char* model)
    return EV_NONE;
 }
 
-static inline size_t divide_round_up(size_t dividend, size_t divisor) {
-   if (dividend % divisor == 0) {
-      return dividend / divisor;
-   } else {
-      return dividend / divisor + 1;
-   }
-}
-
 void handle_backend_event(char* evstr) {
    domid_t domid;
    char model[16], frontend_path[32];
    int event;
    char *err;
-   char grant_ref_value[1024];
+   char grant_ref_value[1000];
    char grant_ref_entry[64];
-   snprintf(grant_ref_value, 1024, "%s", "");
+   snprintf(grant_ref_value, 1000, "%s", "");
 
    NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
 
@@ -96,15 +88,13 @@ void handle_backend_event(char* evstr) {
          free(err);
       }
 
-      int outer;
-      int grant_entry_sum = 0;
+      int grant_entry_sum = 0, outer;
       size_t inner;
       float *page;
       grant_ref_t grant_ref;
       if (strcmp("squeezenet1_0", model) == 0) {
          for (outer = 0; outer < sizeof(P2D24C20E) / sizeof(struct param); ++outer) {
-            size_t inner_page_num = divide_round_up(P2D24C20E[outer].param_size, 1000);
-            for (inner = 0; inner < inner_page_num; ++inner) {
+            for (inner = 0; inner < divide_round_up(P2D24C20E[outer].param_size, 1024); ++inner) {
                /* Create shared page */
                page = (float *)alloc_page();
                if(page == NULL) {
@@ -113,7 +103,7 @@ void handle_backend_event(char* evstr) {
                grant_ref = gnttab_grant_access(domid, virt_to_mfn(page), 0);
                NNPBACK_DEBUG("grant ref is %lu\n", (unsigned long) grant_ref);
 
-               snprintf(grant_ref_value + strlen(grant_ref_value), 1024 - strlen(grant_ref_value), "%lu ", (unsigned long) grant_ref);
+               snprintf(grant_ref_value + strlen(grant_ref_value), 1000 - strlen(grant_ref_value), "%lu ", (unsigned long) grant_ref);
                if (strlen(grant_ref_value) > 950) { // XENSTORE_RING_SIZE is 1024
                   snprintf(grant_ref_entry, 64, "%s/grant-ref%d", frontend_path, grant_entry_sum);
                   if((err = xenbus_write(XBT_NIL, grant_ref_entry, grant_ref_value))) {
@@ -121,10 +111,17 @@ void handle_backend_event(char* evstr) {
                      free(err);
                   }
                   grant_entry_sum++;
-                  snprintf(grant_ref_value, 1024, "%s", "");
+                  snprintf(grant_ref_value, 1000, "%s", "");
                }
             }
          }
+      }
+      char state_path[64];
+      snprintf(state_path, 64, "%s/state", frontend_path);
+      char value[8];
+      snprintf(value, 8, "%d", 1);
+      if((err = xenbus_write(XBT_NIL, state_path, value))) {
+         NNPBACK_ERR("Unable to write state path, error was %s\n", err);
       }
    }
 }
