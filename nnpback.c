@@ -88,22 +88,26 @@ void handle_backend_event(char* evstr) {
    
    if (event == EV_NEWFE) {
       int i;
+      size_t j;
       float *page;
       grant_ref_t ring_ref;
       if (strcmp("squeezenet1_0", model) == 0) {
          for (i = 0; i < sizeof(P2D24C20E) / sizeof(float *); ++i) {
-            /* Create shared page */
-            page = (float *)alloc_page(divide_round_up(P2D24C20E[i] / sizeof(float)), 1000);
-            if(page == NULL) {
-               NNPBACK_ERR("Unable to allocate page for shared memory\n");
-            }
-            ring_ref = gnttab_grant_access(domid, virt_to_mfn(page), 0);
-            NNPBACK_DEBUG("grant ref is %lu\n", (unsigned long) ring_ref);
+            size_t inner_page_num = divide_round_up(sizeof(P2D24C20E[i]) / sizeof(float), 1000);
+            for (j = 0; j < inner_page_num; ++j) {
+               /* Create shared page */
+               page = (float *)alloc_page();
+               if(page == NULL) {
+                  NNPBACK_ERR("Unable to allocate page for shared memory\n");
+               }
+               ring_ref = gnttab_grant_access(domid, virt_to_mfn(page), 0);
+               NNPBACK_DEBUG("grant ref is %lu\n", (unsigned long) ring_ref);
 
-            snprintf(path, 16, "ring-ref%d", i);
-            if((err = xenbus_printf(XBT_NIL, evstr, path, "%u", (unsigned int) ring_ref))) {
-               NNPBACK_ERR("Unable to write %s/ring-ref, error was %s\n", err);
-               free(err);
+               snprintf(path, 16, "ring-ref%d", i * inner_page_num + j);
+               if((err = xenbus_printf(XBT_NIL, evstr, path, "%u", (unsigned int) ring_ref))) {
+                  NNPBACK_ERR("Unable to write %s/ring-ref, error was %s\n", err);
+                  free(err);
+               }
             }
          }
       }
