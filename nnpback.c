@@ -12,7 +12,7 @@
 #include <mini-os/mm.h>
 #include <mini-os/posix/sys/mman.h>
 
-#include <mini-os/schedule.h>
+#include <mini-os/sched.h>
 
 #define NNPBACK_PRINT_DEBUG
 #ifdef NNPBACK_PRINT_DEBUG

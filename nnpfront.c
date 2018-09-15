@@ -17,9 +17,8 @@
 #define NNPFRONT_ERR(fmt,...) printk("Nnpfront:Error " fmt, ##__VA_ARGS__)
 #define NNPFRONT_LOG(fmt,...) printk("Nnpfront:Info " fmt, ##__VA_ARGS__)
 
-void init_nnpfront()
+void init_nnpfront(void)
 {
-   const char* nodename;
    char path[512];
    char* value, *err;
    unsigned long long ival;
@@ -35,7 +34,6 @@ void init_nnpfront()
    if(sscanf(value, "%llu", &ival) != 1) {
       NNPFRONT_ERR("%s has non-integer value (%s)\n", path, value);
       free(value);
-      goto error;
    }
    free(value);
    domid_t bedomid = ival;
