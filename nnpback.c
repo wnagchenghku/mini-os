@@ -103,9 +103,9 @@ void handle_backend_event(char* evstr) {
                ring_ref = gnttab_grant_access(domid, virt_to_mfn(page), 0);
                NNPBACK_DEBUG("grant ref is %lu\n", (unsigned long) ring_ref);
 
-               snprintf(path, 16, "ring-ref%d", i * inner_page_num + j);
+               snprintf(path, 16, "ring-ref%lu", i * inner_page_num + j);
                if((err = xenbus_printf(XBT_NIL, evstr, path, "%u", (unsigned int) ring_ref))) {
-                  NNPBACK_ERR("Unable to write %s/ring-ref, error was %s\n", err);
+                  NNPBACK_ERR("Unable to write ring-ref, error was %s\n", err);
                   free(err);
                }
             }
