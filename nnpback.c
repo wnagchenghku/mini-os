@@ -12,8 +12,6 @@
 #include <mini-os/mm.h>
 #include <mini-os/posix/sys/mman.h>
 
-#include <mini-os/sched.h>
-
 #define NNPBACK_PRINT_DEBUG
 #ifdef NNPBACK_PRINT_DEBUG
 #define NNPBACK_DEBUG(fmt,...) printk("Nnpback:Debug("__FILE__":%d) " fmt, __LINE__, ##__VA_ARGS__)
