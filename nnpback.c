@@ -34,14 +34,54 @@ struct nnpback_dev {
 
    struct gntmap map;
 
+   xenbus_event_queue events;
 };
 typedef struct nnpback_dev nnpback_dev_t;
 
 /* Global objects */
 static struct thread* eventthread = NULL;
-static nnpback_dev_t gnnpdev;
+static nnpback_dev_t gtpmdev = {
+   .events = NULL,
+};
+
+void handle_backend_event(char* evstr) {
+   domid_t domid;
+   unsigned int handle;
+   int event;
+
+   NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
+}
+
+static void event_listener(void)
+{
+   const char* bepath = "/local/domain/frontend";
+   char **path;
+   char* err;
+
+   /* Setup the backend device watch */
+   if((err = xenbus_watch_path_token(XBT_NIL, bepath, bepath, &gtpmdev.events)) != NULL) {
+      NNPBACK_ERR("xenbus_watch_path_token(%s) failed with error %s!\n", bepath, err);
+      free(err);
+      goto egress;
+   }
+
+   /* Wait and listen for changes in frontend connections */
+   while(1) {
+      path = xenbus_wait_for_watch_return(&gtpmdev.events);
+
+      //handle_backend_event(*path);
+      free(path);
+   }
+
+   if((err = xenbus_unwatch_path_token(XBT_NIL, bepath, bepath)) != NULL) {
+      free(err);
+   }
+egress:
+   return;
+}
 
 void event_thread(void* p) {
+   event_listener();
 }
 
 void init_nnpback(void)
