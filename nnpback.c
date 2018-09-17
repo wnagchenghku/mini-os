@@ -68,6 +68,17 @@ static int parse_eventstr(const char* evstr, domid_t* domid, char* model)
    return EV_NONE;
 }
 
+unsigned int round_up_power_of_two(unsigned int v) // compute the next highest power of 2 of 32-bit v
+{
+   v--;
+   v |= v >> 1;
+   v |= v >> 2;
+   v |= v >> 4;
+   v |= v >> 8;
+   v |= v >> 16;
+   v++;
+}
+
 void handle_backend_event(char* evstr) {
    domid_t domid;
    char model[16], frontend_path[32];
@@ -93,29 +104,45 @@ void handle_backend_event(char* evstr) {
       float *page;
       grant_ref_t grant_ref;
       if (strcmp("squeezenet1_0", model) == 0) {
-         for (outer = 0; outer < sizeof(P2D24C20E) / sizeof(struct param); ++outer) {
-            for (inner = 0; inner < divide_round_up(P2D24C20E[outer].param_size, 1024); ++inner) {
-               /* Create shared page */
-               page = (float *)alloc_page();
-               if(page == NULL) {
-                  NNPBACK_ERR("Unable to allocate page for shared memory\n");
-               }
-               grant_ref = gnttab_grant_access(domid, virt_to_mfn(page), 0);
-               NNPBACK_DEBUG("grant ref is %lu\n", (unsigned long) grant_ref);
+         int total_item = sizeof(P2D24C20E) / sizeof(struct param), total_bytes = 0;
+         int i, j;
+         for (i = 0; i < total_item; ++i) {
+            total_bytes += P2D24C20E[i].param_size;
 
-               snprintf(grant_ref_value + strlen(grant_ref_value), 1000 - strlen(grant_ref_value), "%lu ", (unsigned long) grant_ref);
-               if (strlen(grant_ref_value) > 950) { // XENSTORE_RING_SIZE is 1024
-                  snprintf(grant_ref_entry, 64, "%s/grant-ref%d", frontend_path, grant_entry_sum);
-                  if((err = xenbus_write(XBT_NIL, grant_ref_entry, grant_ref_value))) {
-                     NNPBACK_ERR("Unable to write ring-ref, error was %s\n", err);
-                     free(err);
-                  }
-                  grant_entry_sum++;
-                  snprintf(grant_ref_value, 1000, "%s", "");
-               }
-            }
+         float* page = (float*)alloc_pages(round_up_power_of_two(total_bytes));
+         uintptr_t page_addr = (void*)page;
+
+         for (i = 0; i < divide_round_up(total_bytes, PAGE_SIZE); ++i) {
+            grant_ref = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)page_addr + i * PAGE_SIZE), 0);
          }
-      }
+
+         for (i = 0; i < total_item; ++i) {
+            for (int j = 0; j < P2D24C20E[i].param_size; ++j)
+               *(page++) = (P2D24C20E[i].param_ptr + j);
+
+      //    for (outer = 0; outer < sizeof(P2D24C20E) / sizeof(struct param); ++outer) {
+      //       for (inner = 0; inner < divide_round_up(P2D24C20E[outer].param_size, 1024); ++inner) {
+      //          /* Create shared page */
+      //          page = (float *)alloc_page();
+      //          if(page == NULL) {
+      //             NNPBACK_ERR("Unable to allocate page for shared memory\n");
+      //          }
+      //          grant_ref = gnttab_grant_access(domid, virt_to_mfn(page), 0);
+      //          NNPBACK_DEBUG("grant ref is %lu\n", (unsigned long) grant_ref);
+
+      //          snprintf(grant_ref_value + strlen(grant_ref_value), 1000 - strlen(grant_ref_value), "%lu ", (unsigned long) grant_ref);
+      //          if (strlen(grant_ref_value) > 950) { // XENSTORE_RING_SIZE is 1024
+      //             snprintf(grant_ref_entry, 64, "%s/grant-ref%d", frontend_path, grant_entry_sum);
+      //             if((err = xenbus_write(XBT_NIL, grant_ref_entry, grant_ref_value))) {
+      //                NNPBACK_ERR("Unable to write ring-ref, error was %s\n", err);
+      //                free(err);
+      //             }
+      //             grant_entry_sum++;
+      //             snprintf(grant_ref_value, 1000, "%s", "");
+      //          }
+      //       }
+      //    }
+      // }
       char state_path[64];
       snprintf(state_path, 64, "%s/state", frontend_path);
       char value[8];

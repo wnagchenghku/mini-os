@@ -47,7 +47,7 @@
 #endif
 
 
-#define DEFAULT_MAX_GRANTS 128
+#define DEFAULT_MAX_GRANTS 5096
 
 struct gntmap_entry {
     unsigned long host_addr;
@@ -215,6 +215,64 @@ gntmap_map_grant_refs(struct gntmap *map,
                                   writable) != 0) {
 
             (void) gntmap_munmap(map, addr, i);
+            return NULL;
+        }
+    }
+
+    return (void*) addr;
+}
+
+void*
+gntmap_map_grant_refs_batch(struct gntmap *map, 
+                           uint32_t count,
+                           uint32_t *domids,
+                           int domids_stride,
+                           uint32_t *refs,
+                           int writable)
+{
+    unsigned long addr;
+    struct gntmap_entry *ent;
+    int i;
+
+    DEBUG("(map=%p, count=%" PRIu32 ", "
+           "domids=%p [%" PRIu32 "...], domids_stride=%d, "
+           "refs=%p [%" PRIu32 "...], writable=%d)",
+           map, count,
+           domids, domids == NULL ? 0 : domids[0], domids_stride,
+           refs, refs == NULL ? 0 : refs[0], writable);
+
+    (void) gntmap_set_max_grants(map, DEFAULT_MAX_GRANTS);
+
+    addr = allocate_ondemand((unsigned long) count, 1);
+    if (addr == 0)
+        return NULL;
+
+    struct gnttab_map_grant_ref *op = (struct gnttab_map_grant_ref *)malloc(sizeof(struct gnttab_map_grant_ref) * count);
+
+    for (i = 0; i < count; i++) {
+        ent = gntmap_find_free_entry(map);
+        if (ent == NULL)
+            return NULL;
+
+        op[i].ref = (grant_ref_t)refs[i];
+        op[i].dom = (domid_t)domids[i * domids_stride];
+        op[i].host_addr = (uint64_t) addr + PAGE_SIZE * i;
+        op[i].flags = GNTMAP_host_map;
+        if (!writable)
+            op[i].flags |= GNTMAP_readonly;
+
+        ent->host_addr = (uint64_t) addr + PAGE_SIZE * i;
+    }
+
+    int rc;
+
+    rc = HYPERVISOR_grant_table_op(GNTTABOP_map_grant_ref, op, count);
+
+    for (i = 0; i < count; ++i) {
+        if (rc != 0 || op[i].status != GNTST_okay) {
+            printk("GNTTABOP_map_grant_ref failed: "
+                   "returned %d, status %" PRId16 "\n",
+                   rc, op[i].status);
             return NULL;
         }
     }
