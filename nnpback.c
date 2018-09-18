@@ -101,12 +101,12 @@ void handle_backend_event(char* evstr) {
    domid_t domid;
    int event;
    char *err;
-   grant_ref_t grant_ref;
    float* page;
-   int i, j, k = 0, total_item, total_bytes, total_page, total_entry = 0;
+   int i, j, k = 0, total_item, total_bytes, total_page;
    char model[16], frontend_path[32];
    char entry_path[64], entry_value[512];
    char state_path[64], state_value[8];
+   grant_ref_t *grant_ref;
 
    NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
 
@@ -128,7 +128,7 @@ void handle_backend_event(char* evstr) {
          total_page = divide_round_up(total_bytes, PAGE_SIZE);
          page = (float*)alloc_pages(log2(round_up_power_of_two(total_page)));
 
-         grant_ref_t *grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);
+         grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);
 
          for (i = 0; i < total_page; ++i) {
             grant_ref[i] = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)page + i * PAGE_SIZE), 0);

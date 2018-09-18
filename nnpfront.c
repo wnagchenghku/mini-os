@@ -119,7 +119,7 @@ void init_nnpfront(void)
 
 static int param_it;
 
-float *resolve_param_ptr(void)
+float *resolve_param_cb(void)
 {
    if (param_it == 0)
       return page;

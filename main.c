@@ -20,7 +20,7 @@
 #include <mini-os/nnpback.h>
 #include <mini-os/nnpfront.h>
 
-extern int main(float* (*resolve_param_ptr_cb)(void));
+extern int main(void* resolve_param_cb);
 extern void __libc_init_array(void);
 extern void __libc_fini_array(void);
 extern unsigned long __CTOR_LIST__[];
@@ -167,7 +167,7 @@ static void call_main(void *p)
     init_nnpfront();
 
     // exit(main(argc, argv, envp));
-    exit(main(&resolve_param_ptr));
+    exit(main(&resolve_param_cb));
 }
 
 void _exit(int ret)
