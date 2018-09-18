@@ -92,7 +92,6 @@ void handle_backend_event(char* evstr) {
    char model[16], frontend_path[32];
    int event;
    char *err;
-   char grant_ref_value[1000];
    char grant_ref_entry[64];
    snprintf(grant_ref_value, 1000, "%s", "");
 
@@ -111,7 +110,7 @@ void handle_backend_event(char* evstr) {
       if (strcmp("squeezenet1_0", model) == 0) {
          int total_item = sizeof(P4C8732DB) / sizeof(struct backend_param), total_bytes = 0;
          int i, j;
-         for (i = 0; i < total_item; ++i) {
+         for (i = 0; i < total_item; ++i)
             total_bytes += P4C8732DB[i].param_size;
 
          float* page = (float*)alloc_pages(round_up_power_of_two(total_bytes));
@@ -120,9 +119,11 @@ void handle_backend_event(char* evstr) {
             grant_ref = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)page + i * PAGE_SIZE), 0);
          }
 
-         for (i = 0; i < total_item; ++i) {
+         for (i = 0; i < total_item; ++i)
             for (j = 0; j < P4C8732DB[i].param_size; ++j)
                *(page++) = *(P4C8732DB[i].param_ptr + j);
+
+      }
 
       //    for (outer = 0; outer < sizeof(P2D24C20E) / sizeof(struct param); ++outer) {
       //       for (inner = 0; inner < divide_round_up(P2D24C20E[outer].param_size, 1024); ++inner) {
