@@ -94,7 +94,7 @@ unsigned int round_up_power_of_two(unsigned int v) // compute the next highest p
    v |= v >> 16;
    v++;
 
-   return log2(v);
+   return v;
 }
 
 void handle_backend_event(char* evstr) {
@@ -104,6 +104,7 @@ void handle_backend_event(char* evstr) {
    char *err;
    grant_ref_t grant_ref;
    float* page;
+   int i, j, total_item, total_bytes, total_page;
 
    NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
 
@@ -117,14 +118,15 @@ void handle_backend_event(char* evstr) {
       }
 
       if (strcmp("squeezenet1_0", model) == 0) {
-         int total_item = sizeof(P4C8732DB_backend) / sizeof(struct backend_param), total_bytes = 0;
-         int i, j;
+         total_item = sizeof(P4C8732DB_backend) / sizeof(struct backend_param);
+         total_bytes = 0;
          for (i = 0; i < total_item; ++i)
             total_bytes += P4C8732DB_backend[i].param_size * sizeof(float);
 
-         page = (float*)alloc_pages(round_up_power_of_two(total_bytes));
+         total_page = divide_round_up(total_bytes, PAGE_SIZE);
+         page = (float*)alloc_pages(log2(round_up_power_of_two(total_page)));
 
-         for (i = 0; i < divide_round_up(total_bytes, PAGE_SIZE); ++i) {
+         for (i = 0; i < total_page; ++i) {
             grant_ref = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)page + i * PAGE_SIZE), 0);
          }
 
