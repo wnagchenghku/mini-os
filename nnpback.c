@@ -99,12 +99,13 @@ unsigned int round_up_power_of_two(unsigned int v) // compute the next highest p
 
 void handle_backend_event(char* evstr) {
    domid_t domid;
-   char model[16], frontend_path[32];
    int event;
    char *err;
    grant_ref_t grant_ref;
    float* page;
-   int i, j, total_item, total_bytes, total_page;
+   int i, j, total_item, total_bytes, total_page, total_entry = 0;
+   char model[16], frontend_path[32], entry_path[64], entry_value[512];
+   snprintf(entry_value, 512, "%s", "");
 
    NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
 
@@ -128,43 +129,30 @@ void handle_backend_event(char* evstr) {
 
          for (i = 0; i < total_page; ++i) {
             grant_ref = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)page + i * PAGE_SIZE), 0);
+            snprintf(entry_value + strlen(entry_value), 512 - strlen(entry_value), "%lu ", (unsigned long) grant_ref);
+            if (strlen(entry_value) > 512) {
+               snprintf(entry_path, 64, "%s/grant-ref%d", frontend_path, total_entry++);
+               if((err = xenbus_write(XBT_NIL, entry_path, entry_value))) {
+                  NNPBACK_ERR("Unable to write ring-ref, error was %s\n", err);
+                  free(err);
+               }
+               snprintf(entry_value, 512, "%s", "");
+            }
          }
 
          for (i = 0; i < total_item; ++i)
             for (j = 0; j < P4C8732DB_backend[i].param_size; ++j)
                *(page++) = *(P4C8732DB_backend[i].param_ptr + j);
-
       }
 
-      //    for (outer = 0; outer < sizeof(P2D24C20E) / sizeof(struct param); ++outer) {
-      //       for (inner = 0; inner < divide_round_up(P2D24C20E[outer].param_size, 1024); ++inner) {
-      //          /* Create shared page */
-      //          page = (float *)alloc_page();
-      //          if(page == NULL) {
-      //             NNPBACK_ERR("Unable to allocate page for shared memory\n");
-      //          }
-      //          grant_ref = gnttab_grant_access(domid, virt_to_mfn(page), 0);
-      //          NNPBACK_DEBUG("grant ref is %lu\n", (unsigned long) grant_ref);
-
-      //          snprintf(grant_ref_value + strlen(grant_ref_value), 1000 - strlen(grant_ref_value), "%lu ", (unsigned long) grant_ref);
-      //          if (strlen(grant_ref_value) > 950) { // XENSTORE_RING_SIZE is 1024
-      //             snprintf(grant_ref_entry, 64, "%s/grant-ref%d", frontend_path, grant_entry_sum);
-      //             if((err = xenbus_write(XBT_NIL, grant_ref_entry, grant_ref_value))) {
-      //                NNPBACK_ERR("Unable to write ring-ref, error was %s\n", err);
-      //                free(err);
-      //             }
-      //             grant_entry_sum++;
-      //             snprintf(grant_ref_value, 1000, "%s", "");
-      //          }
-      //       }
-      //    }
-      // }
-      // char state_path[64];
-      // snprintf(state_path, 64, "%s/state", frontend_path);
-      // char value[8];
-      // snprintf(value, 8, "%d", 1);
-      // if((err = xenbus_write(XBT_NIL, state_path, value))) {
-      //    NNPBACK_ERR("Unable to write state path, error was %s\n", err);
+      char state_path[64];
+      snprintf(state_path, 64, "%s/state", frontend_path);
+      char value[8];
+      snprintf(value, 8, "%d", 1);
+      if((err = xenbus_write(XBT_NIL, state_path, value))) {
+          NNPBACK_ERR("Unable to write state path, error was %s\n", err);
+          free(err);
+       }
    }
 }
 
