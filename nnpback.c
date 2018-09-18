@@ -104,7 +104,7 @@ void handle_backend_event(char* evstr) {
    float* page;
    int i, j, k = 0, total_item, total_bytes, total_page;
    char model[16], frontend_path[32];
-   char entry_path[64], entry_value[512];
+   char entry_path[64], entry_value[1024];
    char state_path[64], state_value[8];
    grant_ref_t *grant_ref;
 
@@ -134,21 +134,21 @@ void handle_backend_event(char* evstr) {
             grant_ref[i] = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)page + i * PAGE_SIZE), 0);
          }
 
-         snprintf(entry_value, 512, "%s", "");
-         for (i = 0; i < total_page / 512; ++i) {
-            for (j = 0; j < 512; ++j)
-               snprintf(entry_value + strlen(entry_value), 512 - strlen(entry_value), "%lu ", (unsigned long) grant_ref[k++]);
+         snprintf(entry_value, 1024, "%s", "");
+         for (i = 0; i < total_page / 128; ++i) {
+            for (j = 0; j < 128; ++j)
+               snprintf(entry_value + strlen(entry_value), 1024 - strlen(entry_value), "%lu ", (unsigned long) grant_ref[k++]);
             
             snprintf(entry_path, 64, "%s/grant-ref%d", frontend_path, i);
             if((err = xenbus_write(XBT_NIL, entry_path, entry_value))) {
                NNPBACK_ERR("Unable to write ring-ref, error was %s\n", err);
                free(err);
             }
-            snprintf(entry_value, 512, "%s", "");
+            snprintf(entry_value, 1024, "%s", "");
          }
 
          for (; k < total_page; ) {
-               snprintf(entry_value + strlen(entry_value), 512 - strlen(entry_value), "%lu ", (unsigned long) grant_ref[k++]);
+               snprintf(entry_value + strlen(entry_value), 1024 - strlen(entry_value), "%lu ", (unsigned long) grant_ref[k++]);
          }
          snprintf(entry_path, 64, "%s/grant-ref%d", frontend_path, i);
          if((err = xenbus_write(XBT_NIL, entry_path, entry_value))) {

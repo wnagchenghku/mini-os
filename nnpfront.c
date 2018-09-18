@@ -94,7 +94,7 @@ void init_nnpfront(void)
 
    grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);
 
-   for (i = 0; i < divide_round_up(total_page, 512); ++i) {
+   for (i = 0; i < divide_round_up(total_page, 128); ++i) {
       entry_value;
       snprintf(entry_path, 64, "/local/domain/backend/%d/grant-ref%d", xenbus_get_self_id(), i);
       if((err = xenbus_read(XBT_NIL, entry_path, &entry_value))) {
