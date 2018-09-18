@@ -39,6 +39,10 @@ void init_nnpfront(void)
    char path[512];
    char* value, *err;
    unsigned long long ival;
+   uint32_t bedomid;
+   char *model;
+   xenbus_event_queue events = NULL;
+   int total_item, i;
 
    printk("============= Init NNP Front ================\n");
 
@@ -52,17 +56,15 @@ void init_nnpfront(void)
       free(value);
    }
    free(value);
-   domid_t bedomid = ival;
+   bedomid = ival;
 
    snprintf(path, 512, "%u", xenbus_get_self_id());
-   char *model = "squeezenet1_0";
+   model = "squeezenet1_0";
 
    if((err = xenbus_printf(XBT_NIL, "/local/domain/frontend", path, "%s", model))) {
       NNPFRONT_ERR("Unable to write to xenstore frontend id\n");
       free(err);
    }
-
-   xenbus_event_queue events = NULL;
 
    snprintf(path, 512, "/local/domain/backend/%d/state", xenbus_get_self_id());
    /*Setup the watch to wait for the backend */
@@ -128,8 +130,7 @@ void init_nnpfront(void)
    // }
    // free(grant_ref_arr);
 
-   int total_item = sizeof(P4C8732DB_frontend) / sizeof(struct frontend_param), total_bytes = 0;
-   int i, j;
+   total_item = sizeof(P4C8732DB_frontend) / sizeof(struct frontend_param), total_bytes = 0;
    for (i = 0; i < total_item; ++i)
       total_bytes += P4C8732DB_frontend[i].param_size;
 

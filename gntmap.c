@@ -232,7 +232,8 @@ gntmap_map_grant_refs_batch(struct gntmap *map,
 {
     unsigned long addr;
     struct gntmap_entry *ent;
-    int i;
+    int i, rc;
+    struct gnttab_map_grant_ref *op;
 
     DEBUG("(map=%p, count=%" PRIu32 ", "
            "domids=%p [%" PRIu32 "...], domids_stride=%d, "
@@ -246,8 +247,8 @@ gntmap_map_grant_refs_batch(struct gntmap *map,
     addr = allocate_ondemand((unsigned long) count, 1);
     if (addr == 0)
         return NULL;
-
-    struct gnttab_map_grant_ref *op = (struct gnttab_map_grant_ref *)malloc(sizeof(struct gnttab_map_grant_ref) * count);
+    
+    op = (struct gnttab_map_grant_ref *)malloc(sizeof(struct gnttab_map_grant_ref) * count);
 
     for (i = 0; i < count; i++) {
         ent = gntmap_find_free_entry(map);
@@ -263,8 +264,6 @@ gntmap_map_grant_refs_batch(struct gntmap *map,
 
         ent->host_addr = (uint64_t) addr + PAGE_SIZE * i;
     }
-
-    int rc;
 
     rc = HYPERVISOR_grant_table_op(GNTTABOP_map_grant_ref, op, count);
 

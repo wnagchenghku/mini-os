@@ -93,7 +93,8 @@ void handle_backend_event(char* evstr) {
    char model[16], frontend_path[32];
    int event;
    char *err;
-   char grant_ref_entry[64];
+   grant_ref_t grant_ref;
+   float* page;
 
    NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
 
@@ -106,14 +107,13 @@ void handle_backend_event(char* evstr) {
          free(err);
       }
 
-      grant_ref_t grant_ref;
       if (strcmp("squeezenet1_0", model) == 0) {
          int total_item = sizeof(P4C8732DB_backend) / sizeof(struct backend_param), total_bytes = 0;
          int i, j;
          for (i = 0; i < total_item; ++i)
             total_bytes += P4C8732DB_backend[i].param_size;
 
-         float* page = (float*)alloc_pages(round_up_power_of_two(total_bytes));
+         page = (float*)alloc_pages(round_up_power_of_two(total_bytes));
 
          for (i = 0; i < divide_round_up(total_bytes, PAGE_SIZE); ++i) {
             grant_ref = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)page + i * PAGE_SIZE), 0);
@@ -191,9 +191,10 @@ void event_thread(void* p) {
 
 void init_nnpback(void)
 {
-   printk("============= Init NNP BACK ================\n");
    char* err;
    char value[16];
+   
+   printk("============= Init NNP BACK ================\n");
 
    snprintf(value, 16, "%d", xenbus_get_self_id());
    if ((err = xenbus_write(XBT_NIL, "/local/domain/backend", value)))
