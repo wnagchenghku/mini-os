@@ -12,7 +12,7 @@
 #include <mini-os/mm.h>
 #include <mini-os/posix/sys/mman.h>
 
-#include <mini-os/P4C8732DB-backend.h>
+#include <mini-os/P4C8732DB_backend-backend.h>
 
 #define NNPBACK_PRINT_DEBUG
 #ifdef NNPBACK_PRINT_DEBUG
@@ -107,10 +107,10 @@ void handle_backend_event(char* evstr) {
 
       grant_ref_t grant_ref;
       if (strcmp("squeezenet1_0", model) == 0) {
-         int total_item = sizeof(P4C8732DB) / sizeof(struct backend_param), total_bytes = 0;
+         int total_item = sizeof(P4C8732DB_backend) / sizeof(struct backend_param), total_bytes = 0;
          int i, j;
          for (i = 0; i < total_item; ++i)
-            total_bytes += P4C8732DB[i].param_size;
+            total_bytes += P4C8732DB_backend[i].param_size;
 
          float* page = (float*)alloc_pages(round_up_power_of_two(total_bytes));
 
@@ -119,8 +119,8 @@ void handle_backend_event(char* evstr) {
          }
 
          for (i = 0; i < total_item; ++i)
-            for (j = 0; j < P4C8732DB[i].param_size; ++j)
-               *(page++) = *(P4C8732DB[i].param_ptr + j);
+            for (j = 0; j < P4C8732DB_backend[i].param_size; ++j)
+               *(page++) = *(P4C8732DB_backend[i].param_ptr + j);
 
       }
 
