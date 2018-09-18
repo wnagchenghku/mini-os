@@ -124,5 +124,6 @@ float *resolve_param_cb(void)
    if (param_it == 0)
       return page;
    
-   return page + P4C8732DB_frontend[param_it++].param_size;
+   page += P4C8732DB_frontend[param_it++].param_size;
+   return page;
 }
