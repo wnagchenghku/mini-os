@@ -104,7 +104,9 @@ void handle_backend_event(char* evstr) {
    grant_ref_t grant_ref;
    float* page;
    int i, j, total_item, total_bytes, total_page, total_entry = 0;
-   char model[16], frontend_path[32], entry_path[64], entry_value[512];
+   char model[16], frontend_path[32];
+   char entry_path[64], entry_value[512];
+   char state_path[64], state_value[8];
    snprintf(entry_value, 512, "%s", "");
 
    NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
@@ -145,11 +147,9 @@ void handle_backend_event(char* evstr) {
                *(page++) = *(P4C8732DB_backend[i].param_ptr + j);
       }
 
-      char state_path[64];
       snprintf(state_path, 64, "%s/state", frontend_path);
-      char value[8];
-      snprintf(value, 8, "%d", 1);
-      if((err = xenbus_write(XBT_NIL, state_path, value))) {
+      snprintf(state_value, 8, "%d", 1);
+      if((err = xenbus_write(XBT_NIL, state_path, state_value))) {
           NNPBACK_ERR("Unable to write state path, error was %s\n", err);
           free(err);
        }
