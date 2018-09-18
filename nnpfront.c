@@ -121,8 +121,11 @@ static int param_it;
 
 float *resolve_param_cb(void)
 {
-   if (param_it == 0)
+   static int isFirst = 1;
+   if (isFirst) {
+      isFirst = 0;
       return page;
+   }
    
    page += P4C8732DB_frontend[param_it++].param_size;
    return page;
