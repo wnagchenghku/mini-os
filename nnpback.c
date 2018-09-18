@@ -147,8 +147,8 @@ void handle_backend_event(char* evstr) {
             snprintf(entry_value, 512, "%s", "");
          }
 
-         for (; k < total_page; ++k) {
-               snprintf(entry_value + strlen(entry_value), 512 - strlen(entry_value), "%lu ", (unsigned long) grant_ref[k]);
+         for (; k < total_page; ) {
+               snprintf(entry_value + strlen(entry_value), 512 - strlen(entry_value), "%lu ", (unsigned long) grant_ref[k++]);
          }
          snprintf(entry_path, 64, "%s/grant-ref%d", frontend_path, i + 1);
          if((err = xenbus_write(XBT_NIL, entry_path, entry_value))) {
