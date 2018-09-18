@@ -97,7 +97,7 @@ void init_nnpfront(void)
    for (i = 0; i < divide_round_up(total_page, 512); ++i) {
       char *entry_value;
       snprintf(entry_path, 64, "/local/domain/backend/%d/grant-ref%d", xenbus_get_self_id(), i);
-      if((err = xenbus_read(XBT_NIL, grant_entry, &entry_value))) {
+      if((err = xenbus_read(XBT_NIL, entry_path, &entry_value))) {
          NNPFRONT_ERR("Unable to read %s during tpmfront initialization! error = %s\n", grant_entry, err);
          free(err);
       }
