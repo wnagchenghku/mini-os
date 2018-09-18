@@ -150,7 +150,7 @@ void handle_backend_event(char* evstr) {
          for (; k < total_page; ) {
                snprintf(entry_value + strlen(entry_value), 512 - strlen(entry_value), "%lu ", (unsigned long) grant_ref[k++]);
          }
-         snprintf(entry_path, 64, "%s/grant-ref%d", frontend_path, i + 1);
+         snprintf(entry_path, 64, "%s/grant-ref%d", frontend_path, i);
          if((err = xenbus_write(XBT_NIL, entry_path, entry_value))) {
             NNPBACK_ERR("Unable to write ring-ref, error was %s\n", err);
             free(err);

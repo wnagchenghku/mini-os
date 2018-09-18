@@ -41,7 +41,7 @@ void init_nnpfront(void)
    char* value, *err;
    unsigned long long ival;
    uint32_t bedomid;
-   char *model;
+   char *model, *entry_value, *value_it;
    xenbus_event_queue events = NULL;
    int total_item, total_bytes, total_page, i, j = 0;
    char entry_path[64];
@@ -95,16 +95,16 @@ void init_nnpfront(void)
    grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);
 
    for (i = 0; i < divide_round_up(total_page, 512); ++i) {
-      char *entry_value;
+      entry_value;
       snprintf(entry_path, 64, "/local/domain/backend/%d/grant-ref%d", xenbus_get_self_id(), i);
       if((err = xenbus_read(XBT_NIL, entry_path, &entry_value))) {
          NNPFRONT_ERR("Unable to read %s during tpmfront initialization! error = %s\n", entry_path, err);
          free(err);
       }
-      while(sscanf(entry_value, "%d%n", &v, &bytesread) > 0) {
-        *(grant_ref + j) = v;
-        j++;
-        entry_value += bytesread;
+      value_it = entry_value;
+      while(sscanf(value_it, "%d%n", &v, &bytesread) > 0) {
+        grant_ref[j++] = v;
+        value_it += bytesread;
      }
      free(entry_value);
    }
