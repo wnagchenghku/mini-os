@@ -12,7 +12,7 @@
 #include <mini-os/mm.h>
 #include <mini-os/posix/sys/mman.h>
 
-#include <mini-os/2D24C20E.h>
+#include <mini-os/P4C8732DB-backend.h>
 
 #define NNPBACK_PRINT_DEBUG
 #ifdef NNPBACK_PRINT_DEBUG
@@ -68,6 +68,14 @@ static int parse_eventstr(const char* evstr, domid_t* domid, char* model)
    return EV_NONE;
 }
 
+static inline size_t divide_round_up(size_t dividend, size_t divisor) {
+   if (dividend % divisor == 0) {
+      return dividend / divisor;
+   } else {
+      return dividend / divisor + 1;
+   }
+}
+
 unsigned int round_up_power_of_two(unsigned int v) // compute the next highest power of 2 of 32-bit v
 {
    v--;
@@ -104,10 +112,10 @@ void handle_backend_event(char* evstr) {
       float *page;
       grant_ref_t grant_ref;
       if (strcmp("squeezenet1_0", model) == 0) {
-         int total_item = sizeof(P2D24C20E) / sizeof(struct param), total_bytes = 0;
+         int total_item = sizeof(P4C8732DB) / sizeof(struct backend_param), total_bytes = 0;
          int i, j;
          for (i = 0; i < total_item; ++i) {
-            total_bytes += P2D24C20E[i].param_size;
+            total_bytes += P4C8732DB[i].param_size;
 
          float* page = (float*)alloc_pages(round_up_power_of_two(total_bytes));
 
@@ -116,8 +124,8 @@ void handle_backend_event(char* evstr) {
          }
 
          for (i = 0; i < total_item; ++i) {
-            for (j = 0; j < P2D24C20E[i].param_size; ++j)
-               *(page++) = (P2D24C20E[i].param_ptr + j);
+            for (j = 0; j < P4C8732DB[i].param_size; ++j)
+               *(page++) = (P4C8732DB[i].param_ptr + j);
 
       //    for (outer = 0; outer < sizeof(P2D24C20E) / sizeof(struct param); ++outer) {
       //       for (inner = 0; inner < divide_round_up(P2D24C20E[outer].param_size, 1024); ++inner) {
