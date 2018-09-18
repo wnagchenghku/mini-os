@@ -7,7 +7,7 @@
 #include <mini-os/lib.h>
 #include <fcntl.h>
 #include <mini-os/posix/sys/mman.h>
-#include <mini-os/P4C8732DB_frontend-frontend.h>
+#include <mini-os/P4C8732DB_frontend.h>
 
 #define NNPFRONT_PRINT_DEBUG
 #ifdef NNPFRONT_PRINT_DEBUG
