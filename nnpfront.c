@@ -7,7 +7,7 @@
 #include <mini-os/lib.h>
 #include <fcntl.h>
 #include <mini-os/posix/sys/mman.h>
-#include <mini-os/P4C8732DB_frontend.h>
+#include <mini-os/4C8732DB_frontend.h>
 
 #define NNPFRONT_PRINT_DEBUG
 #ifdef NNPFRONT_PRINT_DEBUG
@@ -140,7 +140,7 @@ void init_nnpfront(void)
    }
    
    if(gntmap_map_grant_refs_batch(&gtpmdev.map, total_page, &bedomid, 0, ringref, PROT_READ) == NULL) {
-      NNPBACK_ERR("Failed to map grant reference %u\n", (unsigned int) bedomid);
+      NNPFRONT_ERR("Failed to map grant reference %u\n", (unsigned int) bedomid);
    }
    free(ringref);
 
