@@ -193,7 +193,7 @@ void init_nnpback(void)
 {
    char* err;
    char value[16];
-   
+
    printk("============= Init NNP BACK ================\n");
 
    snprintf(value, 16, "%d", xenbus_get_self_id());
