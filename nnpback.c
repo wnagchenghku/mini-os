@@ -110,14 +110,13 @@ void handle_backend_event(char* evstr) {
             total_bytes += P2D24C20E[i].param_size;
 
          float* page = (float*)alloc_pages(round_up_power_of_two(total_bytes));
-         uintptr_t page_addr = (void*)page;
 
          for (i = 0; i < divide_round_up(total_bytes, PAGE_SIZE); ++i) {
-            grant_ref = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)page_addr + i * PAGE_SIZE), 0);
+            grant_ref = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)page + i * PAGE_SIZE), 0);
          }
 
          for (i = 0; i < total_item; ++i) {
-            for (int j = 0; j < P2D24C20E[i].param_size; ++j)
+            for (j = 0; j < P2D24C20E[i].param_size; ++j)
                *(page++) = (P2D24C20E[i].param_ptr + j);
 
       //    for (outer = 0; outer < sizeof(P2D24C20E) / sizeof(struct param); ++outer) {
@@ -143,12 +142,12 @@ void handle_backend_event(char* evstr) {
       //       }
       //    }
       // }
-      char state_path[64];
-      snprintf(state_path, 64, "%s/state", frontend_path);
-      char value[8];
-      snprintf(value, 8, "%d", 1);
-      if((err = xenbus_write(XBT_NIL, state_path, value))) {
-         NNPBACK_ERR("Unable to write state path, error was %s\n", err);
+      // char state_path[64];
+      // snprintf(state_path, 64, "%s/state", frontend_path);
+      // char value[8];
+      // snprintf(value, 8, "%d", 1);
+      // if((err = xenbus_write(XBT_NIL, state_path, value))) {
+      //    NNPBACK_ERR("Unable to write state path, error was %s\n", err);
       }
    }
 }

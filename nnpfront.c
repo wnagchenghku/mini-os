@@ -132,10 +132,9 @@ void init_nnpfront(void)
       total_bytes += P2D24C20E[i].param_size;
 
    int total_page = divide_round_up(total_bytes, PAGE_SIZE);
-    grant_ref_t *ringref;
+   grant_ref_t *ringref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);
    for (i = 0; i < total_page; ++i) {
-      ringref = malloc(sizeof(grant_ref_t) * divide_round_up(total_bytes, PAGE_SIZE));
-      // ringref[i] = ;
+      //ringref[i] = ;
    }
    
    if(gntmap_map_grant_refs_batch(&gtpmdev.map, total_page, &bedomid, 0, ringref, PROT_READ) == NULL) {
