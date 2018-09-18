@@ -76,6 +76,14 @@ static inline size_t divide_round_up(size_t dividend, size_t divisor) {
    }
 }
 
+int log2(int v)
+{
+   if (v == 1)
+      return 0;
+
+   return 1 + log2(v >> 1);
+}
+
 unsigned int round_up_power_of_two(unsigned int v) // compute the next highest power of 2 of 32-bit v
 {
    v--;
@@ -85,7 +93,8 @@ unsigned int round_up_power_of_two(unsigned int v) // compute the next highest p
    v |= v >> 8;
    v |= v >> 16;
    v++;
-   return v;
+
+   return log2(v);
 }
 
 void handle_backend_event(char* evstr) {
@@ -111,7 +120,7 @@ void handle_backend_event(char* evstr) {
          int total_item = sizeof(P4C8732DB_backend) / sizeof(struct backend_param), total_bytes = 0;
          int i, j;
          for (i = 0; i < total_item; ++i)
-            total_bytes += P4C8732DB_backend[i].param_size;
+            total_bytes += P4C8732DB_backend[i].param_size * sizeof(float);
 
          page = (float*)alloc_pages(round_up_power_of_two(total_bytes));
 
