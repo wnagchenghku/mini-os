@@ -34,6 +34,7 @@ static inline size_t divide_round_up(size_t dividend, size_t divisor) {
    }
 }
 
+float * page;
 void init_nnpfront(void)
 {
    char path[512];
@@ -45,7 +46,6 @@ void init_nnpfront(void)
    int total_item, total_bytes, total_page, i, j = 0;
    char entry_path[64];
    grant_ref_t *grant_ref;
-   float * page;
    int v, bytesread;
 
    printk("============= Init NNP Front ================\n");
@@ -115,4 +115,14 @@ void init_nnpfront(void)
 
    free(grant_ref);
    NNPFRONT_LOG("Initialization Completed successfully\n");
+}
+
+static int param_it;
+
+float *resolve_param_ptr(void)
+{
+   if (param_it == 0)
+      return page;
+   
+   return page + P4C8732DB_frontend[param_it++].param_size;
 }
