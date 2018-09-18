@@ -43,6 +43,7 @@ void init_nnpfront(void)
    char *model;
    xenbus_event_queue events = NULL;
    int total_item, total_bytes, total_page, i;
+   grant_ref_t *ringref;
 
    printk("============= Init NNP Front ================\n");
 
@@ -136,7 +137,7 @@ void init_nnpfront(void)
       total_bytes += P4C8732DB_frontend[i].param_size;
 
    total_page = divide_round_up(total_bytes, PAGE_SIZE);
-   grant_ref_t *ringref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);
+   ringref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);
    for (i = 0; i < total_page; ++i) {
       //ringref[i] = ;
    }
