@@ -42,8 +42,11 @@ void init_nnpfront(void)
    uint32_t bedomid;
    char *model;
    xenbus_event_queue events = NULL;
-   int total_item, total_bytes, total_page, i;
-   grant_ref_t *ringref;
+   int total_item, total_bytes, total_page, i, j = 0;
+   char entry_path[64];
+   grant_ref_t *grant_ref;
+   float * page;
+   int v, bytesread;
 
    printk("============= Init NNP Front ================\n");
 
@@ -82,25 +85,22 @@ void init_nnpfront(void)
        xenbus_wait_for_watch(&events);
    }
 
-   int total_item = sizeof(P4C8732DB_frontend) / sizeof(struct frontend_param);
-   int total_bytes = 0;
+   total_item = sizeof(P4C8732DB_frontend) / sizeof(struct frontend_param);
+   total_bytes = 0;
    for (i = 0; i < total_item; ++i)
       total_bytes += P4C8732DB_frontend[i].param_size * sizeof(float);
 
    total_page = divide_round_up(total_bytes, PAGE_SIZE);
 
-   float * page;
-
-   grant_ref_t *grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);
+   grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);
 
    for (i = 0; i < divide_round_up(total_page, 512); ++i) {
       char *entry_value;
-      snprintf(grant_entry, 64, "/local/domain/backend/%d/grant-ref%d", xenbus_get_self_id(), i);
+      snprintf(entry_path, 64, "/local/domain/backend/%d/grant-ref%d", xenbus_get_self_id(), i);
       if((err = xenbus_read(XBT_NIL, grant_entry, &entry_value))) {
          NNPFRONT_ERR("Unable to read %s during tpmfront initialization! error = %s\n", grant_entry, err);
          free(err);
       }
-      int v, bytesread;
       while(sscanf(entry_value, "%d%n", &v, &bytesread) > 0) {
         *(grant_ref + j) = v;
         j++;
@@ -109,8 +109,8 @@ void init_nnpfront(void)
      free(entry_value);
    }
 
-   if (page = gntmap_map_grant_refs_batch(&gtpmdev.map, total_page, &bedomid, 0, grant_ref, PROT_READ) == NULL) {
-      NNPBACK_ERR("Failed to map grant reference %u\n", (unsigned int) bedomid);
+   if ((page = gntmap_map_grant_refs_batch(&gtpmdev.map, total_page, &bedomid, 0, grant_ref, PROT_READ)) == NULL) {
+      NNPFRONT_ERR("Failed to map grant reference %u\n", (unsigned int) bedomid);
    }
 
    free(grant_ref);
