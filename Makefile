@@ -112,6 +112,7 @@ src-y += console/console.c
 src-y += console/xencons_ring.c
 src-$(CONFIG_CONSFRONT) += console/xenbus.c
 
+src-y += glue.c
 src-y += nnpback.c
 src-y += nnpfront.c
 
