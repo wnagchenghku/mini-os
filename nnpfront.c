@@ -42,7 +42,7 @@ void init_nnpfront(void)
    uint32_t bedomid;
    char *model;
    xenbus_event_queue events = NULL;
-   int total_item, i;
+   int total_item, total_bytes, i;
 
    printk("============= Init NNP Front ================\n");
 
@@ -130,7 +130,8 @@ void init_nnpfront(void)
    // }
    // free(grant_ref_arr);
 
-   total_item = sizeof(P4C8732DB_frontend) / sizeof(struct frontend_param), total_bytes = 0;
+   total_item = sizeof(P4C8732DB_frontend) / sizeof(struct frontend_param);
+   total_bytes = 0;
    for (i = 0; i < total_item; ++i)
       total_bytes += P4C8732DB_frontend[i].param_size;
 
