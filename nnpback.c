@@ -85,6 +85,7 @@ unsigned int round_up_power_of_two(unsigned int v) // compute the next highest p
    v |= v >> 8;
    v |= v >> 16;
    v++;
+   return v;
 }
 
 void handle_backend_event(char* evstr) {
