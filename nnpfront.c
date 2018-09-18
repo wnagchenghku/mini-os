@@ -6,6 +6,7 @@
 #include <xen/io/xenbus.h>
 #include <mini-os/lib.h>
 #include <fcntl.h>
+#include <mini-os/posix/sys/mman.h>
 #include <mini-os/P4C8732DB-frontend.h>
 
 #define NNPFRONT_PRINT_DEBUG
@@ -127,10 +128,10 @@ void init_nnpfront(void)
    // }
    // free(grant_ref_arr);
 
-   int total_item = sizeof(P2D24C20E) / sizeof(struct frontend_param), total_bytes = 0;
+   int total_item = sizeof(P4C8732DB) / sizeof(struct frontend_param), total_bytes = 0;
    int i, j;
-   for (i = 0; i < total_item; ++i) {
-      total_bytes += P2D24C20E[i].param_size;
+   for (i = 0; i < total_item; ++i)
+      total_bytes += P4C8732DB[i].param_size;
 
    int total_page = divide_round_up(total_bytes, PAGE_SIZE);
    grant_ref_t *ringref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);

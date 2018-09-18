@@ -93,7 +93,6 @@ void handle_backend_event(char* evstr) {
    int event;
    char *err;
    char grant_ref_entry[64];
-   snprintf(grant_ref_value, 1000, "%s", "");
 
    NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
 
