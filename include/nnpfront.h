@@ -10,5 +10,6 @@
 void init_nnpfront(void);
 
 void shutdown_nnpfront(void);
+float *resolve_param_ptr(void);
 
 #endif
