@@ -107,9 +107,6 @@ void handle_backend_event(char* evstr) {
          free(err);
       }
 
-      int grant_entry_sum = 0, outer;
-      size_t inner;
-      float *page;
       grant_ref_t grant_ref;
       if (strcmp("squeezenet1_0", model) == 0) {
          int total_item = sizeof(P4C8732DB) / sizeof(struct backend_param), total_bytes = 0;
@@ -125,7 +122,7 @@ void handle_backend_event(char* evstr) {
 
          for (i = 0; i < total_item; ++i) {
             for (j = 0; j < P4C8732DB[i].param_size; ++j)
-               *(page++) = (P4C8732DB[i].param_ptr + j);
+               *(page++) = *(P4C8732DB[i].param_ptr + j);
 
       //    for (outer = 0; outer < sizeof(P2D24C20E) / sizeof(struct param); ++outer) {
       //       for (inner = 0; inner < divide_round_up(P2D24C20E[outer].param_size, 1024); ++inner) {
@@ -156,7 +153,6 @@ void handle_backend_event(char* evstr) {
       // snprintf(value, 8, "%d", 1);
       // if((err = xenbus_write(XBT_NIL, state_path, value))) {
       //    NNPBACK_ERR("Unable to write state path, error was %s\n", err);
-      }
    }
 }
 
