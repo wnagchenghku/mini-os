@@ -127,8 +127,13 @@ void handle_backend_event(char* evstr) {
             total_bytes += P4C8732DB_backend[i].param_size * sizeof(float);
 
          total_page = divide_round_up(total_bytes, PAGE_SIZE);
-         if (squeezenet1_0_page == NULL)
+         if (squeezenet1_0_page == NULL) {
             squeezenet1_0_page = (float*)alloc_pages(log2(round_up_power_of_two(total_page)));
+
+            for (i = 0; i < total_item; ++i)
+               for (j = 0; j < P4C8732DB_backend[i].param_size; ++j)
+                  *(squeezenet1_0_page + k++) = *(P4C8732DB_backend[i].param_ptr + j);
+         }
 
          grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);
 
@@ -136,6 +141,7 @@ void handle_backend_event(char* evstr) {
             grant_ref[i] = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)squeezenet1_0_page + i * PAGE_SIZE), 0);
          }
 
+         k = 0;
          snprintf(entry_value, 1024, "%s", "");
          for (i = 0; i < total_page / 128; ++i) {
             for (j = 0; j < 128; ++j)
@@ -157,11 +163,6 @@ void handle_backend_event(char* evstr) {
             NNPBACK_ERR("Unable to write ring-ref, error was %s\n", err);
             free(err);
          }
-
-         k = 0;
-         for (i = 0; i < total_item; ++i)
-            for (j = 0; j < P4C8732DB_backend[i].param_size; ++j)
-               *(squeezenet1_0_page + k++) = *(P4C8732DB_backend[i].param_ptr + j);
       }
 
       snprintf(state_path, 64, "%s/state", frontend_path);
