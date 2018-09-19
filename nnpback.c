@@ -97,11 +97,12 @@ unsigned int round_up_power_of_two(unsigned int v) // compute the next highest p
    return v;
 }
 
+static float *squeezenet1_0_page = NULL;
+
 void handle_backend_event(char* evstr) {
    domid_t domid;
    int event;
    char *err;
-   float* page;
    int i, j, k = 0, total_item, total_bytes, total_page;
    char model[16], frontend_path[32];
    char entry_path[64], entry_value[1024];
@@ -126,12 +127,13 @@ void handle_backend_event(char* evstr) {
             total_bytes += P4C8732DB_backend[i].param_size * sizeof(float);
 
          total_page = divide_round_up(total_bytes, PAGE_SIZE);
-         page = (float*)alloc_pages(log2(round_up_power_of_two(total_page)));
+         if (squeezenet1_0_page == NULL)
+            squeezenet1_0_page = (float*)alloc_pages(log2(round_up_power_of_two(total_page)));
 
          grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);
 
          for (i = 0; i < total_page; ++i) {
-            grant_ref[i] = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)page + i * PAGE_SIZE), 0);
+            grant_ref[i] = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)squeezenet1_0_page + i * PAGE_SIZE), 0);
          }
 
          snprintf(entry_value, 1024, "%s", "");
@@ -156,9 +158,10 @@ void handle_backend_event(char* evstr) {
             free(err);
          }
 
+         k = 0;
          for (i = 0; i < total_item; ++i)
             for (j = 0; j < P4C8732DB_backend[i].param_size; ++j)
-               *(page++) = *(P4C8732DB_backend[i].param_ptr + j);
+               *(squeezenet1_0_page + k++) = *(P4C8732DB_backend[i].param_ptr + j);
       }
 
       snprintf(state_path, 64, "%s/state", frontend_path);
