@@ -244,10 +244,11 @@ gntmap_map_grant_refs_batch(struct gntmap *map,
 
     (void) gntmap_set_max_grants(map, DEFAULT_MAX_GRANTS);
 
-    addr = allocate_ondemand((unsigned long) count, 1);
+    // addr = allocate_ondemand((unsigned long) count, 1);
+    addr = (unsigned long)mmap(NULL, count * PAGE_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANON, -1, 0);
     if (addr == 0)
         return NULL;
-    
+
     op = (struct gnttab_map_grant_ref *)malloc(sizeof(struct gnttab_map_grant_ref) * count);
 
     for (i = 0; i < count; i++) {
