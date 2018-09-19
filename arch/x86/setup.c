@@ -447,7 +447,7 @@ arch_init(start_info_t *si)
 	/* Initialize SSE */
 	sse_init();
 
-	cpu_detection()
+	cpu_detection();
 
 	/* Copy the start_info struct to a globally-accessible area. */
 	/* WARN: don't do printk before here, it uses information from
