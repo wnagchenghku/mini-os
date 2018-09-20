@@ -158,15 +158,6 @@ ifeq ($(CONFIG_NETFRONT),y)
 LWO += $(OBJ_DIR)/lwip-net.o
 endif
 
-# NNPACK library
-NNC	:= $(sort $(shell find $(NNPACKDIR)/src -type f -name '*.c'))
-NNC	:= $(filter-out %6.c %ip6_addr.c %ethernetif.c, $(NNC))
-NNO	:= $(patsubst %.c,%.o,$(NNC))
-
-$(OBJ_DIR)/libnnpack.a: $(NNO)
-	$(RM) $@
-	$(AR) cqs $@ $^
-
 $(OBJ_DIR)/lwip.a: $(LWO)
 	$(RM) $@
 	$(AR) cqs $@ $^
