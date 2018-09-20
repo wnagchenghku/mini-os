@@ -109,6 +109,9 @@ void handle_backend_event(char* evstr) {
    char state_path[64], state_value[8];
    grant_ref_t *grant_ref;
 
+   struct timeval start, end;
+   unsigned long e_usec;
+
    NNPBACK_DEBUG("Xenbus Event: %s\n", evstr);
 
    event = parse_eventstr(evstr, &domid, model);
@@ -137,9 +140,13 @@ void handle_backend_event(char* evstr) {
 
          grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * total_page);
 
+         gettimeofday(&start, 0);
          for (i = 0; i < total_page; ++i) {
             grant_ref[i] = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)(void*)squeezenet1_0_page + i * PAGE_SIZE), 0);
          }
+         gettimeofday(&end, 0);
+         e_usec = ((end.tv_sec * 1000000) + end.tv_usec) - ((start.tv_sec * 1000000) + start.tv_usec);
+         NNPBACK_LOG("Publishing grant references takes %lu microseconds\n", e_usec);
 
          k = 0;
          snprintf(entry_value, 1024, "%s", "");
