@@ -170,6 +170,7 @@ void handle_backend_event(char* evstr) {
             NNPBACK_ERR("Unable to write ring-ref, error was %s\n", err);
             free(err);
          }
+         free(grant_ref);
       }
 
       snprintf(state_path, 64, "%s/state", frontend_path);
