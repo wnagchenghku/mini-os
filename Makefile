@@ -188,7 +188,6 @@ ifneq ($(APP_OBJS),)
 APP_O=$(OBJ_DIR)/$(TARGET)_app.o 
 endif
 
-NEWS_OBJS := libnnpack.a libpthreadpool.a
 NEWS_OBJS += squeezenet1_0.a
 
 $(OBJ_DIR)/$(TARGET): $(OBJS) $(APP_O) arch_lib

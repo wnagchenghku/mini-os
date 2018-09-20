@@ -11,3 +11,5 @@ sudo xenstore-chmod /local/domain/frontend b
 
 
 When we change Mini-OS stack size, we had better delete mini-os-x86_64-c and build again.
+
+pytorcher builds ISPC with -fPIC, we should make .a without -fPIC.
