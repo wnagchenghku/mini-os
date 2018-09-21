@@ -13,3 +13,8 @@ sudo xenstore-chmod /local/domain/frontend b
 When we change Mini-OS stack size, we had better delete mini-os-x86_64-c and build again.
 
 pytorcher builds ISPC with -fPIC, we should make .a without -fPIC.
+
+resnet18 needs 11425 pages. Some parameters to set:
+1. DEFAULT_MAX_GRANTS in gntmap.c (20384)
+2. NR_GRANT_FRAMES in gnttab.c (24)
+3. GRUB_CMDLINE_XEN="gnttab_max_frames=24000" in /etc/default/grub
