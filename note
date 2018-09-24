@@ -12,7 +12,7 @@ $ update-rc.d xen-watchdog defaults 22 23
 After edit xc_dom_core.c
 $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/xen-4.8.4/tools/libxc
 
-However, we still minios (frontend) carried with xen 4.6.5.
+However, we still use minios (frontend) carried with xen 4.6.5.
 To build xen 4.6.5, we downgrade gcc to gcc-5.
 https://unix.stackexchange.com/questions/284817/how-to-install-gcc-5-on-debian-jessie-8-1
 
