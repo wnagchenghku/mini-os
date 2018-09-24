@@ -1,8 +1,16 @@
 So in order to build c-stubdom, you need to enter stubdom directory and run ./configure --enable-c-stubdom. You should see in the output c-stubdom will be built.
 
-After we apt-get install xen-hypervisor, we do update-pxelinux.
+Install xen on testbed machine:
+After we install xen-4.8.4 on Debian 9, we do update-pxelinux.
 
 We edit /etc/default/update-pxelinux, add gnttab_max_frame=65536 in XEN_PARAMETER, and then update-pxelinux.
+
+$ ldconfig /usr/local/lib/
+$ update-rc.d xencommons defaults 19 18
+$ update-rc.d xendomains defaults 21 20
+$ update-rc.d xen-watchdog defaults 22 23
+After edit xc_dom_core.c
+$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/xen-4.8.4/tools/libxc
 
 Remember to set node permissions.
 1. 
