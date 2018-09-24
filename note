@@ -12,6 +12,15 @@ $ update-rc.d xen-watchdog defaults 22 23
 After edit xc_dom_core.c
 $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/xen-4.8.4/tools/libxc
 
+However, we still minios (frontend) carried with xen 4.6.5.
+To build xen 4.6.5, we downgrade gcc to gcc-5.
+https://unix.stackexchange.com/questions/284817/how-to-install-gcc-5-on-debian-jessie-8-1
+
+For building, some useful fixes:
+https://lists.xenproject.org/archives/html/xen-devel/2016-06/msg00155.html
+https://lists.xenproject.org/archives/html/xen-devel/2016-05/msg02970.html
+
+
 Remember to set node permissions.
 1. 
 sudo xenstore-write /local/domain/backend 0
