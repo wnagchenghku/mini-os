@@ -1,5 +1,9 @@
 So in order to build c-stubdom, you need to enter stubdom directory and run ./configure --enable-c-stubdom. You should see in the output c-stubdom will be built.
 
+After we apt-get install xen-hypervisor, we do update-pxelinux.
+
+We edit /etc/default/update-pxelinux, add gnttab_max_frame=65536 in XEN_PARAMETER, and then update-pxelinux.
+
 Remember to set node permissions.
 1. 
 sudo xenstore-write /local/domain/backend 0
