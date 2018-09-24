@@ -3,7 +3,7 @@ So in order to build c-stubdom, you need to enter stubdom directory and run ./co
 Install xen on testbed machine:
 After we install xen-4.8.4 on Debian 9, we do update-pxelinux.
 
-We edit /etc/default/update-pxelinux, add gnttab_max_frame=65536 in XEN_PARAMETER, and then update-pxelinux.
+We edit /etc/default/update-pxelinux, add gnttab_max_frame=65536 dom0_mem=1024M,max:1024M in XEN_PARAMETER, and then update-pxelinux.
 
 $ ldconfig /usr/local/lib/
 $ update-rc.d xencommons defaults 19 18
