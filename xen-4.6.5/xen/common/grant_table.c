@@ -981,7 +981,7 @@ __gnttab_map_grant_ref(
     }
 
     TRACE_1D(TRC_MEM_PAGE_GRANT_MAP, op->dom);
-    if ( (mapping = (el *)malloc(sizeof *mapping)) != NULL) {
+    if ( (mapping = xmalloc(el)) != NULL) {
         mapping->addr = op->host_addr;
         mapping->frame = frame;
         mapping->flags = op->flags;
@@ -3026,7 +3026,7 @@ do_grant_table_op(
     long rc;
     unsigned int opaque_in = cmd & GNTTABOP_ARG_MASK, opaque_out = 0;
 
-    int count;
+    int el_count;
     el *elt;
     
     if ( (int)count < 0 )
@@ -3040,7 +3040,7 @@ do_grant_table_op(
     {
     case GNTTABOP_map_grant_ref:
     {
-        DL_COUNT(head, elt, count);
+        DL_COUNT(head, elt, el_count);
         // if (count < TOTAL_PAGE)
         // {
             XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) map =
