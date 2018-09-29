@@ -16,6 +16,7 @@
 #include <xenbus.h>
 #include <events.h>
 #include <mini-os/lib.h>
+#include <mini-os/nnpfront.h>
 
 extern int main(int argc, char *argv[], char *envp[]);
 extern void __libc_init_array(void);
@@ -160,6 +161,8 @@ static void call_main(void *p)
         ((void((*)(void)))__CTOR_LIST__[i]) ();
     tzset();
 
+    init_nnpfront();
+
     exit(main(argc, argv, envp));
 }
 
@@ -171,6 +174,7 @@ void _exit(int ret)
         ((void((*)(void)))__DTOR_LIST__[i]) ();
     close_all_files();
     __libc_fini_array();
+    shutdown_nnpfront();
     printk("main returned %d\n", ret);
 #if defined(HAVE_LWIP) && defined(CONFIG_NETFRONT)
     stop_networking();

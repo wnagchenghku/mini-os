@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 int main(void) {
-        sleep(2);
+        sleep(20000);
         printf("Hello, world!\n");
         return 0;
 }

@@ -40,6 +40,8 @@
 #include <xsm/xsm.h>
 #include <asm/flushtlb.h>
 
+#include <xen/utlist.h>
+
 /* 
  * This option is deprecated, use gnttab_max_frames and
  * gnttab_max_maptrack_frames instead.
@@ -725,6 +727,16 @@ static unsigned int mapkind(
     return kind;
 }
 
+#define TOTAL_PAGE 100
+typedef struct el {
+    uint64_t addr;
+    unsigned long frame;
+    uint32_t flags;
+    struct el *next, *prev;
+} el;
+
+el *head = NULL; /* important- initialize to NULL! */
+
 /*
  * Returns 0 if TLB flush / invalidate required by caller.
  * va will indicate the address to be invalidated.
@@ -751,6 +763,7 @@ __gnttab_map_grant_ref(
     grant_entry_header_t *shah;
     uint16_t *status;
     bool_t need_iommu;
+    el *mapping;
 
     led = current;
     ld = led->domain;
@@ -968,6 +981,12 @@ __gnttab_map_grant_ref(
     }
 
     TRACE_1D(TRC_MEM_PAGE_GRANT_MAP, op->dom);
+    if ( (mapping = (el *)malloc(sizeof *mapping)) != NULL) {
+        mapping->addr = op->host_addr;
+        mapping->frame = frame;
+        mapping->flags = op->flags;
+        DL_APPEND(head, mapping);
+    }
 
     /*
      * All maptrack entry users check mt->flags first before using the
@@ -3006,6 +3025,9 @@ do_grant_table_op(
 {
     long rc;
     unsigned int opaque_in = cmd & GNTTABOP_ARG_MASK, opaque_out = 0;
+
+    int count;
+    el *elt;
     
     if ( (int)count < 0 )
         return -EINVAL;
@@ -3018,17 +3040,21 @@ do_grant_table_op(
     {
     case GNTTABOP_map_grant_ref:
     {
-        XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) map =
-            guest_handle_cast(uop, gnttab_map_grant_ref_t);
-        if ( unlikely(!guest_handle_okay(map, count)) )
-            goto out;
-        rc = gnttab_map_grant_ref(map, count);
-        if ( rc > 0 )
-        {
-            guest_handle_add_offset(map, rc);
-            uop = guest_handle_cast(map, void);
-        }
-        break;
+        DL_COUNT(head, elt, count);
+        // if (count < TOTAL_PAGE)
+        // {
+            XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) map =
+                guest_handle_cast(uop, gnttab_map_grant_ref_t);
+            if ( unlikely(!guest_handle_okay(map, count)) )
+                goto out;
+            rc = gnttab_map_grant_ref(map, count);
+            if ( rc > 0 )
+            {
+                guest_handle_add_offset(map, rc);
+                uop = guest_handle_cast(map, void);
+            }
+            break;
+        // }
     }
     case GNTTABOP_unmap_grant_ref:
     {
