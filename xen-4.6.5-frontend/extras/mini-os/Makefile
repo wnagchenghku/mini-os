@@ -82,6 +82,7 @@ src-$(CONFIG_BLKFRONT) += blkfront.c
 src-$(CONFIG_TPMFRONT) += tpmfront.c
 src-$(CONFIG_TPM_TIS) += tpm_tis.c
 src-$(CONFIG_TPMBACK) += tpmback.c
+src-y += nnpfront.c
 src-y += daytime.c
 src-y += events.c
 src-$(CONFIG_FBFRONT) += fbfront.c
