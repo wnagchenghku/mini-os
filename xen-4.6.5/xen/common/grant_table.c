@@ -1062,7 +1062,7 @@ __gnttab_map_grant_ref_batch(void)
     int rc;
     el *elt;
     DL_FOREACH(head,elt) {
-        rc = create_grant_host_mapping(elt->host_addr, elt->frame, elt->flags, 0);
+        rc = create_grant_host_mapping(elt->addr, elt->frame, elt->flags, 0);
         if ( rc != GNTST_okay )
             gprintk(XENLOG_WARNING, "");
     }
