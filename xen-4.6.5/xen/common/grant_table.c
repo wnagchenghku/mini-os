@@ -3027,7 +3027,7 @@ do_grant_table_op(
     unsigned int opaque_in = cmd & GNTTABOP_ARG_MASK, opaque_out = 0;
 
     int el_count;
-    el *elt;
+    el *elt, *tmp;
     
     if ( (int)count < 0 )
         return -EINVAL;
@@ -3174,6 +3174,14 @@ do_grant_table_op(
         }
         opaque_out = opaque_in;
         break;
+    }
+    case GNTTABOP_reset_model:
+    {
+        DL_FOREACH_SAFE(head,elt,tmp) {
+            DL_DELETE(head,elt);
+            xfree(elt);
+        }
+        rc = 0;
     }
     default:
         rc = -ENOSYS;
