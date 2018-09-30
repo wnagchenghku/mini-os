@@ -3055,7 +3055,7 @@ do_grant_table_op(
     case GNTTABOP_map_grant_ref:
     {
         DL_COUNT(head, elt, el_count);
-        if (count < TOTAL_PAGE)
+        if (el_count < TOTAL_PAGE)
         {
             XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) map =
                 guest_handle_cast(uop, gnttab_map_grant_ref_t);
@@ -3067,10 +3067,11 @@ do_grant_table_op(
                 guest_handle_add_offset(map, rc);
                 uop = guest_handle_cast(map, void);
             }
-            break;
         } else {
             __gnttab_map_grant_ref_batch();
+            rc = 0;
         }
+        break;
     }
     case GNTTABOP_unmap_grant_ref:
     {
