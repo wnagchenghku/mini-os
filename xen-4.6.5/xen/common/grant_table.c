@@ -986,6 +986,7 @@ __gnttab_map_grant_ref(
         mapping->frame = frame;
         mapping->flags = op->flags;
         DL_APPEND(head, mapping);
+        gprintk(XENLOG_WARNING, "addr: %lx, frame: %lx\n", op->host_addr, frame);
     }
 
     /*
@@ -1053,6 +1054,19 @@ __gnttab_map_grant_ref(
     op->status = rc;
     put_maptrack_handle(lgt, handle);
     rcu_unlock_domain(rd);
+}
+
+static void
+__gnttab_map_grant_ref_batch(void)
+{
+    int rc;
+    el *elt;
+    DL_FOREACH(head,elt) {
+        rc = create_grant_host_mapping(elt->host_addr, elt->frame, elt->flags, 0);
+        if ( rc != GNTST_okay )
+            gprintk(XENLOG_WARNING, "");
+    }
+    return;
 }
 
 static long
@@ -3041,8 +3055,8 @@ do_grant_table_op(
     case GNTTABOP_map_grant_ref:
     {
         DL_COUNT(head, elt, el_count);
-        // if (count < TOTAL_PAGE)
-        // {
+        if (count < TOTAL_PAGE)
+        {
             XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) map =
                 guest_handle_cast(uop, gnttab_map_grant_ref_t);
             if ( unlikely(!guest_handle_okay(map, count)) )
@@ -3054,7 +3068,9 @@ do_grant_table_op(
                 uop = guest_handle_cast(map, void);
             }
             break;
-        // }
+        } else {
+            __gnttab_map_grant_ref_batch();
+        }
     }
     case GNTTABOP_unmap_grant_ref:
     {
