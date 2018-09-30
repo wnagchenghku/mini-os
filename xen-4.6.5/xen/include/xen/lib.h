@@ -88,17 +88,17 @@ extern int printk_ratelimit(void);
 #define gprintk(lvl, fmt, args...) \
     printk(XENLOG_GUEST lvl "%pv " fmt, current, ## args)
 
-#ifdef NDEBUG
+// #ifdef NDEBUG
 
-static inline void
-__attribute__ ((__format__ (__printf__, 2, 3)))
-dprintk(const char *lvl, const char *fmt, ...) {}
+// static inline void
+// __attribute__ ((__format__ (__printf__, 2, 3)))
+// dprintk(const char *lvl, const char *fmt, ...) {}
 
-static inline void
-__attribute__ ((__format__ (__printf__, 2, 3)))
-gdprintk(const char *lvl, const char *fmt, ...) {}
+// static inline void
+// __attribute__ ((__format__ (__printf__, 2, 3)))
+// gdprintk(const char *lvl, const char *fmt, ...) {}
 
-#else
+// #else
 
 #define dprintk(lvl, fmt, args...) \
     printk(lvl "%s:%d: " fmt, __FILE__, __LINE__, ## args)
@@ -106,7 +106,7 @@ gdprintk(const char *lvl, const char *fmt, ...) {}
     printk(XENLOG_GUEST lvl "%s:%d:%pv " fmt, \
            __FILE__, __LINE__, current, ## args)
 
-#endif
+// #endif
 
 /* vsprintf.c */
 #define sprintf __xen_has_no_sprintf__

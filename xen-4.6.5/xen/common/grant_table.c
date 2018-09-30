@@ -981,12 +981,15 @@ __gnttab_map_grant_ref(
     }
 
     TRACE_1D(TRC_MEM_PAGE_GRANT_MAP, op->dom);
-    if ( (mapping = xmalloc(el)) != NULL) {
-        mapping->addr = op->host_addr;
-        mapping->frame = frame;
-        mapping->flags = op->flags;
-        DL_APPEND(head, mapping);
-        gprintk(XENLOG_WARNING, "addr: %lx, frame: %lx\n", op->host_addr, frame);
+    if (op->host_addr >= 536891392 && op->host_addr <= 537296896)
+    {
+        if ( (mapping = xmalloc(el)) != NULL) {
+            mapping->addr = op->host_addr;
+            mapping->frame = frame;
+            mapping->flags = op->flags;
+            DL_APPEND(head, mapping);
+            gprintk(XENLOG_WARNING, "addr: %lx, frame: %lx\n", op->host_addr, frame);
+        }
     }
 
     /*
@@ -1056,16 +1059,112 @@ __gnttab_map_grant_ref(
     rcu_unlock_domain(rd);
 }
 
+int addrcmp(el *a, el *b) {
+    return a->addr == b->addr ? 0 : 1;
+}
+
 static void
-__gnttab_map_grant_ref_batch(void)
+__gnttab_map_grant_ref_batch(
+    struct gnttab_map_grant_ref *op)
 {
-    int rc;
-    el *elt;
-    DL_FOREACH(head,elt) {
-        rc = create_grant_host_mapping(elt->addr, elt->frame, elt->flags, 0);
-        if ( rc != GNTST_okay )
-            gprintk(XENLOG_WARNING, "");
+    struct domain *ld, *rd, *owner = NULL;
+    struct grant_table *lgt, *rgt;
+    struct vcpu   *led;
+    int            handle;
+    unsigned long  frame = 0, nr_gets = 0;
+    struct page_info *pg = NULL;
+    int            rc = GNTST_okay;
+    u32            old_pin;
+    u32            act_pin;
+    unsigned int   cache_flags;
+    struct active_grant_entry *act = NULL;
+    struct grant_mapping *mt;
+    grant_entry_header_t *shah;
+    uint16_t *status;
+    bool_t need_iommu;
+    el *elt, etmp;
+
+    led = current;
+    ld = led->domain;
+
+    if ( unlikely((op->flags & (GNTMAP_device_map|GNTMAP_host_map)) == 0) )
+    {
+        gdprintk(XENLOG_INFO, "Bad flags in grant map op (%x).\n", op->flags);
+        op->status = GNTST_bad_gntref;
+        return;
     }
+
+    if ( unlikely(paging_mode_external(ld) &&
+                  (op->flags & (GNTMAP_device_map|GNTMAP_application_map|
+                            GNTMAP_contains_pte))) )
+    {
+        gdprintk(XENLOG_INFO, "No device mapping in HVM domain.\n");
+        op->status = GNTST_general_error;
+        return;
+    }
+
+    if ( unlikely((rd = rcu_lock_domain_by_id(op->dom)) == NULL) )
+    {
+        gdprintk(XENLOG_INFO, "Could not find domain %d\n", op->dom);
+        op->status = GNTST_bad_domain;
+        return;
+    }
+
+    rc = xsm_grant_mapref(XSM_HOOK, ld, rd, op->flags);
+    if ( rc )
+    {
+        rcu_unlock_domain(rd);
+        op->status = GNTST_permission_denied;
+        return;
+    }
+
+    lgt = ld->grant_table;
+    if ( unlikely((handle = get_maptrack_handle(lgt)) == -1) )
+    {
+        rcu_unlock_domain(rd);
+        gdprintk(XENLOG_INFO, "Failed to obtain maptrack handle.\n");
+        op->status = GNTST_no_device_space;
+        return;
+    }
+
+    etmp.addr = op->host_addr;
+    DL_SEARCH(head,elt,&etmp,addrcmp);
+    if (elt) frame = elt->frame;
+
+    if ( gnttab_host_mapping_get_page_type(op, ld, rd) )
+    {
+        if ( (owner == dom_cow) ||
+             !get_page_type(pg, PGT_writable_page) )
+            goto could_not_pin;
+    }
+
+    nr_gets++;
+    if ( op->flags & GNTMAP_host_map )
+    {
+        rc = create_grant_host_mapping(op->host_addr, frame, op->flags, 0);
+        if ( rc != GNTST_okay )
+            goto undo_out;
+
+        if ( op->flags & GNTMAP_device_map )
+        {
+            nr_gets++;
+            (void)get_page(pg, rd);
+            if ( !(op->flags & GNTMAP_readonly) )
+                get_page_type(pg, PGT_writable_page);
+        }
+    }
+
+    mt = &maptrack_entry(lgt, handle);
+    mt->domid = op->dom;
+    mt->ref   = op->ref;
+    wmb();
+    write_atomic(&mt->flags, op->flags);
+
+    op->dev_bus_addr = (u64)frame << PAGE_SHIFT;
+    op->handle       = handle;
+    op->status       = GNTST_okay;
+
+    rcu_unlock_domain(rd);
     return;
 }
 
@@ -1075,6 +1174,8 @@ gnttab_map_grant_ref(
 {
     int i;
     struct gnttab_map_grant_ref op;
+    int el_count;
+    el *elt;
 
     for ( i = 0; i < count; i++ )
     {
@@ -1082,7 +1183,14 @@ gnttab_map_grant_ref(
             return i;
         if ( unlikely(__copy_from_guest_offset(&op, uop, i, 1)) )
             return -EFAULT;
-        __gnttab_map_grant_ref(&op);
+
+        DL_COUNT(head, elt, el_count);
+        
+        if (el_count == TOTAL_PAGE && op.host_addr >= 536891392 && op.host_addr <= 537296896) {
+            __gnttab_map_grant_ref_batch(&op);
+        } else {
+            __gnttab_map_grant_ref(&op);
+        }
         if ( unlikely(__copy_to_guest_offset(uop, i, &op, 1)) )
             return -EFAULT;
     }
@@ -3039,9 +3147,6 @@ do_grant_table_op(
 {
     long rc;
     unsigned int opaque_in = cmd & GNTTABOP_ARG_MASK, opaque_out = 0;
-
-    int el_count;
-    el *elt, *tmp;
     
     if ( (int)count < 0 )
         return -EINVAL;
@@ -3054,22 +3159,15 @@ do_grant_table_op(
     {
     case GNTTABOP_map_grant_ref:
     {
-        DL_COUNT(head, elt, el_count);
-        if (el_count < TOTAL_PAGE)
+        XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) map =
+            guest_handle_cast(uop, gnttab_map_grant_ref_t);
+        if ( unlikely(!guest_handle_okay(map, count)) )
+            goto out;
+        rc = gnttab_map_grant_ref(map, count);
+        if ( rc > 0 )
         {
-            XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) map =
-                guest_handle_cast(uop, gnttab_map_grant_ref_t);
-            if ( unlikely(!guest_handle_okay(map, count)) )
-                goto out;
-            rc = gnttab_map_grant_ref(map, count);
-            if ( rc > 0 )
-            {
-                guest_handle_add_offset(map, rc);
-                uop = guest_handle_cast(map, void);
-            }
-        } else {
-            __gnttab_map_grant_ref_batch();
-            rc = 0;
+            guest_handle_add_offset(map, rc);
+            uop = guest_handle_cast(map, void);
         }
         break;
     }
