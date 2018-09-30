@@ -1068,20 +1068,15 @@ __gnttab_map_grant_ref_batch(
     struct gnttab_map_grant_ref *op)
 {
     struct domain *ld, *rd, *owner = NULL;
-    struct grant_table *lgt, *rgt;
+    struct grant_table *lgt;
     struct vcpu   *led;
     int            handle;
     unsigned long  frame = 0, nr_gets = 0;
     struct page_info *pg = NULL;
     int            rc = GNTST_okay;
-    u32            old_pin;
-    u32            act_pin;
     unsigned int   cache_flags;
     struct active_grant_entry *act = NULL;
     struct grant_mapping *mt;
-    grant_entry_header_t *shah;
-    uint16_t *status;
-    bool_t need_iommu;
     el *elt, etmp;
 
     led = current;
@@ -1135,7 +1130,9 @@ __gnttab_map_grant_ref_batch(
     {
         if ( (owner == dom_cow) ||
              !get_page_type(pg, PGT_writable_page) )
-            goto could_not_pin;
+        {
+
+        }
     }
 
     nr_gets++;
@@ -1143,7 +1140,9 @@ __gnttab_map_grant_ref_batch(
     {
         rc = create_grant_host_mapping(op->host_addr, frame, op->flags, 0);
         if ( rc != GNTST_okay )
-            goto undo_out;
+        {
+
+        }
 
         if ( op->flags & GNTMAP_device_map )
         {
@@ -3147,6 +3146,7 @@ do_grant_table_op(
 {
     long rc;
     unsigned int opaque_in = cmd & GNTTABOP_ARG_MASK, opaque_out = 0;
+    el *elt, *tmp;
     
     if ( (int)count < 0 )
         return -EINVAL;
