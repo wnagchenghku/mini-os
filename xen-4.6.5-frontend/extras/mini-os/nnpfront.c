@@ -37,7 +37,7 @@ static inline size_t divide_round_up(size_t dividend, size_t divisor) {
 
 domid_t self_id;
 #define TOTAL_PAGE 100
-float *page;
+int *page;
 void init_nnpfront(void)
 {
    char path[512];

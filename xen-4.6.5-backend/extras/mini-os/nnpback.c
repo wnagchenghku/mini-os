@@ -101,7 +101,7 @@ static void *page = NULL;
 
 #define TOTAL_PAGE 100
 
-float model_param[TOTAL_PAGE][1024];
+int model_param[TOTAL_PAGE][1024];
 
 void handle_backend_event(char* evstr) {
    domid_t domid;
@@ -132,7 +132,7 @@ void handle_backend_event(char* evstr) {
             page = (void*)alloc_pages(log2(round_up_power_of_two(TOTAL_PAGE)));
             for (i = 0; i < TOTAL_PAGE; ++i) {
                for (j = 0; j < 1024; ++j) {
-                  *((float*)page + k++) = model_param[i][j];
+                  *((int*)page + k++) = model_param[i][j];
                }
             }
       }
@@ -223,7 +223,7 @@ void init_nnpback(void)
 
    for (i = 0; i < TOTAL_PAGE; ++i) {
       for (j = 0; j < 1024; ++j) {
-         model_param[i][j] = 0.1 + j + i;
+         model_param[i][j] = 13 + j;
       }
    }
 
