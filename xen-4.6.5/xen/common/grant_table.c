@@ -1074,8 +1074,6 @@ __gnttab_map_grant_ref_batch(
     unsigned long  frame = 0, nr_gets = 0;
     struct page_info *pg = NULL;
     int            rc = GNTST_okay;
-    unsigned int   cache_flags;
-    struct active_grant_entry *act = NULL;
     struct grant_mapping *mt;
     el *elt, etmp;
 
