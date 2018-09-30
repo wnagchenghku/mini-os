@@ -16,7 +16,6 @@
 #include <xenbus.h>
 #include <events.h>
 #include <mini-os/lib.h>
-#include <mini-os/nnpback.h>
 
 extern int main(int argc, char *argv[], char *envp[]);
 extern void __libc_init_array(void);
@@ -160,8 +159,6 @@ static void call_main(void *p)
     for (i = 0; __CTOR_LIST__[i] != 0; i++)
         ((void((*)(void)))__CTOR_LIST__[i]) ();
     tzset();
-
-    init_nnpback();
 
     exit(main(argc, argv, envp));
 }

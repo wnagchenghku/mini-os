@@ -312,7 +312,6 @@ typedef uint16_t grant_status_t;
 #define GNTTABOP_get_version          10
 #define GNTTABOP_swap_grant_ref	      11
 #define GNTTABOP_cache_flush	      12
-#define GNTTABOP_reset_model          13
 #endif /* __XEN_INTERFACE_VERSION__ */
 /* ` } */
 
