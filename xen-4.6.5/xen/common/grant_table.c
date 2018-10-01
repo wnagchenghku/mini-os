@@ -981,15 +981,12 @@ __gnttab_map_grant_ref(
     }
 
     TRACE_1D(TRC_MEM_PAGE_GRANT_MAP, op->dom);
-    if (op->model != none && op->host_addr >= 536891392 && op->host_addr <= 537296896)
-    {
-        if ( (mapping = xmalloc(el)) != NULL) {
-            mapping->addr = op->host_addr;
-            mapping->frame = frame;
-            mapping->flags = op->flags;
-            DL_APPEND(head, mapping);
-            gprintk(XENLOG_WARNING, "addr: %lx, frame: %lx\n", op->host_addr, frame);
-        }
+    if ( (mapping = xmalloc(el)) != NULL) {
+        mapping->addr = op->host_addr;
+        mapping->frame = frame;
+        mapping->flags = op->flags;
+        DL_APPEND(head, mapping);
+        gprintk(XENLOG_WARNING, "addr: %lx, frame: %lx\n", op->host_addr, frame);
     }
 
     /*
@@ -1380,6 +1377,7 @@ gnttab_map_grant_ref(
     struct gnttab_map_grant_ref op;
     int el_count;
     el *elt;
+    DL_COUNT(head, elt, el_count);
 
     for ( i = 0; i < count; i++ )
     {
@@ -1387,14 +1385,7 @@ gnttab_map_grant_ref(
             return i;
         if ( unlikely(__copy_from_guest_offset(&op, uop, i, 1)) )
             return -EFAULT;
-
-        DL_COUNT(head, elt, el_count);
-        
-        if (el_count == TOTAL_PAGE && op.host_addr >= 536891392 && op.host_addr <= 537296896) {
-            __gnttab_map_grant_ref_batch(&op);
-        } else {
-            __gnttab_map_grant_ref(&op);
-        }
+         __gnttab_map_grant_ref(&op);
         if ( unlikely(__copy_to_guest_offset(uop, i, &op, 1)) )
             return -EFAULT;
     }

@@ -28,8 +28,7 @@ gntmap_map_grant_refs(struct gntmap *map,
                       int writable);
 
 void*
-gntmap_map_grant_refs_batch(unsigned long addr,
-                            struct gntmap *map, 
+gntmap_map_grant_refs_batch(struct gntmap *map, 
                             uint32_t count,
                             uint32_t *domids,
                             int domids_stride,

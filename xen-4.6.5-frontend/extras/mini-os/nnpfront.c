@@ -102,12 +102,7 @@ void init_nnpfront(void)
       value_it += bytesread;
    }
 
-   if ((page = (void*)gntmap_map_grant_refs(&gtpmdev.map, TOTAL_PAGE, &bedomid, 0, grant_ref, PROT_READ)) == NULL) {
-      NNPFRONT_ERR("Failed to map grant reference %u\n", (unsigned int) bedomid);
-   }
-   gntmap_munmap(&gtpmdev.map, (unsigned long)page, TOTAL_PAGE);
-
-   if ((page = gntmap_map_grant_refs_batch((unsigned long)page, &gtpmdev.map, TOTAL_PAGE, &bedomid, 0, grant_ref, PROT_READ, alexnet)) == NULL) {
+   if ((page = gntmap_map_grant_refs_batch(&gtpmdev.map, TOTAL_PAGE, &bedomid, 0, grant_ref, PROT_READ, alexnet)) == NULL) {
       NNPFRONT_ERR("Failed to map grant reference %u\n", (unsigned int) bedomid);
    }
 

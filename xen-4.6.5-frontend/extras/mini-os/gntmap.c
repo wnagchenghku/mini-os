@@ -257,8 +257,7 @@ gntmap_map_grant_refs(struct gntmap *map,
 }
 
 void*
-gntmap_map_grant_refs_batch(unsigned long addr,
-                            struct gntmap *map, 
+gntmap_map_grant_refs_batch(struct gntmap *map, 
                             uint32_t count,
                             uint32_t *domids,
                             int domids_stride,
@@ -277,6 +276,27 @@ gntmap_map_grant_refs_batch(unsigned long addr,
            refs, refs == NULL ? 0 : refs[0], writable);
 
     (void) gntmap_set_max_grants(map, DEFAULT_MAX_GRANTS);
+
+    addr = allocate_ondemand((unsigned long) count, 1);
+    if (addr == 0)
+        return NULL;
+
+    for (i = 0; i < count; i++) {
+        ent = gntmap_find_free_entry(map);
+        if (ent == NULL ||
+            _gntmap_map_grant_ref_batch(ent,
+                                        addr + PAGE_SIZE * i,
+                                        domids[i * domids_stride],
+                                        refs[i],
+                                        writable,
+                                        model) != 0) {
+
+            (void) gntmap_munmap(map, addr, i);
+            return NULL;
+        }
+    }
+
+    gntmap_munmap(map, addr, count);
 
     for (i = 0; i < count; i++) {
         ent = gntmap_find_free_entry(map);
