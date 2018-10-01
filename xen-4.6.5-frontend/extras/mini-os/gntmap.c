@@ -110,8 +110,38 @@ _gntmap_map_grant_ref(struct gntmap_entry *entry,
                       unsigned long host_addr,
                       uint32_t domid,
                       uint32_t ref,
-                      int writable,
-                      int model)
+                      int writable)
+{
+    struct gnttab_map_grant_ref op;
+    int rc;
+
+    op.ref = (grant_ref_t) ref;
+    op.dom = (domid_t) domid;
+    op.host_addr = (uint64_t) host_addr;
+    op.flags = GNTMAP_host_map;
+    if (!writable)
+        op.flags |= GNTMAP_readonly;
+
+    rc = HYPERVISOR_grant_table_op(GNTTABOP_map_grant_ref, &op, 1);
+    if (rc != 0 || op.status != GNTST_okay) {
+        printk("GNTTABOP_map_grant_ref failed: "
+               "returned %d, status %" PRId16 "\n",
+               rc, op.status);
+        return rc != 0 ? rc : op.status;
+    }
+
+    entry->host_addr = host_addr;
+    entry->handle = op.handle;
+    return 0;
+}
+
+static int
+_gntmap_map_grant_ref_batch(struct gntmap_entry *entry, 
+                            unsigned long host_addr,
+                            uint32_t domid,
+                            uint32_t ref,
+                            int writable,
+                            int model)
 {
     struct gnttab_map_grant_ref op;
     int rc;
@@ -189,8 +219,7 @@ gntmap_map_grant_refs(struct gntmap *map,
                       uint32_t *domids,
                       int domids_stride,
                       uint32_t *refs,
-                      int writable,
-                      int model)
+                      int writable)
 {
     unsigned long addr;
     struct gntmap_entry *ent;
@@ -216,8 +245,51 @@ gntmap_map_grant_refs(struct gntmap *map,
                                   addr + PAGE_SIZE * i,
                                   domids[i * domids_stride],
                                   refs[i],
-                                  writable,
-                                  model) != 0) {
+                                  writable) != 0) {
+
+            (void) gntmap_munmap(map, addr, i);
+            return NULL;
+        }
+    }
+
+    return (void*) addr;
+}
+
+void*
+gntmap_map_grant_refs_batch(struct gntmap *map, 
+                            uint32_t count,
+                            uint32_t *domids,
+                            int domids_stride,
+                            uint32_t *refs,
+                            int writable,
+                            int model)
+{
+    unsigned long addr;
+    struct gntmap_entry *ent;
+    int i;
+
+    DEBUG("(map=%p, count=%" PRIu32 ", "
+           "domids=%p [%" PRIu32 "...], domids_stride=%d, "
+           "refs=%p [%" PRIu32 "...], writable=%d)",
+           map, count,
+           domids, domids == NULL ? 0 : domids[0], domids_stride,
+           refs, refs == NULL ? 0 : refs[0], writable);
+
+    (void) gntmap_set_max_grants(map, DEFAULT_MAX_GRANTS);
+
+    addr = allocate_ondemand((unsigned long) count, 1);
+    if (addr == 0)
+        return NULL;
+
+    for (i = 0; i < count; i++) {
+        ent = gntmap_find_free_entry(map);
+        if (ent == NULL ||
+            _gntmap_map_grant_ref_batch(ent,
+                                        addr + PAGE_SIZE * i,
+                                        domids[i * domids_stride],
+                                        refs[i],
+                                        writable,
+                                        model) != 0) {
 
             (void) gntmap_munmap(map, addr, i);
             return NULL;

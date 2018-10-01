@@ -26,6 +26,15 @@ gntmap_map_grant_refs(struct gntmap *map,
                       uint32_t *refs,
                       int writable);
 
+void*
+gntmap_map_grant_refs_batch(struct gntmap *map, 
+                            uint32_t count,
+                            uint32_t *domids,
+                            int domids_stride,
+                            uint32_t *refs,
+                            int writable,
+                            int model);
+
 void
 gntmap_init(struct gntmap *map);
 
