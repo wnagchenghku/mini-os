@@ -20,6 +20,8 @@
 #define NNPFRONT_ERR(fmt,...) printk("Nnpfront:Error " fmt, ##__VA_ARGS__)
 #define NNPFRONT_LOG(fmt,...) printk("Nnpfront:Info " fmt, ##__VA_ARGS__)
 
+enum ml_models {vgg11, alexnet};
+
 struct nnpfront_dev {
    struct gntmap map;
 };

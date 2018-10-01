@@ -41,7 +41,7 @@
 #include <asm/flushtlb.h>
 
 #include <xen/utlist.h>
-
+enum ml_models {vgg11, alexnet};
 /* 
  * This option is deprecated, use gnttab_max_frames and
  * gnttab_max_maptrack_frames instead.

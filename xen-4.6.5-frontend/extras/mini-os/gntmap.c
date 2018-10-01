@@ -111,7 +111,7 @@ _gntmap_map_grant_ref(struct gntmap_entry *entry,
                       uint32_t domid,
                       uint32_t ref,
                       int writable,
-                      enum ml_models model)
+                      int model)
 {
     struct gnttab_map_grant_ref op;
     int rc;
@@ -190,7 +190,7 @@ gntmap_map_grant_refs(struct gntmap *map,
                       int domids_stride,
                       uint32_t *refs,
                       int writable,
-                      enum ml_models model)
+                      int model)
 {
     unsigned long addr;
     struct gntmap_entry *ent;
