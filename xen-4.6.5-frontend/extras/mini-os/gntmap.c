@@ -265,6 +265,7 @@ gntmap_map_grant_refs_batch(struct gntmap *map,
                             int writable,
                             int model)
 {
+    unsigned long addr;
     struct gntmap_entry *ent;
     int i;
 
