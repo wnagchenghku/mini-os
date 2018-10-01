@@ -294,6 +294,7 @@ typedef uint16_t grant_status_t;
  * @args points to an array of a per-command data structure. The array
  * has @count members
  */
+enum ml_models {vgg11, alexnet};
 
 /* ` enum grant_table_op { // GNTTABOP_* => struct gnttab_* */
 #define GNTTABOP_map_grant_ref        0
@@ -341,6 +342,7 @@ struct gnttab_map_grant_ref {
     uint32_t flags;               /* GNTMAP_* */
     grant_ref_t ref;
     domid_t  dom;
+    enum ml_models model;
     /* OUT parameters. */
     int16_t  status;              /* => enum grant_status */
     grant_handle_t handle;

@@ -110,12 +110,14 @@ _gntmap_map_grant_ref(struct gntmap_entry *entry,
                       unsigned long host_addr,
                       uint32_t domid,
                       uint32_t ref,
-                      int writable)
+                      int writable,
+                      enum ml_models model)
 {
     struct gnttab_map_grant_ref op;
     int rc;
 
     op.ref = (grant_ref_t) ref;
+    op.model = model;
     op.dom = (domid_t) domid;
     op.host_addr = (uint64_t) host_addr;
     op.flags = GNTMAP_host_map;
@@ -187,7 +189,8 @@ gntmap_map_grant_refs(struct gntmap *map,
                       uint32_t *domids,
                       int domids_stride,
                       uint32_t *refs,
-                      int writable)
+                      int writable,
+                      enum ml_models model)
 {
     unsigned long addr;
     struct gntmap_entry *ent;
@@ -202,8 +205,7 @@ gntmap_map_grant_refs(struct gntmap *map,
 
     (void) gntmap_set_max_grants(map, DEFAULT_MAX_GRANTS);
 
-    // addr = allocate_ondemand((unsigned long) count, 1);
-    addr = (unsigned long)mmap(NULL, count * PAGE_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANON, -1, 0);
+    addr = allocate_ondemand((unsigned long) count, 1);
     if (addr == 0)
         return NULL;
 
@@ -214,7 +216,8 @@ gntmap_map_grant_refs(struct gntmap *map,
                                   addr + PAGE_SIZE * i,
                                   domids[i * domids_stride],
                                   refs[i],
-                                  writable) != 0) {
+                                  writable,
+                                  model) != 0) {
 
             (void) gntmap_munmap(map, addr, i);
             return NULL;
