@@ -20,8 +20,6 @@
 #define NNPFRONT_ERR(fmt,...) printk("Nnpfront:Error " fmt, ##__VA_ARGS__)
 #define NNPFRONT_LOG(fmt,...) printk("Nnpfront:Info " fmt, ##__VA_ARGS__)
 
-enum ml_models {vgg11, alexnet};
-
 struct nnpfront_dev {
    struct gntmap map;
 };
@@ -39,7 +37,7 @@ static inline size_t divide_round_up(size_t dividend, size_t divisor) {
 
 domid_t self_id;
 #define TOTAL_PAGE 100
-int *page;
+void *page;
 void init_nnpfront(void)
 {
    char path[512];
@@ -104,7 +102,12 @@ void init_nnpfront(void)
       value_it += bytesread;
    }
 
-   if ((page = gntmap_map_grant_refs_batch(&gtpmdev.map, TOTAL_PAGE, &bedomid, 0, grant_ref, PROT_READ, alexnet)) == NULL) {
+   if ((page = (void*)gntmap_map_grant_refs(&gtpmdev.map, TOTAL_PAGE, &bedomid, 0, grant_ref, PROT_READ)) == NULL) {
+      NNPFRONT_ERR("Failed to map grant reference %u\n", (unsigned int) bedomid);
+   }
+   gntmap_munmap(&gtpmdev.map, (unsigned long)page, TOTAL_PAGE);
+
+   if ((page = gntmap_map_grant_refs_batch((unsigned long)page, &gtpmdev.map, TOTAL_PAGE, &bedomid, 0, grant_ref, PROT_READ, alexnet)) == NULL) {
       NNPFRONT_ERR("Failed to map grant reference %u\n", (unsigned int) bedomid);
    }
 
@@ -116,7 +119,7 @@ void shutdown_nnpfront(void)
 {
    char *err;
    char path[512];
-   gntmap_munmap(&gtpmdev.map, (unsigned long)(void*)page, TOTAL_PAGE);
+   gntmap_munmap(&gtpmdev.map, (unsigned long)page, TOTAL_PAGE);
 
    snprintf(path, 512, "/local/domain/frontend/%u", self_id);
    if((err = xenbus_write(XBT_NIL, path, "close"))) {

@@ -116,6 +116,7 @@ _gntmap_map_grant_ref(struct gntmap_entry *entry,
     int rc;
 
     op.ref = (grant_ref_t) ref;
+    op.model = none;
     op.dom = (domid_t) domid;
     op.host_addr = (uint64_t) host_addr;
     op.flags = GNTMAP_host_map;
@@ -256,7 +257,8 @@ gntmap_map_grant_refs(struct gntmap *map,
 }
 
 void*
-gntmap_map_grant_refs_batch(struct gntmap *map, 
+gntmap_map_grant_refs_batch(unsigned long addr,
+                            struct gntmap *map, 
                             uint32_t count,
                             uint32_t *domids,
                             int domids_stride,
@@ -264,7 +266,6 @@ gntmap_map_grant_refs_batch(struct gntmap *map,
                             int writable,
                             int model)
 {
-    unsigned long addr;
     struct gntmap_entry *ent;
     int i;
 
@@ -276,10 +277,6 @@ gntmap_map_grant_refs_batch(struct gntmap *map,
            refs, refs == NULL ? 0 : refs[0], writable);
 
     (void) gntmap_set_max_grants(map, DEFAULT_MAX_GRANTS);
-
-    addr = allocate_ondemand((unsigned long) count, 1);
-    if (addr == 0)
-        return NULL;
 
     for (i = 0; i < count; i++) {
         ent = gntmap_find_free_entry(map);

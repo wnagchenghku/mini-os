@@ -41,7 +41,7 @@
 #include <asm/flushtlb.h>
 
 #include <xen/utlist.h>
-enum ml_models {vgg11, alexnet};
+enum ml_models {none, vgg11, alexnet};
 /* 
  * This option is deprecated, use gnttab_max_frames and
  * gnttab_max_maptrack_frames instead.
@@ -981,7 +981,7 @@ __gnttab_map_grant_ref(
     }
 
     TRACE_1D(TRC_MEM_PAGE_GRANT_MAP, op->dom);
-    if (op->host_addr >= 536891392 && op->host_addr <= 537296896)
+    if (op->model != none && op->host_addr >= 536891392 && op->host_addr <= 537296896)
     {
         if ( (mapping = xmalloc(el)) != NULL) {
             mapping->addr = op->host_addr;
