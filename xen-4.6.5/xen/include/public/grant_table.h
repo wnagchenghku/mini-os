@@ -344,7 +344,6 @@ struct gnttab_map_grant_ref {
     uint32_t flags;               /* GNTMAP_* */
     grant_ref_t ref;
     domid_t  dom;
-    int model;
     /* OUT parameters. */
     int16_t  status;              /* => enum grant_status */
     grant_handle_t handle;

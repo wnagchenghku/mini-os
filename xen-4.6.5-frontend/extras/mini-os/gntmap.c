@@ -116,7 +116,6 @@ _gntmap_map_grant_ref(struct gntmap_entry *entry,
     int rc;
 
     op.ref = (grant_ref_t) ref;
-    op.model = none;
     op.dom = (domid_t) domid;
     op.host_addr = (uint64_t) host_addr;
     op.flags = GNTMAP_host_map;
@@ -141,14 +140,12 @@ _gntmap_map_grant_ref_batch(struct gntmap_entry *entry,
                             unsigned long host_addr,
                             uint32_t domid,
                             uint32_t ref,
-                            int writable,
-                            int model)
+                            int writable)
 {
     struct gnttab_map_grant_ref op;
     int rc;
 
     op.ref = (grant_ref_t) ref;
-    op.model = model;
     op.dom = (domid_t) domid;
     op.host_addr = (uint64_t) host_addr;
     op.flags = GNTMAP_host_map;
@@ -289,8 +286,7 @@ gntmap_map_grant_refs_batch(struct gntmap *map,
                                         addr + PAGE_SIZE * i,
                                         domids[i * domids_stride],
                                         refs[i],
-                                        writable,
-                                        model) != 0) {
+                                        writable) != 0) {
 
             (void) gntmap_munmap(map, addr, i);
             return NULL;
@@ -306,8 +302,7 @@ gntmap_map_grant_refs_batch(struct gntmap *map,
                                         addr + PAGE_SIZE * i,
                                         domids[i * domids_stride],
                                         refs[i],
-                                        writable,
-                                        model) != 0) {
+                                        writable) != 0) {
 
             (void) gntmap_munmap(map, addr, i);
             return NULL;
