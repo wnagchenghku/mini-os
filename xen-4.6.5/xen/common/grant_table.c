@@ -3773,15 +3773,31 @@ do_grant_table_op(
     }
     case GNTTABOP_unmap_alexnet:
     {
-        XEN_GUEST_HANDLE_PARAM(gnttab_unmap_grant_ref_t) unmap =
-            guest_handle_cast(uop, gnttab_unmap_grant_ref_t);
-        if ( unlikely(!guest_handle_okay(unmap, count)) )
-            goto out;
-        rc = gnttab_unmap_grant_ref_alexnet(unmap, count);
-        if ( rc > 0 )
+        DL_COUNT(alexnet_head, elt, el_count);
+
+        if (el_count != ALEXNET_SIZE)
         {
-            guest_handle_add_offset(unmap, rc);
-            uop = guest_handle_cast(unmap, void);
+            XEN_GUEST_HANDLE_PARAM(gnttab_unmap_grant_ref_t) unmap =
+                guest_handle_cast(uop, gnttab_unmap_grant_ref_t);
+            if ( unlikely(!guest_handle_okay(unmap, count)) )
+                goto out;
+            rc = gnttab_unmap_grant_ref(unmap, count);
+            if ( rc > 0 )
+            {
+                guest_handle_add_offset(unmap, rc);
+                uop = guest_handle_cast(unmap, void);
+            }
+        } else {
+            XEN_GUEST_HANDLE_PARAM(gnttab_unmap_grant_ref_t) unmap =
+                guest_handle_cast(uop, gnttab_unmap_grant_ref_t);
+            if ( unlikely(!guest_handle_okay(unmap, count)) )
+                goto out;
+            rc = gnttab_unmap_grant_ref_alexnet(unmap, count);
+            if ( rc > 0 )
+            {
+                guest_handle_add_offset(unmap, rc);
+                uop = guest_handle_cast(unmap, void);
+            }
         }
         break;
     }
