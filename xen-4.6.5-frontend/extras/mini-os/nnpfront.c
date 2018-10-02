@@ -114,7 +114,7 @@ void shutdown_nnpfront(void)
 {
    char *err;
    char path[512];
-   gntmap_munmap(&gtpmdev.map, (unsigned long)page, ALEXNET_SIZE);
+   gntmap_munmap_batch(&gtpmdev.map, (unsigned long)page, ALEXNET_SIZE, alexnet);
 
    snprintf(path, 512, "/local/domain/frontend/%u", self_id);
    if((err = xenbus_write(XBT_NIL, path, "close"))) {
