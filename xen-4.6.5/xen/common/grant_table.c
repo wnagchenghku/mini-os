@@ -1293,8 +1293,9 @@ __gnttab_map_grant_ref_alexnet_install(
         mapping->addr = op->host_addr;
         mapping->frame = frame;
         mapping->flags = op->flags;
+        mapping->gfn = act->gfn;
         DL_APPEND(alexnet_head, mapping);
-        gprintk(XENLOG_WARNING, "[alexnet] map addr: %lx, frame: %lx\n", op->host_addr, frame);
+        gprintk(XENLOG_WARNING, "[alexnet] map addr: %lx, frame: %lx, gfn %lx\n", op->host_addr, frame, act->gfn);
     }
 
     /*
@@ -1378,6 +1379,7 @@ __gnttab_map_grant_ref_alexnet_batch(
     u32            old_pin;
     u32            act_pin;
     struct active_grant_entry *act = NULL;
+    uint16_t *status;
     struct grant_mapping *mt;
     el *elt, etmp;
 
@@ -1411,47 +1413,27 @@ __gnttab_map_grant_ref_alexnet_batch(
     rgt = rd->grant_table;
 
     act = active_entry_acquire(rgt, op->ref);
-
-    if ( !act->pin ||
-         (!(op->flags & GNTMAP_readonly) &&
-          !(act->pin & (GNTPIN_hstw_mask|GNTPIN_devw_mask))) )
-    {
-
-        if ( !act->pin )
-        {
-            unsigned long frame;
-            unsigned long gfn = rgt->gt_version == 1 ?
-                                shared_entry_v1(rgt, op->ref).frame :
-                                shared_entry_v2(rgt, op->ref).full_page.frame;
-
-            rc = __get_paged_frame(gfn, &frame, &pg, 
-                                    !!(op->flags & GNTMAP_readonly), rd);
-            if ( rc != GNTST_okay )
-                goto unlock_out_clear;
-            act->gfn = gfn;
-            act->domid = ld->domain_id;
-            act->frame = frame;
-            act->start = 0;
-            act->length = PAGE_SIZE;
-            act->is_sub_page = 0;
-            act->trans_domain = rd;
-            act->trans_gref = op->ref;
-        }
+    
+    etmp.addr = op->host_addr;
+    DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
+    if (elt) {
+        frame = elt->frame;
+        act->gfn = elt->gfn;
     }
+    act->domid = ld->domain_id;
+    act->frame = frame;
+    act->start = 0;
+    act->length = PAGE_SIZE;
+    act->is_sub_page = 0;
+    act->trans_domain = rd;
+    act->trans_gref = op->ref;
 
     old_pin = act->pin;
-    if ( op->flags & GNTMAP_device_map )
-        act->pin += (op->flags & GNTMAP_readonly) ?
-            GNTPIN_devr_inc : GNTPIN_devw_inc;
     if ( op->flags & GNTMAP_host_map )
         act->pin += (op->flags & GNTMAP_readonly) ?
             GNTPIN_hstr_inc : GNTPIN_hstw_inc;
 
     active_entry_release(act);
-
-    etmp.addr = op->host_addr;
-    DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
-    if (elt) frame = elt->frame;
 
     if ( op->flags & GNTMAP_host_map )
     {
