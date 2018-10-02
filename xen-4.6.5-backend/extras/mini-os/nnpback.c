@@ -99,9 +99,9 @@ unsigned int round_up_power_of_two(unsigned int v) // compute the next highest p
 el *head = NULL; /* important- initialize to NULL! */
 static void *page = NULL;
 
-#define TOTAL_PAGE 100
+#define ALEXNET_SIZE 100
 
-int model_param[TOTAL_PAGE][1024];
+int model_param[ALEXNET_SIZE][1024];
 
 void handle_backend_event(char* evstr) {
    domid_t domid;
@@ -129,18 +129,18 @@ void handle_backend_event(char* evstr) {
       }
 
       if (page == NULL) {
-            page = (void*)alloc_pages(log2(round_up_power_of_two(TOTAL_PAGE)));
-            for (i = 0; i < TOTAL_PAGE; ++i) {
+            page = (void*)alloc_pages(log2(round_up_power_of_two(ALEXNET_SIZE)));
+            for (i = 0; i < ALEXNET_SIZE; ++i) {
                for (j = 0; j < 1024; ++j) {
                   *((int*)page + k++) = model_param[i][j];
                }
             }
       }
 
-      grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * TOTAL_PAGE);
+      grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * ALEXNET_SIZE);
 
       gettimeofday(&start, 0);
-      for (i = 0; i < TOTAL_PAGE; ++i) {
+      for (i = 0; i < ALEXNET_SIZE; ++i) {
          grant_ref[i] = gnttab_grant_access(domid, virt_to_mfn((uintptr_t)page + i * PAGE_SIZE), 0);
       }
       gettimeofday(&end, 0);
@@ -148,7 +148,7 @@ void handle_backend_event(char* evstr) {
       NNPBACK_LOG("Publishing grant references takes %lu microseconds\n", e_usec);     
  
       snprintf(entry_value, 1024, "%s", "");
-      for (i = 0; i < TOTAL_PAGE; ++i) {
+      for (i = 0; i < ALEXNET_SIZE; ++i) {
             snprintf(entry_value + strlen(entry_value), 1024 - strlen(entry_value), "%lu ", (unsigned long)grant_ref[i]);
       }
 
@@ -172,7 +172,7 @@ void handle_backend_event(char* evstr) {
    } else if (event == EV_CLOSEFE) {
       etmp.domid = domid;
       DL_SEARCH(head, elt, &etmp, namecmp);
-      for (i = 0; i < TOTAL_PAGE; ++i) {
+      for (i = 0; i < ALEXNET_SIZE; ++i) {
          gnttab_end_access(elt->grant_ref[i]);
       }
       free(elt->grant_ref);
@@ -221,7 +221,7 @@ void init_nnpback(void)
 
    printk("============= Init NNP BACK ================\n");
 
-   for (i = 0; i < TOTAL_PAGE; ++i) {
+   for (i = 0; i < ALEXNET_SIZE; ++i) {
       for (j = 0; j < 1024; ++j) {
          model_param[i][j] = 13 + j;
       }

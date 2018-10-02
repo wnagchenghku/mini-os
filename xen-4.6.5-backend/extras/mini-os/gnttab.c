@@ -174,7 +174,7 @@ int
 gnttab_reset_model(void)
 {
     int rc;
-    rc = HYPERVISOR_grant_table_op(GNTTABOP_reset_model, NULL, 0);
+    rc = HYPERVISOR_grant_table_op(GNTTABOP_setup_model, NULL, 0);
     return rc;
 }
 

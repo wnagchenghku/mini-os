@@ -36,7 +36,7 @@ static inline size_t divide_round_up(size_t dividend, size_t divisor) {
 }
 
 domid_t self_id;
-#define TOTAL_PAGE 100
+#define ALEXNET_SIZE 100
 void *page;
 void init_nnpfront(void)
 {
@@ -89,7 +89,7 @@ void init_nnpfront(void)
        xenbus_wait_for_watch(&events);
    }
    
-   grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * TOTAL_PAGE);
+   grant_ref = (grant_ref_t*)malloc(sizeof(grant_ref_t) * ALEXNET_SIZE);
 
    snprintf(entry_path, 64, "/local/domain/backend/%d/grant-ref", self_id);
    if((err = xenbus_read(XBT_NIL, entry_path, &entry_value))) {
@@ -102,7 +102,7 @@ void init_nnpfront(void)
       value_it += bytesread;
    }
 
-   if ((page = gntmap_map_grant_refs_batch(&gtpmdev.map, TOTAL_PAGE, &bedomid, 0, grant_ref, PROT_READ, alexnet)) == NULL) {
+   if ((page = gntmap_map_grant_refs_batch(&gtpmdev.map, ALEXNET_SIZE, &bedomid, 0, grant_ref, PROT_READ, alexnet)) == NULL) {
       NNPFRONT_ERR("Failed to map grant reference %u\n", (unsigned int) bedomid);
    }
 
@@ -114,7 +114,7 @@ void shutdown_nnpfront(void)
 {
    char *err;
    char path[512];
-   gntmap_munmap(&gtpmdev.map, (unsigned long)page, TOTAL_PAGE);
+   gntmap_munmap(&gtpmdev.map, (unsigned long)page, ALEXNET_SIZE);
 
    snprintf(path, 512, "/local/domain/frontend/%u", self_id);
    if((err = xenbus_write(XBT_NIL, path, "close"))) {

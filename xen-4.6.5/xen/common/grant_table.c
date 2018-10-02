@@ -727,7 +727,7 @@ static unsigned int mapkind(
     return kind;
 }
 
-#define TOTAL_PAGE 100
+#define ALEXNET_SIZE 100
 typedef struct el {
     uint64_t addr;
     unsigned long frame;
@@ -735,7 +735,7 @@ typedef struct el {
     struct el *next, *prev;
 } el;
 
-el *head = NULL; /* important- initialize to NULL! */
+el *alexnet_head = NULL; /* important- initialize to NULL! */
 
 /*
  * Returns 0 if TLB flush / invalidate required by caller.
@@ -746,6 +746,314 @@ el *head = NULL; /* important- initialize to NULL! */
  */
 static void
 __gnttab_map_grant_ref(
+    struct gnttab_map_grant_ref *op)
+{
+    struct domain *ld, *rd, *owner = NULL;
+    struct grant_table *lgt, *rgt;
+    struct vcpu   *led;
+    int            handle;
+    unsigned long  frame = 0, nr_gets = 0;
+    struct page_info *pg = NULL;
+    int            rc = GNTST_okay;
+    u32            old_pin;
+    u32            act_pin;
+    unsigned int   cache_flags;
+    struct active_grant_entry *act = NULL;
+    struct grant_mapping *mt;
+    grant_entry_header_t *shah;
+    uint16_t *status;
+    bool_t need_iommu;
+
+    led = current;
+    ld = led->domain;
+
+    if ( unlikely((op->flags & (GNTMAP_device_map|GNTMAP_host_map)) == 0) )
+    {
+        gdprintk(XENLOG_INFO, "Bad flags in grant map op (%x).\n", op->flags);
+        op->status = GNTST_bad_gntref;
+        return;
+    }
+
+    if ( unlikely(paging_mode_external(ld) &&
+                  (op->flags & (GNTMAP_device_map|GNTMAP_application_map|
+                            GNTMAP_contains_pte))) )
+    {
+        gdprintk(XENLOG_INFO, "No device mapping in HVM domain.\n");
+        op->status = GNTST_general_error;
+        return;
+    }
+
+    if ( unlikely((rd = rcu_lock_domain_by_id(op->dom)) == NULL) )
+    {
+        gdprintk(XENLOG_INFO, "Could not find domain %d\n", op->dom);
+        op->status = GNTST_bad_domain;
+        return;
+    }
+
+    rc = xsm_grant_mapref(XSM_HOOK, ld, rd, op->flags);
+    if ( rc )
+    {
+        rcu_unlock_domain(rd);
+        op->status = GNTST_permission_denied;
+        return;
+    }
+
+    lgt = ld->grant_table;
+    if ( unlikely((handle = get_maptrack_handle(lgt)) == -1) )
+    {
+        rcu_unlock_domain(rd);
+        gdprintk(XENLOG_INFO, "Failed to obtain maptrack handle.\n");
+        op->status = GNTST_no_device_space;
+        return;
+    }
+
+    rgt = rd->grant_table;
+    read_lock(&rgt->lock);
+
+    /* Bounds check on the grant ref */
+    if ( unlikely(op->ref >= nr_grant_entries(rgt)))
+        PIN_FAIL(unlock_out, GNTST_bad_gntref, "Bad ref (%d).\n", op->ref);
+
+    act = active_entry_acquire(rgt, op->ref);
+    shah = shared_entry_header(rgt, op->ref);
+    status = rgt->gt_version == 1 ? &shah->flags : &status_entry(rgt, op->ref);
+
+    /* If already pinned, check the active domid and avoid refcnt overflow. */
+    if ( act->pin &&
+         ((act->domid != ld->domain_id) ||
+          (act->pin & 0x80808080U) != 0 ||
+          (act->is_sub_page)) )
+        PIN_FAIL(act_release_out, GNTST_general_error,
+                 "Bad domain (%d != %d), or risk of counter overflow %08x, or subpage %d\n",
+                 act->domid, ld->domain_id, act->pin, act->is_sub_page);
+
+    if ( !act->pin ||
+         (!(op->flags & GNTMAP_readonly) &&
+          !(act->pin & (GNTPIN_hstw_mask|GNTPIN_devw_mask))) )
+    {
+        if ( (rc = _set_status(rgt->gt_version, ld->domain_id,
+                               op->flags & GNTMAP_readonly,
+                               1, shah, act, status) ) != GNTST_okay )
+            goto act_release_out;
+
+        if ( !act->pin )
+        {
+            unsigned long frame;
+            unsigned long gfn = rgt->gt_version == 1 ?
+                                shared_entry_v1(rgt, op->ref).frame :
+                                shared_entry_v2(rgt, op->ref).full_page.frame;
+
+            rc = __get_paged_frame(gfn, &frame, &pg, 
+                                    !!(op->flags & GNTMAP_readonly), rd);
+            if ( rc != GNTST_okay )
+                goto unlock_out_clear;
+            act->gfn = gfn;
+            act->domid = ld->domain_id;
+            act->frame = frame;
+            act->start = 0;
+            act->length = PAGE_SIZE;
+            act->is_sub_page = 0;
+            act->trans_domain = rd;
+            act->trans_gref = op->ref;
+        }
+    }
+
+    old_pin = act->pin;
+    if ( op->flags & GNTMAP_device_map )
+        act->pin += (op->flags & GNTMAP_readonly) ?
+            GNTPIN_devr_inc : GNTPIN_devw_inc;
+    if ( op->flags & GNTMAP_host_map )
+        act->pin += (op->flags & GNTMAP_readonly) ?
+            GNTPIN_hstr_inc : GNTPIN_hstw_inc;
+
+    frame = act->frame;
+    act_pin = act->pin;
+
+    cache_flags = (shah->flags & (GTF_PAT | GTF_PWT | GTF_PCD) );
+
+    active_entry_release(act);
+    read_unlock(&rgt->lock);
+
+    /* pg may be set, with a refcount included, from __get_paged_frame */
+    if ( !pg )
+    {
+        pg = mfn_valid(frame) ? mfn_to_page(frame) : NULL;
+        if ( pg )
+            owner = page_get_owner_and_reference(pg);
+    }
+    else
+        owner = page_get_owner(pg);
+
+    if ( !pg || (owner == dom_io) )
+    {
+        /* Only needed the reference to confirm dom_io ownership. */
+        if ( pg )
+            put_page(pg);
+
+        if ( paging_mode_external(ld) )
+        {
+            gdprintk(XENLOG_WARNING, "HVM guests can't grant map iomem\n");
+            rc = GNTST_general_error;
+            goto undo_out;
+        }
+
+        if ( !iomem_access_permitted(rd, frame, frame) )
+        {
+            gdprintk(XENLOG_WARNING,
+                     "Iomem mapping not permitted %lx (domain %d)\n", 
+                     frame, rd->domain_id);
+            rc = GNTST_general_error;
+            goto undo_out;
+        }
+
+        rc = create_grant_host_mapping(
+            op->host_addr, frame, op->flags, cache_flags);
+        if ( rc != GNTST_okay )
+            goto undo_out;
+    }
+    else if ( owner == rd || owner == dom_cow )
+    {
+        if ( gnttab_host_mapping_get_page_type(op, ld, rd) )
+        {
+            if ( (owner == dom_cow) ||
+                 !get_page_type(pg, PGT_writable_page) )
+                goto could_not_pin;
+        }
+
+        nr_gets++;
+        if ( op->flags & GNTMAP_host_map )
+        {
+            rc = create_grant_host_mapping(op->host_addr, frame, op->flags, 0);
+            if ( rc != GNTST_okay )
+                goto undo_out;
+
+            if ( op->flags & GNTMAP_device_map )
+            {
+                nr_gets++;
+                (void)get_page(pg, rd);
+                if ( !(op->flags & GNTMAP_readonly) )
+                    get_page_type(pg, PGT_writable_page);
+            }
+        }
+    }
+    else
+    {
+    could_not_pin:
+        if ( !rd->is_dying )
+            gdprintk(XENLOG_WARNING, "Could not pin grant frame %lx\n",
+                     frame);
+        if ( owner != NULL )
+            put_page(pg);
+        rc = GNTST_general_error;
+        goto undo_out;
+    }
+
+    need_iommu = gnttab_need_iommu_mapping(ld);
+    if ( need_iommu )
+    {
+        unsigned int kind;
+        int err = 0;
+
+        double_gt_lock(lgt, rgt);
+
+        /* We're not translated, so we know that gmfns and mfns are
+           the same things, so the IOMMU entry is always 1-to-1. */
+        kind = mapkind(lgt, rd, frame);
+        if ( (act_pin & (GNTPIN_hstw_mask|GNTPIN_devw_mask)) &&
+             !(old_pin & (GNTPIN_hstw_mask|GNTPIN_devw_mask)) )
+        {
+            if ( !(kind & MAPKIND_WRITE) )
+                err = iommu_map_page(ld, frame, frame,
+                                     IOMMUF_readable|IOMMUF_writable);
+        }
+        else if ( act_pin && !old_pin )
+        {
+            if ( !kind )
+                err = iommu_map_page(ld, frame, frame, IOMMUF_readable);
+        }
+        if ( err )
+        {
+            double_gt_unlock(lgt, rgt);
+            rc = GNTST_general_error;
+            goto undo_out;
+        }
+    }
+
+    TRACE_1D(TRC_MEM_PAGE_GRANT_MAP, op->dom);
+
+    /*
+     * All maptrack entry users check mt->flags first before using the
+     * other fields so just ensure the flags field is stored last.
+     *
+     * However, if gnttab_need_iommu_mapping() then this would race
+     * with a concurrent mapcount() call (on an unmap, for example)
+     * and a lock is required.
+     */
+    mt = &maptrack_entry(lgt, handle);
+    mt->domid = op->dom;
+    mt->ref   = op->ref;
+    wmb();
+    write_atomic(&mt->flags, op->flags);
+
+    if ( need_iommu )
+        double_gt_unlock(lgt, rgt);
+
+    op->dev_bus_addr = (u64)frame << PAGE_SHIFT;
+    op->handle       = handle;
+    op->status       = GNTST_okay;
+
+    rcu_unlock_domain(rd);
+    return;
+
+ undo_out:
+    if ( nr_gets > 1 )
+    {
+        if ( !(op->flags & GNTMAP_readonly) )
+            put_page_type(pg);
+        put_page(pg);
+    }
+    if ( nr_gets > 0 )
+    {
+        if ( gnttab_host_mapping_get_page_type(op, ld, rd) )
+            put_page_type(pg);
+        put_page(pg);
+    }
+
+    read_lock(&rgt->lock);
+
+    act = active_entry_acquire(rgt, op->ref);
+
+    if ( op->flags & GNTMAP_device_map )
+        act->pin -= (op->flags & GNTMAP_readonly) ?
+            GNTPIN_devr_inc : GNTPIN_devw_inc;
+    if ( op->flags & GNTMAP_host_map )
+        act->pin -= (op->flags & GNTMAP_readonly) ?
+            GNTPIN_hstr_inc : GNTPIN_hstw_inc;
+ 
+ unlock_out_clear:
+    if ( !(op->flags & GNTMAP_readonly) &&
+         !(act->pin & (GNTPIN_hstw_mask|GNTPIN_devw_mask)) )
+        gnttab_clear_flag(_GTF_writing, status);
+
+    if ( !act->pin )
+        gnttab_clear_flag(_GTF_reading, status);
+
+ act_release_out:
+    active_entry_release(act);
+
+ unlock_out:
+    read_unlock(&rgt->lock);
+    op->status = rc;
+    put_maptrack_handle(lgt, handle);
+    rcu_unlock_domain(rd);
+}
+
+int addrcmp(el *a, el *b) {
+    return a->addr == b->addr ? 0 : 1;
+}
+
+static void
+__gnttab_map_grant_ref_alexnet_install(
     struct gnttab_map_grant_ref *op)
 {
     struct domain *ld, *rd, *owner = NULL;
@@ -985,7 +1293,7 @@ __gnttab_map_grant_ref(
         mapping->addr = op->host_addr;
         mapping->frame = frame;
         mapping->flags = op->flags;
-        DL_APPEND(head, mapping);
+        DL_APPEND(alexnet_head, mapping);
         gprintk(XENLOG_WARNING, "addr: %lx, frame: %lx\n", op->host_addr, frame);
     }
 
@@ -1056,12 +1364,8 @@ __gnttab_map_grant_ref(
     rcu_unlock_domain(rd);
 }
 
-int addrcmp(el *a, el *b) {
-    return a->addr == b->addr ? 0 : 1;
-}
-
 static void
-__gnttab_map_grant_ref_batch(
+__gnttab_map_grant_ref_alexnet_batch(
     struct gnttab_map_grant_ref *op)
 {
     struct domain *ld, *rd, *owner = NULL;
@@ -1192,7 +1496,7 @@ __gnttab_map_grant_ref_batch(
     read_unlock(&rgt->lock);
 
     etmp.addr = op->host_addr;
-    DL_SEARCH(head,elt,&etmp,addrcmp);
+    DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
     if (elt) frame = elt->frame;
 
     /* pg may be set, with a refcount included, from __get_paged_frame */
@@ -1375,9 +1679,6 @@ gnttab_map_grant_ref(
 {
     int i;
     struct gnttab_map_grant_ref op;
-    int el_count;
-    el *elt;
-    DL_COUNT(head, elt, el_count);
 
     for ( i = 0; i < count; i++ )
     {
@@ -1386,6 +1687,48 @@ gnttab_map_grant_ref(
         if ( unlikely(__copy_from_guest_offset(&op, uop, i, 1)) )
             return -EFAULT;
          __gnttab_map_grant_ref(&op);
+        if ( unlikely(__copy_to_guest_offset(uop, i, &op, 1)) )
+            return -EFAULT;
+    }
+
+    return 0;
+}
+
+static long
+gnttab_map_grant_ref_alexnet_install(
+    XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) uop, unsigned int count)
+{
+    int i;
+    struct gnttab_map_grant_ref op;
+
+    for ( i = 0; i < count; i++ )
+    {
+        if (i && hypercall_preempt_check())
+            return i;
+        if ( unlikely(__copy_from_guest_offset(&op, uop, i, 1)) )
+            return -EFAULT;
+         __gnttab_map_grant_ref_alexnet_install(&op);
+        if ( unlikely(__copy_to_guest_offset(uop, i, &op, 1)) )
+            return -EFAULT;
+    }
+
+    return 0;
+}
+
+static long
+gnttab_map_grant_ref_alexnet_batch(
+    XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) uop, unsigned int count)
+{
+    int i;
+    struct gnttab_map_grant_ref op;
+
+    for ( i = 0; i < count; i++ )
+    {
+        if (i && hypercall_preempt_check())
+            return i;
+        if ( unlikely(__copy_from_guest_offset(&op, uop, i, 1)) )
+            return -EFAULT;
+         __gnttab_map_grant_ref_alexnet_batch(&op);
         if ( unlikely(__copy_to_guest_offset(uop, i, &op, 1)) )
             return -EFAULT;
     }
@@ -3343,6 +3686,7 @@ do_grant_table_op(
     long rc;
     unsigned int opaque_in = cmd & GNTTABOP_ARG_MASK, opaque_out = 0;
     el *elt, *tmp;
+    int el_count;
     
     if ( (int)count < 0 )
         return -EINVAL;
@@ -3486,13 +3830,45 @@ do_grant_table_op(
         opaque_out = opaque_in;
         break;
     }
-    case GNTTABOP_reset_model:
+    case GNTTABOP_alexnet_batch:
     {
-        DL_FOREACH_SAFE(head,elt,tmp) {
-            DL_DELETE(head,elt);
+        DL_COUNT(alexnet_head, elt, el_count);
+
+        if (el_count != ALEXNET_SIZE)
+        {
+            XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) map =
+                guest_handle_cast(uop, gnttab_map_grant_ref_t);
+            if ( unlikely(!guest_handle_okay(map, count)) )
+                goto out;
+            rc = gnttab_map_grant_ref_alexnet_install(map, count);
+            if ( rc > 0 )
+            {
+                guest_handle_add_offset(map, rc);
+                uop = guest_handle_cast(map, void);
+            }
+        } else {
+            XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) map =
+                guest_handle_cast(uop, gnttab_map_grant_ref_t);
+            if ( unlikely(!guest_handle_okay(map, count)) )
+                goto out;
+            rc = gnttab_map_grant_ref_alexnet_batch(map, count);
+            if ( rc > 0 )
+            {
+                guest_handle_add_offset(map, rc);
+                uop = guest_handle_cast(map, void);
+            }
+        }
+
+        break;
+    }
+    case GNTTABOP_setup_model:
+    {
+        DL_FOREACH_SAFE(alexnet_head,elt,tmp) {
+            DL_DELETE(alexnet_head,elt);
             xfree(elt);
         }
         rc = 0;
+        break;
     }
     default:
         rc = -ENOSYS;
