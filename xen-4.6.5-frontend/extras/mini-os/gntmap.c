@@ -140,7 +140,8 @@ _gntmap_map_grant_ref_batch(struct gntmap_entry *entry,
                             unsigned long host_addr,
                             uint32_t domid,
                             uint32_t ref,
-                            int writable)
+                            int writable,
+                            int model)
 {
     struct gnttab_map_grant_ref op;
     int rc;
@@ -152,9 +153,15 @@ _gntmap_map_grant_ref_batch(struct gntmap_entry *entry,
     if (!writable)
         op.flags |= GNTMAP_readonly;
 
-    rc = HYPERVISOR_grant_table_op(GNTTABOP_map_grant_ref, &op, 1);
+    switch(model) {
+        case alexnet:
+            rc = HYPERVISOR_grant_table_op(GNTTABOP_alexnet_batch, &op, 1);
+            break;
+        default:
+            break;
+    }
     if (rc != 0 || op.status != GNTST_okay) {
-        printk("GNTTABOP_map_grant_ref failed: "
+        printk("GNTTABOP_alexnet_batch failed: "
                "returned %d, status %" PRId16 "\n",
                rc, op.status);
         return rc != 0 ? rc : op.status;
@@ -286,23 +293,8 @@ gntmap_map_grant_refs_batch(struct gntmap *map,
                                         addr + PAGE_SIZE * i,
                                         domids[i * domids_stride],
                                         refs[i],
-                                        writable) != 0) {
-
-            (void) gntmap_munmap(map, addr, i);
-            return NULL;
-        }
-    }
-
-    gntmap_munmap(map, addr, count);
-
-    for (i = 0; i < count; i++) {
-        ent = gntmap_find_free_entry(map);
-        if (ent == NULL ||
-            _gntmap_map_grant_ref_batch(ent,
-                                        addr + PAGE_SIZE * i,
-                                        domids[i * domids_stride],
-                                        refs[i],
-                                        writable) != 0) {
+                                        writable,
+                                        model) != 0) {
 
             (void) gntmap_munmap(map, addr, i);
             return NULL;
