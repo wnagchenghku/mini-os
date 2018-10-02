@@ -2047,6 +2047,7 @@ gnttab_unmap_grant_ref_alexnet_uninstall(
     int i, c, partial_done, done = 0;
     struct gnttab_unmap_grant_ref op;
     struct gnttab_unmap_common common[GNTTAB_UNMAP_BATCH_SIZE];
+    el *elt, etmp;
 
     while ( count != 0 )
     {
@@ -2057,9 +2058,13 @@ gnttab_unmap_grant_ref_alexnet_uninstall(
         {
             if ( unlikely(__copy_from_guest(&op, uop, 1)) )
                 goto fault;
-            
-            unmap_grant_ref_alexnet_count++;
-            gprintk(XENLOG_WARNING, "[alexnet] unmap addr: %lx\n", op.host_addr);
+
+            etmp.addr = op.host_addr;
+            DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
+            if (elt) {
+                unmap_grant_ref_alexnet_count++;
+                gprintk(XENLOG_WARNING, "[alexnet] unmap addr: %lx\n", op.host_addr);
+            }
             
             __gnttab_unmap_grant_ref(&op, &(common[i]));
             ++partial_done;
