@@ -732,6 +732,7 @@ typedef struct el {
     uint64_t addr;
     unsigned long frame;
     uint32_t flags;
+    unsigned long gfn;
     struct el *next, *prev;
 } el;
 
