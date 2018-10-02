@@ -1875,7 +1875,247 @@ __gnttab_unmap_common(
 }
 
 static void
+__gnttab_unmap_common_alexnet(
+    struct gnttab_unmap_common *op)
+{
+    domid_t          dom;
+    struct domain   *ld, *rd;
+    struct grant_table *lgt, *rgt;
+    struct active_grant_entry *act;
+    s16              rc = 0;
+
+    ld = current->domain;
+    lgt = ld->grant_table;
+
+    op->frame = (unsigned long)(op->dev_bus_addr >> PAGE_SHIFT);
+
+    if ( unlikely(op->handle >= lgt->maptrack_limit) )
+    {
+        gdprintk(XENLOG_INFO, "Bad handle (%d).\n", op->handle);
+        op->status = GNTST_bad_handle;
+        return;
+    }
+
+    op->map = &maptrack_entry(lgt, op->handle);
+
+    read_lock(&lgt->lock);
+
+    if ( unlikely(!read_atomic(&op->map->flags)) )
+    {
+        read_unlock(&lgt->lock);
+        gdprintk(XENLOG_INFO, "Zero flags for handle (%d).\n", op->handle);
+        op->status = GNTST_bad_handle;
+        return;
+    }
+
+    dom = op->map->domid;
+    read_unlock(&lgt->lock);
+
+    if ( unlikely((rd = rcu_lock_domain_by_id(dom)) == NULL) )
+    {
+        /* This can happen when a grant is implicitly unmapped. */
+        gdprintk(XENLOG_INFO, "Could not find domain %d\n", dom);
+        domain_crash(ld); /* naughty... */
+        return;
+    }
+
+    rc = xsm_grant_unmapref(XSM_HOOK, ld, rd);
+    if ( rc )
+    {
+        rcu_unlock_domain(rd);
+        op->status = GNTST_permission_denied;
+        return;
+    }
+
+    TRACE_1D(TRC_MEM_PAGE_GRANT_UNMAP, dom);
+
+    rgt = rd->grant_table;
+
+    read_lock(&rgt->lock);
+
+    op->flags = read_atomic(&op->map->flags);
+    if ( unlikely(!op->flags) || unlikely(op->map->domid != dom) )
+    {
+        gdprintk(XENLOG_WARNING, "Unstable handle %u\n", op->handle);
+        rc = GNTST_bad_handle;
+        goto unmap_out;
+    }
+
+    op->rd = rd;
+    act = active_entry_acquire(rgt, op->map->ref);
+
+    if ( op->frame == 0 )
+    {
+        op->frame = act->frame;
+    }
+    else
+    {
+        if ( unlikely(op->frame != act->frame) )
+            PIN_FAIL(act_release_out, GNTST_general_error,
+                     "Bad frame number doesn't match gntref. (%lx != %lx)\n",
+                     op->frame, act->frame);
+        if ( op->flags & GNTMAP_device_map )
+        {
+            ASSERT(act->pin & (GNTPIN_devw_mask | GNTPIN_devr_mask));
+            op->map->flags &= ~GNTMAP_device_map;
+            if ( op->flags & GNTMAP_readonly )
+                act->pin -= GNTPIN_devr_inc;
+            else
+                act->pin -= GNTPIN_devw_inc;
+        }
+    }
+
+    if ( (op->host_addr != 0) && (op->flags & GNTMAP_host_map) )
+    {
+        if ( (rc = replace_grant_host_mapping(op->host_addr,
+                                              op->frame, op->new_addr, 
+                                              op->flags)) < 0 )
+            goto act_release_out;
+
+        ASSERT(act->pin & (GNTPIN_hstw_mask | GNTPIN_hstr_mask));
+        op->map->flags &= ~GNTMAP_host_map;
+        if ( op->flags & GNTMAP_readonly )
+            act->pin -= GNTPIN_hstr_inc;
+        else
+            act->pin -= GNTPIN_hstw_inc;
+    }
+
+ act_release_out:
+    active_entry_release(act);
+ unmap_out:
+    read_unlock(&rgt->lock);
+
+    if ( rc == GNTST_okay && gnttab_need_iommu_mapping(ld) )
+    {
+        unsigned int kind;
+        int err = 0;
+
+        double_gt_lock(lgt, rgt);
+
+        kind = mapkind(lgt, rd, op->frame);
+        if ( !kind )
+            err = iommu_unmap_page(ld, op->frame);
+        else if ( !(kind & MAPKIND_WRITE) )
+            err = iommu_map_page(ld, op->frame, op->frame, IOMMUF_readable);
+
+        double_gt_unlock(lgt, rgt);
+
+        if ( err )
+            rc = GNTST_general_error;
+    }
+
+    /* If just unmapped a writable mapping, mark as dirtied */
+    if ( rc == GNTST_okay && !(op->flags & GNTMAP_readonly) )
+         gnttab_mark_dirty(rd, op->frame);
+
+    op->status = rc;
+    rcu_unlock_domain(rd);
+}
+
+static void
 __gnttab_unmap_common_complete(struct gnttab_unmap_common *op)
+{
+    struct domain *ld, *rd = op->rd;
+    struct grant_table *rgt;
+    struct active_grant_entry *act;
+    grant_entry_header_t *sha;
+    struct page_info *pg;
+    uint16_t *status;
+    bool_t put_handle = 0;
+
+    if ( rd == NULL )
+    { 
+        /*
+         * Suggests that __gntab_unmap_common failed in
+         * rcu_lock_domain_by_id() or earlier, and so we have nothing
+         * to complete
+         */
+        return;
+    }
+
+    ld = current->domain;
+
+    rcu_lock_domain(rd);
+    rgt = rd->grant_table;
+
+    read_lock(&rgt->lock);
+    if ( rgt->gt_version == 0 )
+        goto unlock_out;
+
+    act = active_entry_acquire(rgt, op->map->ref);
+    sha = shared_entry_header(rgt, op->map->ref);
+
+    if ( rgt->gt_version == 1 )
+        status = &sha->flags;
+    else
+        status = &status_entry(rgt, op->map->ref);
+
+    if ( unlikely(op->frame != act->frame) ) 
+    {
+        /*
+         * Suggests that __gntab_unmap_common failed early and so
+         * nothing further to do
+         */
+        goto act_release_out;
+    }
+
+    pg = mfn_to_page(op->frame);
+
+    if ( op->flags & GNTMAP_device_map ) 
+    {
+        if ( !is_iomem_page(act->frame) )
+        {
+            if ( op->flags & GNTMAP_readonly )
+                put_page(pg);
+            else
+                put_page_and_type(pg);
+        }
+    }
+
+    if ( (op->host_addr != 0) && (op->flags & GNTMAP_host_map) )
+    {
+        if ( op->status != 0 ) 
+        {
+            /*
+             * Suggests that __gntab_unmap_common failed in
+             * replace_grant_host_mapping() so nothing further to do
+             */
+            goto act_release_out;
+        }
+
+        if ( !is_iomem_page(op->frame) ) 
+        {
+            if ( gnttab_host_mapping_get_page_type(op, ld, rd) )
+                put_page_type(pg);
+            put_page(pg);
+        }
+    }
+
+    if ( (op->map->flags & (GNTMAP_device_map|GNTMAP_host_map)) == 0 )
+        put_handle = 1;
+
+    if ( ((act->pin & (GNTPIN_devw_mask|GNTPIN_hstw_mask)) == 0) &&
+         !(op->flags & GNTMAP_readonly) )
+        gnttab_clear_flag(_GTF_writing, status);
+
+    if ( act->pin == 0 )
+        gnttab_clear_flag(_GTF_reading, status);
+
+ act_release_out:
+    active_entry_release(act);
+ unlock_out:
+    read_unlock(&rgt->lock);
+
+    if ( put_handle )
+    {
+        op->map->flags = 0;
+        put_maptrack_handle(ld->grant_table, op->handle);
+    }
+    rcu_unlock_domain(rd);
+}
+
+static void
+__gnttab_unmap_common_complete_alexnet(struct gnttab_unmap_common *op)
 {
     struct domain *ld, *rd = op->rd;
     struct grant_table *rgt;
@@ -1990,6 +2230,23 @@ __gnttab_unmap_grant_ref(
     common->rd = NULL;
 
     __gnttab_unmap_common(common);
+    op->status = common->status;
+}
+
+static void
+__gnttab_unmap_grant_ref_alexnet(
+    struct gnttab_unmap_grant_ref *op,
+    struct gnttab_unmap_common *common)
+{
+    common->host_addr = op->host_addr;
+    common->dev_bus_addr = op->dev_bus_addr;
+    common->handle = op->handle;
+
+    /* Intialise these in case common contains old state */
+    common->new_addr = 0;
+    common->rd = NULL;
+
+    __gnttab_unmap_common_alexnet(common);
     op->status = common->status;
 }
 
@@ -2112,7 +2369,7 @@ gnttab_unmap_grant_ref_alexnet_batch(
         {
             if ( unlikely(__copy_from_guest(&op, uop, 1)) )
                 goto fault;
-            __gnttab_unmap_grant_ref(&op, &(common[i]));
+            __gnttab_unmap_grant_ref_alexnet(&op, &(common[i]));
             ++partial_done;
             if ( unlikely(__copy_field_to_guest(uop, &op, status)) )
                 goto fault;
@@ -2122,7 +2379,7 @@ gnttab_unmap_grant_ref_alexnet_batch(
         gnttab_flush_tlb(current->domain);
 
         for ( i = 0; i < partial_done; i++ )
-            __gnttab_unmap_common_complete(&(common[i]));
+            __gnttab_unmap_common_complete_alexnet(&(common[i]));
 
         count -= c;
         done += c;
@@ -2137,7 +2394,7 @@ fault:
     gnttab_flush_tlb(current->domain);
 
     for ( i = 0; i < partial_done; i++ )
-        __gnttab_unmap_common_complete(&(common[i]));
+        __gnttab_unmap_common_complete_alexnet(&(common[i]));
     return -EFAULT;
 }
 
