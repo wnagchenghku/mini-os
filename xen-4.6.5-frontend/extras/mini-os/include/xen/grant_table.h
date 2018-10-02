@@ -311,6 +311,8 @@ typedef uint16_t grant_status_t;
 #define GNTTABOP_swap_grant_ref	      11
 #define GNTTABOP_cache_flush	      12
 #endif /* __XEN_INTERFACE_VERSION__ */
+#define GNTTABOP_setup_model          13
+#define GNTTABOP_alexnet_batch        14
 /* ` } */
 
 /*
