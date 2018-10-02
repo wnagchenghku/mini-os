@@ -1294,7 +1294,7 @@ __gnttab_map_grant_ref_alexnet_install(
         mapping->frame = frame;
         mapping->flags = op->flags;
         DL_APPEND(alexnet_head, mapping);
-        gprintk(XENLOG_WARNING, "addr: %lx, frame: %lx\n", op->host_addr, frame);
+        gprintk(XENLOG_WARNING, "[alexnet] map addr: %lx, frame: %lx\n", op->host_addr, frame);
     }
 
     /*
@@ -2039,9 +2039,59 @@ fault:
         __gnttab_unmap_common_complete(&(common[i]));
     return -EFAULT;
 }
+static int unmap_grant_ref_alexnet_count = 0;
+static long
+gnttab_unmap_grant_ref_alexnet_uninstall(
+    XEN_GUEST_HANDLE_PARAM(gnttab_unmap_grant_ref_t) uop, unsigned int count)
+{
+    int i, c, partial_done, done = 0;
+    struct gnttab_unmap_grant_ref op;
+    struct gnttab_unmap_common common[GNTTAB_UNMAP_BATCH_SIZE];
+
+    while ( count != 0 )
+    {
+        c = min(count, (unsigned int)GNTTAB_UNMAP_BATCH_SIZE);
+        partial_done = 0;
+
+        for ( i = 0; i < c; i++ )
+        {
+            if ( unlikely(__copy_from_guest(&op, uop, 1)) )
+                goto fault;
+            
+            unmap_grant_ref_alexnet_count++;
+            gprintk(XENLOG_WARNING, "[alexnet] unmap addr: %lx\n", op.host_addr);
+            
+            __gnttab_unmap_grant_ref(&op, &(common[i]));
+            ++partial_done;
+            if ( unlikely(__copy_field_to_guest(uop, &op, status)) )
+                goto fault;
+            guest_handle_add_offset(uop, 1);
+        }
+
+        gnttab_flush_tlb(current->domain);
+
+        for ( i = 0; i < partial_done; i++ )
+            __gnttab_unmap_common_complete(&(common[i]));
+
+        count -= c;
+        done += c;
+
+        if (count && hypercall_preempt_check())
+            return done;
+    }
+     
+    return 0;
+
+fault:
+    gnttab_flush_tlb(current->domain);
+
+    for ( i = 0; i < partial_done; i++ )
+        __gnttab_unmap_common_complete(&(common[i]));
+    return -EFAULT;
+}
 
 static long
-gnttab_unmap_grant_ref_alexnet(
+gnttab_unmap_grant_ref_alexnet_batch(
     XEN_GUEST_HANDLE_PARAM(gnttab_unmap_grant_ref_t) uop, unsigned int count)
 {
     int i, c, partial_done, done = 0;
@@ -3773,15 +3823,13 @@ do_grant_table_op(
     }
     case GNTTABOP_unmap_alexnet:
     {
-        DL_COUNT(alexnet_head, elt, el_count);
-
-        if (el_count != ALEXNET_SIZE)
+        if (unmap_grant_ref_alexnet_count != ALEXNET_SIZE)
         {
             XEN_GUEST_HANDLE_PARAM(gnttab_unmap_grant_ref_t) unmap =
                 guest_handle_cast(uop, gnttab_unmap_grant_ref_t);
             if ( unlikely(!guest_handle_okay(unmap, count)) )
                 goto out;
-            rc = gnttab_unmap_grant_ref(unmap, count);
+            rc = gnttab_unmap_grant_ref_alexnet_uninstall(unmap, count);
             if ( rc > 0 )
             {
                 guest_handle_add_offset(unmap, rc);
@@ -3792,7 +3840,7 @@ do_grant_table_op(
                 guest_handle_cast(uop, gnttab_unmap_grant_ref_t);
             if ( unlikely(!guest_handle_okay(unmap, count)) )
                 goto out;
-            rc = gnttab_unmap_grant_ref_alexnet(unmap, count);
+            rc = gnttab_unmap_grant_ref_alexnet_batch(unmap, count);
             if ( rc > 0 )
             {
                 guest_handle_add_offset(unmap, rc);
