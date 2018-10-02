@@ -1418,8 +1418,12 @@ __gnttab_map_grant_ref_alexnet_batch(
     shah = shared_entry_header(rgt, op->ref);
     status = rgt->gt_version == 1 ? &shah->flags : &status_entry(rgt, op->ref);
 
+    if ( !act->pin ||
+         (!(op->flags & GNTMAP_readonly) &&
           !(act->pin & (GNTPIN_hstw_mask|GNTPIN_devw_mask))) )
     {
+
+        if ( !act->pin )
         {
             unsigned long frame;
             unsigned long gfn = rgt->gt_version == 1 ?
