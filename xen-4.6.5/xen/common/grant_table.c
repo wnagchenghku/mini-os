@@ -1377,12 +1377,8 @@ __gnttab_map_grant_ref_alexnet_batch(
     int            rc = GNTST_okay;
     u32            old_pin;
     u32            act_pin;
-    unsigned int   cache_flags;
     struct active_grant_entry *act = NULL;
     struct grant_mapping *mt;
-    grant_entry_header_t *shah;
-    uint16_t *status;
-    bool_t need_iommu;
     el *elt, etmp;
 
     led = current;
@@ -1415,8 +1411,6 @@ __gnttab_map_grant_ref_alexnet_batch(
     rgt = rd->grant_table;
 
     act = active_entry_acquire(rgt, op->ref);
-    shah = shared_entry_header(rgt, op->ref);
-    status = rgt->gt_version == 1 ? &shah->flags : &status_entry(rgt, op->ref);
 
     if ( !act->pin ||
          (!(op->flags & GNTMAP_readonly) &&
@@ -1459,20 +1453,20 @@ __gnttab_map_grant_ref_alexnet_batch(
     DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
     if (elt) frame = elt->frame;
 
-        if ( op->flags & GNTMAP_host_map )
-        {
-            rc = create_grant_host_mapping(op->host_addr, frame, op->flags, 0);
-            if ( rc != GNTST_okay )
-                goto undo_out;
+    if ( op->flags & GNTMAP_host_map )
+    {
+        rc = create_grant_host_mapping(op->host_addr, frame, op->flags, 0);
+        if ( rc != GNTST_okay )
+            goto undo_out;
 
-            if ( op->flags & GNTMAP_device_map )
-            {
-                nr_gets++;
-                (void)get_page(pg, rd);
-                if ( !(op->flags & GNTMAP_readonly) )
-                    get_page_type(pg, PGT_writable_page);
-            }
+        if ( op->flags & GNTMAP_device_map )
+        {
+            nr_gets++;
+            (void)get_page(pg, rd);
+            if ( !(op->flags & GNTMAP_readonly) )
+                get_page_type(pg, PGT_writable_page);
         }
+    }
 
     mt = &maptrack_entry(lgt, handle);
     mt->domid = op->dom;
