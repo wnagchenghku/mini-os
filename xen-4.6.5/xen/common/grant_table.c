@@ -1420,10 +1420,6 @@ __gnttab_map_grant_ref_alexnet_batch(
          (!(op->flags & GNTMAP_readonly) &&
           !(act->pin & (GNTPIN_hstw_mask|GNTPIN_devw_mask))) )
     {
-        if ( (rc = _set_status(rgt->gt_version, ld->domain_id,
-                               op->flags & GNTMAP_readonly,
-                               1, shah, act, status) ) != GNTST_okay )
-            goto act_release_out;
 
         if ( !act->pin )
         {
