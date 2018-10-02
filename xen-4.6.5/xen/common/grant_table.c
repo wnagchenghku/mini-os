@@ -1414,25 +1414,39 @@ __gnttab_map_grant_ref_alexnet_batch(
     rgt = rd->grant_table;
 
     act = active_entry_acquire(rgt, op->ref);
-    
-    etmp.addr = op->host_addr;
-    DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
-    if (elt) {
-        frame = elt->frame;
-        act->gfn = elt->gfn;
-    }
-    act->domid = ld->domain_id;
-    act->frame = frame;
-    act->start = 0;
-    act->length = PAGE_SIZE;
-    act->is_sub_page = 0;
-    act->trans_domain = rd;
-    act->trans_gref = op->ref;
 
     old_pin = act->pin;
-    if ( op->flags & GNTMAP_host_map )
-        act->pin += (op->flags & GNTMAP_readonly) ?
-            GNTPIN_hstr_inc : GNTPIN_hstw_inc;
+    if ( !act->pin ||
+         (!(op->flags & GNTMAP_readonly) &&
+          !(act->pin & (GNTPIN_hstw_mask|GNTPIN_devw_mask))) )
+    {
+        if ( (rc = _set_status(rgt->gt_version, ld->domain_id,
+                               op->flags & GNTMAP_readonly,
+                               1, shah, act, status) ) != GNTST_okay )
+            goto act_release_out;
+
+        if ( !act->pin )
+        {
+            unsigned long frame;
+            unsigned long gfn = rgt->gt_version == 1 ?
+                                shared_entry_v1(rgt, op->ref).frame :
+                                shared_entry_v2(rgt, op->ref).full_page.frame;
+
+            rc = __get_paged_frame(gfn, &frame, &pg, 
+                                    !!(op->flags & GNTMAP_readonly), rd);
+            if ( rc != GNTST_okay )
+                goto unlock_out_clear;
+            act->gfn = gfn;
+            act->domid = ld->domain_id;
+            act->frame = frame;
+            act->start = 0;
+            act->length = PAGE_SIZE;
+            act->is_sub_page = 0;
+            act->trans_domain = rd;
+            act->trans_gref = op->ref;
+        }
+    }
+    frame = act->frame;
 
     active_entry_release(act);
 
