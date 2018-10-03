@@ -349,8 +349,8 @@ gntmap_map_grant_refs_batch(struct gntmap *map,
                                         writable,
                                         model) != 0) {
 
-            (void) gntmap_munmap(map, addr, i);
-            return NULL;
+            /*(void) gntmap_munmap(map, addr, i);
+            return NULL;*/
         }
     }
 

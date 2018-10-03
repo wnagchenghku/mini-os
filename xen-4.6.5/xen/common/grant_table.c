@@ -1377,19 +1377,19 @@ __gnttab_map_grant_ref_alexnet_batch(
     unsigned long  frame = 0, nr_gets = 0;
     struct page_info *pg = NULL;
     int            rc = GNTST_okay;
-    u32            old_pin;
+    /*u32            old_pin;
     u32            act_pin;
-    unsigned int   cache_flags;
+    unsigned int   cache_flags;*/
     struct active_grant_entry *act = NULL;
     struct grant_mapping *mt;
     grant_entry_header_t *shah;
     uint16_t *status;
-    bool_t need_iommu;
+    /*bool_t need_iommu;*/
 
     led = current;
     ld = led->domain;
 
-    if ( unlikely((op->flags & (GNTMAP_device_map|GNTMAP_host_map)) == 0) )
+    /*if ( unlikely((op->flags & (GNTMAP_device_map|GNTMAP_host_map)) == 0) )
     {
         gdprintk(XENLOG_INFO, "Bad flags in grant map op (%x).\n", op->flags);
         op->status = GNTST_bad_gntref;
@@ -1403,7 +1403,7 @@ __gnttab_map_grant_ref_alexnet_batch(
         gdprintk(XENLOG_INFO, "No device mapping in HVM domain.\n");
         op->status = GNTST_general_error;
         return;
-    }
+    }*/
 
     if ( unlikely((rd = rcu_lock_domain_by_id(op->dom)) == NULL) )
     {
@@ -1412,13 +1412,13 @@ __gnttab_map_grant_ref_alexnet_batch(
         return;
     }
 
-    rc = xsm_grant_mapref(XSM_HOOK, ld, rd, op->flags);
+    /*rc = xsm_grant_mapref(XSM_HOOK, ld, rd, op->flags);
     if ( rc )
     {
         rcu_unlock_domain(rd);
         op->status = GNTST_permission_denied;
         return;
-    }
+    }*/
 
     lgt = ld->grant_table;
     if ( unlikely((handle = get_maptrack_handle(lgt)) == -1) )
@@ -1430,24 +1430,24 @@ __gnttab_map_grant_ref_alexnet_batch(
     }
 
     rgt = rd->grant_table;
-    read_lock(&rgt->lock);
+    /*read_lock(&rgt->lock);*/
 
     /* Bounds check on the grant ref */
-    if ( unlikely(op->ref >= nr_grant_entries(rgt)))
-        PIN_FAIL(unlock_out, GNTST_bad_gntref, "Bad ref (%d).\n", op->ref);
+    /*if ( unlikely(op->ref >= nr_grant_entries(rgt)))
+        PIN_FAIL(unlock_out, GNTST_bad_gntref, "Bad ref (%d).\n", op->ref);*/
 
     act = active_entry_acquire(rgt, op->ref);
     shah = shared_entry_header(rgt, op->ref);
     status = rgt->gt_version == 1 ? &shah->flags : &status_entry(rgt, op->ref);
 
     /* If already pinned, check the active domid and avoid refcnt overflow. */
-    if ( act->pin &&
+    /*if ( act->pin &&
          ((act->domid != ld->domain_id) ||
           (act->pin & 0x80808080U) != 0 ||
           (act->is_sub_page)) )
         PIN_FAIL(act_release_out, GNTST_general_error,
                  "Bad domain (%d != %d), or risk of counter overflow %08x, or subpage %d\n",
-                 act->domid, ld->domain_id, act->pin, act->is_sub_page);
+                 act->domid, ld->domain_id, act->pin, act->is_sub_page);*/
 
     if ( !act->pin ||
          (!(op->flags & GNTMAP_readonly) &&
@@ -1480,35 +1480,34 @@ __gnttab_map_grant_ref_alexnet_batch(
         }
     }
 
-    old_pin = act->pin;
+    /*old_pin = act->pin;
     if ( op->flags & GNTMAP_device_map )
         act->pin += (op->flags & GNTMAP_readonly) ?
-            GNTPIN_devr_inc : GNTPIN_devw_inc;
+            GNTPIN_devr_inc : GNTPIN_devw_inc;*/
     if ( op->flags & GNTMAP_host_map )
         act->pin += (op->flags & GNTMAP_readonly) ?
             GNTPIN_hstr_inc : GNTPIN_hstw_inc;
 
     frame = act->frame;
-    act_pin = act->pin;
+    /*act_pin = act->pin;
 
-    cache_flags = (shah->flags & (GTF_PAT | GTF_PWT | GTF_PCD) );
+    cache_flags = (shah->flags & (GTF_PAT | GTF_PWT | GTF_PCD) );*/
 
     active_entry_release(act);
-    read_unlock(&rgt->lock);
+    /*read_unlock(&rgt->lock);*/
 
     /* pg may be set, with a refcount included, from __get_paged_frame */
-    if ( !pg )
+    /*if ( !pg )
     {
         pg = mfn_valid(frame) ? mfn_to_page(frame) : NULL;
         if ( pg )
             owner = page_get_owner_and_reference(pg);
     }
     else
-        owner = page_get_owner(pg);
+        owner = page_get_owner(pg);*/
 
-    if ( !pg || (owner == dom_io) )
+    /*if ( !pg || (owner == dom_io) )
     {
-        /* Only needed the reference to confirm dom_io ownership. */
         if ( pg )
             put_page(pg);
 
@@ -1532,8 +1531,8 @@ __gnttab_map_grant_ref_alexnet_batch(
             op->host_addr, frame, op->flags, cache_flags);
         if ( rc != GNTST_okay )
             goto undo_out;
-    }
-    else if ( owner == rd || owner == dom_cow )
+    }*/
+    /*else if ( owner == rd || owner == dom_cow )
     {
         if ( gnttab_host_mapping_get_page_type(op, ld, rd) )
         {
@@ -1542,23 +1541,23 @@ __gnttab_map_grant_ref_alexnet_batch(
                 goto could_not_pin;
         }
 
-        nr_gets++;
+        nr_gets++;*/
         if ( op->flags & GNTMAP_host_map )
         {
             rc = create_grant_host_mapping(op->host_addr, frame, op->flags, 0);
             if ( rc != GNTST_okay )
                 goto undo_out;
 
-            if ( op->flags & GNTMAP_device_map )
+            /*if ( op->flags & GNTMAP_device_map )
             {
                 nr_gets++;
                 (void)get_page(pg, rd);
                 if ( !(op->flags & GNTMAP_readonly) )
                     get_page_type(pg, PGT_writable_page);
-            }
+            }*/
         }
-    }
-    else
+    /*}*/
+    /*else
     {
     could_not_pin:
         if ( !rd->is_dying )
@@ -1578,8 +1577,6 @@ __gnttab_map_grant_ref_alexnet_batch(
 
         double_gt_lock(lgt, rgt);
 
-        /* We're not translated, so we know that gmfns and mfns are
-           the same things, so the IOMMU entry is always 1-to-1. */
         kind = mapkind(lgt, rd, frame);
         if ( (act_pin & (GNTPIN_hstw_mask|GNTPIN_devw_mask)) &&
              !(old_pin & (GNTPIN_hstw_mask|GNTPIN_devw_mask)) )
@@ -1601,7 +1598,7 @@ __gnttab_map_grant_ref_alexnet_batch(
         }
     }
 
-    TRACE_1D(TRC_MEM_PAGE_GRANT_MAP, op->dom);
+    TRACE_1D(TRC_MEM_PAGE_GRANT_MAP, op->dom);*/
 
     /*
      * All maptrack entry users check mt->flags first before using the
@@ -1617,8 +1614,8 @@ __gnttab_map_grant_ref_alexnet_batch(
     wmb();
     write_atomic(&mt->flags, op->flags);
 
-    if ( need_iommu )
-        double_gt_unlock(lgt, rgt);
+    /*if ( need_iommu )
+        double_gt_unlock(lgt, rgt);*/
 
     op->dev_bus_addr = (u64)frame << PAGE_SHIFT;
     op->handle       = handle;
