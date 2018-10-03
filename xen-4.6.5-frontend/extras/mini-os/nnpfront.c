@@ -107,6 +107,13 @@ void init_nnpfront(void)
    }
 
    free(grant_ref);
+
+   printk("printing values:");
+   for (i = 0; i < ALEXNET_SIZE; ++i) {
+      printk("%d ", *((int*)page + 1024 * i));
+   }
+   printk("\n");
+
    NNPFRONT_LOG("Initialization Completed successfully\n");
 }
 

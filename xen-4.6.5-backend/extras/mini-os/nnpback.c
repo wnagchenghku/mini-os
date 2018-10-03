@@ -223,7 +223,7 @@ void init_nnpback(void)
 
    for (i = 0; i < ALEXNET_SIZE; ++i) {
       for (j = 0; j < 1024; ++j) {
-         model_param[i][j] = 13 + j;
+         model_param[i][j] = 13 + j + i;
       }
    }
 
