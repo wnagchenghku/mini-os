@@ -733,6 +733,7 @@ typedef struct el {
     unsigned long frame;
     uint32_t flags;
     unsigned long gfn;
+    domid_t  dom;
     struct el *next, *prev;
 } el;
 
@@ -1295,6 +1296,7 @@ __gnttab_map_grant_ref_alexnet_install(
         mapping->frame = frame;
         mapping->flags = op->flags;
         mapping->gfn = act->gfn;
+	mapping->dom = op->dom;
         DL_APPEND(alexnet_head, mapping);
         gprintk(XENLOG_WARNING, "[alexnet] map addr: %lx, frame: %lx, gfn %lx\n", op->host_addr, frame, act->gfn);
     }
@@ -1421,13 +1423,13 @@ __gnttab_map_grant_ref_alexnet_batch(
     }*/
 
     lgt = ld->grant_table;
-    if ( unlikely((handle = get_maptrack_handle(lgt)) == -1) )
+    /*if ( unlikely((handle = get_maptrack_handle(lgt)) == -1) )
     {
         rcu_unlock_domain(rd);
         gdprintk(XENLOG_INFO, "Failed to obtain maptrack handle.\n");
         op->status = GNTST_no_device_space;
         return;
-    }
+    }*/
 
     rgt = rd->grant_table;
     /*read_lock(&rgt->lock);*/
@@ -1607,11 +1609,11 @@ __gnttab_map_grant_ref_alexnet_batch(
      * with a concurrent mapcount() call (on an unmap, for example)
      * and a lock is required.
      */
-    mt = &maptrack_entry(lgt, handle);
+    /*mt = &maptrack_entry(lgt, handle);
     mt->domid = op->dom;
     mt->ref   = op->ref;
     wmb();
-    write_atomic(&mt->flags, op->flags);
+    write_atomic(&mt->flags, op->flags);*/
 
     /*if ( need_iommu )
         double_gt_unlock(lgt, rgt);*/
@@ -1884,26 +1886,29 @@ __gnttab_unmap_common_alexnet(
 
     op->frame = (unsigned long)(op->dev_bus_addr >> PAGE_SHIFT);
 
-    if ( unlikely(op->handle >= lgt->maptrack_limit) )
+    /*if ( unlikely(op->handle >= lgt->maptrack_limit) )
     {
         gdprintk(XENLOG_INFO, "Bad handle (%d).\n", op->handle);
         op->status = GNTST_bad_handle;
         return;
     }
 
-    op->map = &maptrack_entry(lgt, op->handle);
+    op->map = &maptrack_entry(lgt, op->handle);*/
 
     read_lock(&lgt->lock);
 
-    if ( unlikely(!read_atomic(&op->map->flags)) )
+    /*if ( unlikely(!read_atomic(&op->map->flags)) )
     {
         read_unlock(&lgt->lock);
         gdprintk(XENLOG_INFO, "Zero flags for handle (%d).\n", op->handle);
         op->status = GNTST_bad_handle;
         return;
-    }
+    }*/
 
-    dom = op->map->domid;
+    etmp.addr = op->host_addr;
+    DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
+    if (elt) dom = elt->dom;
+    /*dom = op->map->domid;*/
     read_unlock(&lgt->lock);
 
     if ( unlikely((rd = rcu_lock_domain_by_id(dom)) == NULL) )
@@ -1914,7 +1919,7 @@ __gnttab_unmap_common_alexnet(
         return;
     }
 
-    rc = xsm_grant_unmapref(XSM_HOOK, ld, rd);
+    /*rc = xsm_grant_unmapref(XSM_HOOK, ld, rd);
     if ( rc )
     {
         rcu_unlock_domain(rd);
@@ -1922,19 +1927,19 @@ __gnttab_unmap_common_alexnet(
         return;
     }
 
-    TRACE_1D(TRC_MEM_PAGE_GRANT_UNMAP, dom);
+    TRACE_1D(TRC_MEM_PAGE_GRANT_UNMAP, dom);*/
 
     rgt = rd->grant_table;
 
     read_lock(&rgt->lock);
 
-    op->flags = read_atomic(&op->map->flags);
+    /*op->flags = read_atomic(&op->map->flags);
     if ( unlikely(!op->flags) || unlikely(op->map->domid != dom) )
     {
         gdprintk(XENLOG_WARNING, "Unstable handle %u\n", op->handle);
         rc = GNTST_bad_handle;
         goto unmap_out;
-    }
+    }*/
 
     op->rd = rd;
     /*act = active_entry_acquire(rgt, op->map->ref);*/
@@ -1984,7 +1989,7 @@ __gnttab_unmap_common_alexnet(
 
     if ( rc == GNTST_okay && gnttab_need_iommu_mapping(ld) )
     {
-        unsigned int kind;
+        /*unsigned int kind;
         int err = 0;
 
         double_gt_lock(lgt, rgt);
@@ -1998,7 +2003,7 @@ __gnttab_unmap_common_alexnet(
         double_gt_unlock(lgt, rgt);
 
         if ( err )
-            rc = GNTST_general_error;
+            rc = GNTST_general_error;*/
     }
 
     /* If just unmapped a writable mapping, mark as dirtied */
@@ -2144,10 +2149,10 @@ __gnttab_unmap_common_complete_alexnet(struct gnttab_unmap_common *op)
     /*act = active_entry_acquire(rgt, op->map->ref);*/
     sha = shared_entry_header(rgt, op->map->ref);
 
-    if ( rgt->gt_version == 1 )
+    /*if ( rgt->gt_version == 1 )
         status = &sha->flags;
     else
-        status = &status_entry(rgt, op->map->ref);
+        status = &status_entry(rgt, op->map->ref);*/
 
     /*if ( unlikely(op->frame != act->frame) ) 
     {*/
@@ -2191,8 +2196,8 @@ __gnttab_unmap_common_complete_alexnet(struct gnttab_unmap_common *op)
         }
     }
 
-    if ( (op->map->flags & (GNTMAP_device_map|GNTMAP_host_map)) == 0 )
-        put_handle = 1;
+    /*if ( (op->map->flags & (GNTMAP_device_map|GNTMAP_host_map)) == 0 )
+        put_handle = 1;*/
 
     /*if ( ((act->pin & (GNTPIN_devw_mask|GNTPIN_hstw_mask)) == 0) &&
          !(op->flags & GNTMAP_readonly) )
@@ -2206,11 +2211,11 @@ __gnttab_unmap_common_complete_alexnet(struct gnttab_unmap_common *op)
  unlock_out:
     read_unlock(&rgt->lock);
 
-    if ( put_handle )
+    /*if ( put_handle )
     {
         op->map->flags = 0;
         put_maptrack_handle(ld->grant_table, op->handle);
-    }
+    }*/
     rcu_unlock_domain(rd);
 }
 
