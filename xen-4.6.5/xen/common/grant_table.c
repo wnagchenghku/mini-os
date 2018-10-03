@@ -2149,10 +2149,10 @@ __gnttab_unmap_common_complete_alexnet(struct gnttab_unmap_common *op)
     else
         status = &status_entry(rgt, op->map->ref);
 
-    if ( unlikely(op->frame != act->frame) ) 
+    /*if ( unlikely(op->frame != act->frame) ) 
     {
         goto act_release_out;
-    }
+    }*/
 
     pg = mfn_to_page(op->frame);
 
