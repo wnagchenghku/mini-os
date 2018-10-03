@@ -1438,8 +1438,7 @@ __gnttab_map_grant_ref_alexnet_batch(
 
     /*act = active_entry_acquire(rgt, op->ref);
     shah = shared_entry_header(rgt, op->ref);
-    status = rgt->gt_version == 1 ? &shah->flags : &status_entry(rgt, op->ref);
-    */
+    status = rgt->gt_version == 1 ? &shah->flags : &status_entry(rgt, op->ref);*/
     /* If already pinned, check the active domid and avoid refcnt overflow. */
     /*if ( act->pin &&
          ((act->domid != ld->domain_id) ||
@@ -1477,8 +1476,8 @@ __gnttab_map_grant_ref_alexnet_batch(
             act->is_sub_page = 0;
             act->trans_domain = rd;
             act->trans_gref = op->ref;*/
-        /*}
-    }*/
+        /*}*/
+    /*}*/
 
     /*old_pin = act->pin;
     if ( op->flags & GNTMAP_device_map )
@@ -1878,6 +1877,8 @@ __gnttab_unmap_common_alexnet(
     struct active_grant_entry *act;
     s16              rc = 0;
 
+    el *elt, etmp;
+
     ld = current->domain;
     lgt = ld->grant_table;
 
@@ -1936,15 +1937,13 @@ __gnttab_unmap_common_alexnet(
     }
 
     op->rd = rd;
-    /*act = active_entry_acquire(rgt, op->map->ref);
-     */
+    /*act = active_entry_acquire(rgt, op->map->ref);*/
     if ( op->frame == 0 )
     {
         /*op->frame = act->frame;*/
-	el *elt, etmp;
-	etmp.addr = op->host_addr;
-	DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
-	if (elt) op->frame = elt->frame;
+        etmp.addr = op->host_addr;
+        DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
+        if (elt) op->frame = elt->frame;
     }
     /*else
     {
@@ -1970,9 +1969,8 @@ __gnttab_unmap_common_alexnet(
                                               op->flags)) < 0 )
             goto act_release_out;
 
-        /*ASSERT(act->pin & (GNTPIN_hstw_mask | GNTPIN_hstr_mask));
-        */
-	op->map->flags &= ~GNTMAP_host_map;
+        /*ASSERT(act->pin & (GNTPIN_hstw_mask | GNTPIN_hstr_mask));*/
+        op->map->flags &= ~GNTMAP_host_map;
         /*if ( op->flags & GNTMAP_readonly )
             act->pin -= GNTPIN_hstr_inc;
         else
@@ -2143,8 +2141,7 @@ __gnttab_unmap_common_complete_alexnet(struct gnttab_unmap_common *op)
     if ( rgt->gt_version == 0 )
         goto unlock_out;
 
-    /*act = active_entry_acquire(rgt, op->map->ref);
-    */
+    /*act = active_entry_acquire(rgt, op->map->ref);*/
     sha = shared_entry_header(rgt, op->map->ref);
 
     if ( rgt->gt_version == 1 )
@@ -2161,6 +2158,7 @@ __gnttab_unmap_common_complete_alexnet(struct gnttab_unmap_common *op)
 
     if ( op->flags & GNTMAP_device_map ) 
     {
+        /*if ( !is_iomem_page(act->frame) )*/
         if ( !is_iomem_page(op->frame) )
         {
             if ( op->flags & GNTMAP_readonly )
@@ -2197,8 +2195,8 @@ __gnttab_unmap_common_complete_alexnet(struct gnttab_unmap_common *op)
         gnttab_clear_flag(_GTF_writing, status);
 
     if ( act->pin == 0 )
-        gnttab_clear_flag(_GTF_reading, status);
-     */
+        gnttab_clear_flag(_GTF_reading, status);*/
+
  act_release_out:
     /*active_entry_release(act);*/
  unlock_out:
