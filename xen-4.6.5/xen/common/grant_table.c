@@ -1296,7 +1296,7 @@ __gnttab_map_grant_ref_alexnet_install(
         mapping->frame = frame;
         mapping->flags = op->flags;
         mapping->gfn = act->gfn;
-	mapping->dom = op->dom;
+        mapping->dom = op->dom;
         DL_APPEND(alexnet_head, mapping);
         gprintk(XENLOG_WARNING, "[alexnet] map addr: %lx, frame: %lx, gfn %lx\n", op->host_addr, frame, act->gfn);
     }
@@ -1879,7 +1879,7 @@ __gnttab_unmap_common_alexnet(
     struct active_grant_entry *act;
     s16              rc = 0;
 
-    el *elt, etmp;
+    el *elt, *tmp, etmp;
 
     ld = current->domain;
     lgt = ld->grant_table;
@@ -1907,7 +1907,8 @@ __gnttab_unmap_common_alexnet(
 
     etmp.addr = op->host_addr;
     DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
-    if (elt) dom = elt->dom;
+    if (elt) tmp = elt;
+    dom = tmp->dom;
     /*dom = op->map->domid;*/
     read_unlock(&lgt->lock);
 
@@ -1946,9 +1947,7 @@ __gnttab_unmap_common_alexnet(
     if ( op->frame == 0 )
     {
         /*op->frame = act->frame;*/
-        etmp.addr = op->host_addr;
-        DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
-        if (elt) op->frame = elt->frame;
+        op->frame = tmp->frame;
     }
     /*else
     {
@@ -2146,8 +2145,8 @@ __gnttab_unmap_common_complete_alexnet(struct gnttab_unmap_common *op)
     if ( rgt->gt_version == 0 )
         goto unlock_out;
 
-    /*act = active_entry_acquire(rgt, op->map->ref);*/
-    sha = shared_entry_header(rgt, op->map->ref);
+    /*act = active_entry_acquire(rgt, op->map->ref);
+    sha = shared_entry_header(rgt, op->map->ref);*/
 
     /*if ( rgt->gt_version == 1 )
         status = &sha->flags;
