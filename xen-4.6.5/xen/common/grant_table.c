@@ -1374,7 +1374,7 @@ static void
 __gnttab_map_grant_ref_alexnet_batch(
     struct gnttab_map_grant_ref *op)
 {
-    struct domain *ld, *rd, *owner = NULL;
+    struct domain *ld, *rd/*, *owner = NULL*/;
     struct grant_table *lgt, *rgt;
     struct vcpu   *led;
     int            handle;
@@ -1385,8 +1385,8 @@ __gnttab_map_grant_ref_alexnet_batch(
     u32            act_pin;
     unsigned int   cache_flags;*/
     struct active_grant_entry *act = NULL;
-    struct grant_mapping *mt;
-    grant_entry_header_t *shah;
+    /*struct grant_mapping *mt;
+    grant_entry_header_t *shah;*/
     uint16_t *status;
     /*bool_t need_iommu;*/
     el *elt;
@@ -1667,14 +1667,14 @@ __gnttab_map_grant_ref_alexnet_batch(
     if ( !act->pin )
         gnttab_clear_flag(_GTF_reading, status);
 
- act_release_out:
+/* act_release_out:
     active_entry_release(act);
 
  unlock_out:
     read_unlock(&rgt->lock);
     op->status = rc;
     put_maptrack_handle(lgt, handle);
-    rcu_unlock_domain(rd);
+    rcu_unlock_domain(rd);*/
 }
 
 static long
