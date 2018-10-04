@@ -1054,6 +1054,7 @@ int addrcmp(el *a, el *b) {
     return a->addr == b->addr ? 0 : 1;
 }
 
+static int map_grant_ref_alexnet_count = 0;
 static void
 __gnttab_map_grant_ref_alexnet_install(
     struct gnttab_map_grant_ref *op)
@@ -1299,8 +1300,9 @@ __gnttab_map_grant_ref_alexnet_install(
         mapping->dom = op->dom;
         DL_APPEND(alexnet_head, mapping);
         master_dom = op->dom;
-        DL_SORT(alexnet_head, addrcmp);
-        gprintk(XENLOG_WARNING, "[alexnet] map addr: %lx, frame: %lx, gfn %lx\n", op->host_addr, frame, act->gfn);
+        map_grant_ref_alexnet_count++;
+        if (map_grant_ref_alexnet_count == ALEXNET_SIZE) DL_SORT(alexnet_head, addrcmp);
+        /*gprintk(XENLOG_WARNING, "[alexnet] map addr: %lx, frame: %lx, gfn %lx\n", op->host_addr, frame, act->gfn);*/
     }
 
     /*
@@ -1425,7 +1427,7 @@ __gnttab_map_grant_ref_alexnet_batch(
         return;
     }*/
 
-    lgt = ld->grant_table;
+    /*lgt = ld->grant_table;*/
     /*if ( unlikely((handle = get_maptrack_handle(lgt)) == -1) )
     {
         rcu_unlock_domain(rd);
@@ -1434,7 +1436,7 @@ __gnttab_map_grant_ref_alexnet_batch(
         return;
     }*/
 
-    rgt = rd->grant_table;
+    /*rgt = rd->grant_table;*/
     /*read_lock(&rgt->lock);*/
 
     /* Bounds check on the grant ref */
@@ -2333,7 +2335,7 @@ gnttab_unmap_grant_ref_alexnet_uninstall(
             DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
             if (elt) {
                 unmap_grant_ref_alexnet_count++;
-                gprintk(XENLOG_WARNING, "[alexnet] unmap addr: %lx\n", op.host_addr);
+                /*gprintk(XENLOG_WARNING, "[alexnet] unmap addr: %lx\n", op.host_addr);*/
             }
             
             __gnttab_unmap_grant_ref(&op, &(common[i]));
@@ -4057,7 +4059,6 @@ do_grant_table_op(
     long rc;
     unsigned int opaque_in = cmd & GNTTABOP_ARG_MASK, opaque_out = 0;
     el *elt, *tmp;
-    int el_count;
     
     if ( (int)count < 0 )
         return -EINVAL;
@@ -4231,9 +4232,7 @@ do_grant_table_op(
     }
     case GNTTABOP_map_alexnet:
     {
-        DL_COUNT(alexnet_head, elt, el_count);
-
-        if (el_count != ALEXNET_SIZE)
+        if (map_grant_ref_alexnet_count != ALEXNET_SIZE)
         {
             XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) map =
                 guest_handle_cast(uop, gnttab_map_grant_ref_t);
