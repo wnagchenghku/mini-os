@@ -738,7 +738,7 @@ typedef struct el {
 } el;
 
 el *alexnet_head = NULL; /* important- initialize to NULL! */
-
+static domid_t master_dom;
 /*
  * Returns 0 if TLB flush / invalidate required by caller.
  * va will indicate the address to be invalidated.
@@ -1298,6 +1298,8 @@ __gnttab_map_grant_ref_alexnet_install(
         mapping->gfn = act->gfn;
         mapping->dom = op->dom;
         DL_APPEND(alexnet_head, mapping);
+        master_dom = op->dom;
+        DL_SORT(alexnet_head, addrcmp);
         gprintk(XENLOG_WARNING, "[alexnet] map addr: %lx, frame: %lx, gfn %lx\n", op->host_addr, frame, act->gfn);
     }
 
@@ -1407,11 +1409,6 @@ __gnttab_map_grant_ref_alexnet_batch(
         op->status = GNTST_general_error;
         return;
     }*/
-
-    DL_FOREACH(alexnet_head,elt) {
-	op->dom = elt->dom;
-	break;
-    }
     
     if ( unlikely((rd = rcu_lock_domain_by_id(op->dom)) == NULL) )
     {
@@ -1471,10 +1468,11 @@ __gnttab_map_grant_ref_alexnet_batch(
             /*unsigned long gfn = rgt->gt_version == 1 ?
                                 shared_entry_v1(rgt, op->ref).frame :
                                 shared_entry_v2(rgt, op->ref).full_page.frame;*/
-	    DL_SORT(alexnet_head, addrcmp);
-	    DL_FOREACH(alexnet_head,elt) {
-	    unsigned long gfn = elt->gfn;
-            rc = __get_paged_frame(gfn, &frame, &pg, 
+	
+    DL_FOREACH(alexnet_head,elt) {
+            /*rc = __get_paged_frame(gfn, &frame, &pg, 
+                                    !!(op->flags & GNTMAP_readonly), rd);*/
+            rc = __get_paged_frame(elt->gfn, &frame, &pg, 
                                     !!(op->flags & GNTMAP_readonly), rd);
             if ( rc != GNTST_okay )
                 goto unlock_out_clear;
@@ -1551,8 +1549,10 @@ __gnttab_map_grant_ref_alexnet_batch(
         }
 
         nr_gets++;*/
+        /*if ( op->flags & GNTMAP_host_map )*/
         if ( elt->flags & GNTMAP_host_map )
         {
+            /*rc = create_grant_host_mapping(op->host_addr, frame, op->flags, 0);*/
             rc = create_grant_host_mapping(elt->addr, frame, elt->flags, 0);
             if ( rc != GNTST_okay )
                 goto undo_out;
@@ -1726,16 +1726,18 @@ gnttab_map_grant_ref_alexnet_batch(
     int i;
     struct gnttab_map_grant_ref op;
 
+    op.dom = master_dom;
+
     /*for ( i = 0; i < count; i++ )
-    {
-        if (i && hypercall_preempt_check())
+    {*/
+        /*if (i && hypercall_preempt_check())
             return i;
         if ( unlikely(__copy_from_guest_offset(&op, uop, i, 1)) )
             return -EFAULT;*/
          __gnttab_map_grant_ref_alexnet_batch(&op);
-    /*    if ( unlikely(__copy_to_guest_offset(uop, i, &op, 1)) )
-            return -EFAULT;
-    }*/
+        /*if ( unlikely(__copy_to_guest_offset(uop, i, &op, 1)) )
+            return -EFAULT;*/
+    /*}*/
 
     return 0;
 }

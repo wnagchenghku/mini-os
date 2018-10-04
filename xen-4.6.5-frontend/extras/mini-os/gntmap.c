@@ -164,7 +164,7 @@ _gntmap_map_grant_ref_batch(struct gntmap_entry *entry,
         printk("GNTTABOP_map_alexnet failed: "
                "returned %d, status %" PRId16 "\n",
                rc, op.status);
-        return rc != 0 ? rc : op.status;
+        // return rc != 0 ? rc : op.status;
     }
 
     entry->host_addr = host_addr;
