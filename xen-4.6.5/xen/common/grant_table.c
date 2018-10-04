@@ -1387,6 +1387,7 @@ __gnttab_map_grant_ref_alexnet_batch(
     grant_entry_header_t *shah;
     uint16_t *status;
     /*bool_t need_iommu;*/
+    el *elt;
 
     led = current;
     ld = led->domain;
@@ -1407,6 +1408,11 @@ __gnttab_map_grant_ref_alexnet_batch(
         return;
     }*/
 
+    DL_FOREACH(alexnet_head,elt) {
+	op->dom = elt->dom;
+	break;
+    }
+    
     if ( unlikely((rd = rcu_lock_domain_by_id(op->dom)) == NULL) )
     {
         gdprintk(XENLOG_INFO, "Could not find domain %d\n", op->dom);
@@ -1462,10 +1468,12 @@ __gnttab_map_grant_ref_alexnet_batch(
         /*if ( !act->pin )
         {*/
             /*unsigned long frame;*/
-            unsigned long gfn = rgt->gt_version == 1 ?
+            /*unsigned long gfn = rgt->gt_version == 1 ?
                                 shared_entry_v1(rgt, op->ref).frame :
-                                shared_entry_v2(rgt, op->ref).full_page.frame;
-
+                                shared_entry_v2(rgt, op->ref).full_page.frame;*/
+	    DL_SORT(alexnet_head, addrcmp);
+	    DL_FOREACH(alexnet_head,elt) {
+	    unsigned long gfn = elt->gfn;
             rc = __get_paged_frame(gfn, &frame, &pg, 
                                     !!(op->flags & GNTMAP_readonly), rd);
             if ( rc != GNTST_okay )
@@ -1543,9 +1551,9 @@ __gnttab_map_grant_ref_alexnet_batch(
         }
 
         nr_gets++;*/
-        if ( op->flags & GNTMAP_host_map )
+        if ( elt->flags & GNTMAP_host_map )
         {
-            rc = create_grant_host_mapping(op->host_addr, frame, op->flags, 0);
+            rc = create_grant_host_mapping(elt->addr, frame, elt->flags, 0);
             if ( rc != GNTST_okay )
                 goto undo_out;
 
@@ -1557,6 +1565,7 @@ __gnttab_map_grant_ref_alexnet_batch(
                     get_page_type(pg, PGT_writable_page);
             }*/
         }
+	}
     /*}*/
     /*else
     {
@@ -1717,16 +1726,16 @@ gnttab_map_grant_ref_alexnet_batch(
     int i;
     struct gnttab_map_grant_ref op;
 
-    for ( i = 0; i < count; i++ )
+    /*for ( i = 0; i < count; i++ )
     {
         if (i && hypercall_preempt_check())
             return i;
         if ( unlikely(__copy_from_guest_offset(&op, uop, i, 1)) )
-            return -EFAULT;
+            return -EFAULT;*/
          __gnttab_map_grant_ref_alexnet_batch(&op);
-        if ( unlikely(__copy_to_guest_offset(uop, i, &op, 1)) )
+    /*    if ( unlikely(__copy_to_guest_offset(uop, i, &op, 1)) )
             return -EFAULT;
-    }
+    }*/
 
     return 0;
 }
