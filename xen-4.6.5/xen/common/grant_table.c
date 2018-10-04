@@ -1377,7 +1377,7 @@ __gnttab_map_grant_ref_alexnet_batch(
     struct gnttab_map_grant_ref *op)
 {
     struct domain *ld, *rd/*, *owner = NULL*/;
-    struct grant_table *lgt, *rgt;
+    struct grant_table /**lgt,*/ *rgt;
     struct vcpu   *led;
     int            handle;
     unsigned long  frame = 0, nr_gets = 0;
