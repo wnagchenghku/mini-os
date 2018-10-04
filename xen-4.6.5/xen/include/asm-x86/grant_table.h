@@ -15,6 +15,9 @@
  */
 int create_grant_host_mapping(uint64_t addr, unsigned long frame,
 			      unsigned int flags, unsigned int cache_flags);
+int create_grant_host_mapping_batch(uint64_t addr, unsigned long frame,
+                  unsigned int flags, unsigned int cache_flags);
+
 int replace_grant_host_mapping(
     uint64_t addr, unsigned long frame, uint64_t new_addr, unsigned int flags);
 

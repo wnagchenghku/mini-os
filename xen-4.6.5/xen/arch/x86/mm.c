@@ -4048,6 +4048,59 @@ static int create_grant_va_mapping(
     return okay ? GNTST_okay : GNTST_general_error;
 }
 
+static int create_grant_va_mapping_batch(
+    unsigned long va, l1_pgentry_t nl1e, struct vcpu *v)
+{
+    l1_pgentry_t *pl1e, ol1e;
+    struct domain *d = v->domain;
+    unsigned long gl1mfn;
+    struct page_info *l1pg;
+    int okay;
+    
+    adjust_guest_l1e(nl1e, d);
+
+    pl1e = guest_map_l1e(v, va, &gl1mfn);
+    if ( !pl1e )
+    {
+        MEM_LOG("Could not find L1 PTE for address %lx", va);
+        return GNTST_general_error;
+    }
+
+    if ( !get_page_from_pagenr(gl1mfn, current->domain) )
+    {
+        guest_unmap_l1e(v, pl1e);
+        return GNTST_general_error;
+    }
+
+    l1pg = mfn_to_page(gl1mfn);
+    /*if ( !page_lock(l1pg) )
+    {
+        put_page(l1pg);
+        guest_unmap_l1e(v, pl1e);
+        return GNTST_general_error;
+    }
+
+    if ( (l1pg->u.inuse.type_info & PGT_type_mask) != PGT_l1_page_table )
+    {
+        page_unlock(l1pg);
+        put_page(l1pg);
+        guest_unmap_l1e(v, pl1e);
+        return GNTST_general_error;
+    }*/
+
+    ol1e = *pl1e;
+    okay = UPDATE_ENTRY(l1, pl1e, ol1e, nl1e, gl1mfn, v, 0);
+
+    /*page_unlock(l1pg);*/
+    put_page(l1pg);
+    guest_unmap_l1e(v, pl1e);
+
+    if ( okay && !paging_mode_refcounts(d) )
+        put_page_from_l1e(ol1e, d);
+
+    return okay ? GNTST_okay : GNTST_general_error;
+}
+
 static int replace_grant_va_mapping(
     unsigned long addr, unsigned long frame, l1_pgentry_t nl1e, struct vcpu *v)
 {
@@ -4167,6 +4220,37 @@ int create_grant_host_mapping(uint64_t addr, unsigned long frame,
     if ( flags & GNTMAP_contains_pte )
         return create_grant_pte_mapping(addr, pte, current);
     return create_grant_va_mapping(addr, pte, current);
+}
+
+int create_grant_host_mapping_batch(uint64_t addr, unsigned long frame, 
+                              unsigned int flags, unsigned int cache_flags)
+{
+    l1_pgentry_t pte;
+    uint32_t grant_pte_flags;
+
+    if ( paging_mode_external(current->domain) )
+        return create_grant_p2m_mapping(addr, frame, flags, cache_flags);
+
+    grant_pte_flags =
+        _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_GNTTAB;
+    if ( cpu_has_nx )
+        grant_pte_flags |= _PAGE_NX_BIT;
+
+    pte = l1e_from_pfn(frame, grant_pte_flags);
+    if ( (flags & GNTMAP_application_map) )
+        l1e_add_flags(pte,_PAGE_USER);
+    if ( !(flags & GNTMAP_readonly) )
+        l1e_add_flags(pte,_PAGE_RW);
+
+    l1e_add_flags(pte,
+                  ((flags >> _GNTMAP_guest_avail0) * _PAGE_AVAIL0)
+                   & _PAGE_AVAIL);
+
+    l1e_add_flags(pte, cacheattr_to_pte_flags(cache_flags >> 5));
+
+    if ( flags & GNTMAP_contains_pte )
+        return create_grant_pte_mapping(addr, pte, current);
+    return create_grant_va_mapping_batch(addr, pte, current);
 }
 
 static int replace_grant_p2m_mapping(

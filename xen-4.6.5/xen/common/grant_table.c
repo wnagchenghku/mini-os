@@ -1555,7 +1555,7 @@ __gnttab_map_grant_ref_alexnet_batch(
         if ( elt->flags & GNTMAP_host_map )
         {
             /*rc = create_grant_host_mapping(op->host_addr, frame, op->flags, 0);*/
-            rc = create_grant_host_mapping(elt->addr, frame, elt->flags, 0);
+            rc = create_grant_host_mapping_batch(elt->addr, frame, elt->flags, 0);
             if ( rc != GNTST_okay )
                 goto undo_out;
 
