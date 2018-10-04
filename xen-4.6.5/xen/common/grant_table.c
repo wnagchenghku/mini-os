@@ -1723,7 +1723,7 @@ static long
 gnttab_map_grant_ref_alexnet_batch(
     XEN_GUEST_HANDLE_PARAM(gnttab_map_grant_ref_t) uop, unsigned int count)
 {
-    int i;
+    /*int i;*/
     struct gnttab_map_grant_ref op;
 
     op.dom = master_dom;
