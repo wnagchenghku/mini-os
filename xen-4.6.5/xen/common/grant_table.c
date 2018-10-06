@@ -4082,7 +4082,7 @@ do_grant_table_op(
 {
     long rc;
     unsigned int opaque_in = cmd & GNTTABOP_ARG_MASK, opaque_out = 0;
-    el *elt, *tmp, *head = NULL;
+    el *elt, *tmp, *head;
     int i, isFisrt = 0;
     struct gnttab_unmap_grant_ref gnttab_unmap_op;
     
@@ -4275,6 +4275,7 @@ do_grant_table_op(
     case GNTTABOP_setup_model:
     {
         for (i = none; i <= alexnet; i++) {
+            head = NULL;
             switch(i) {
                 case alexnet:
                     head = alexnet_head;
