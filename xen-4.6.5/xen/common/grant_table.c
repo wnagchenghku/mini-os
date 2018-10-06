@@ -1479,7 +1479,7 @@ __gnttab_map_grant_ref_model_batch(
                                 shared_entry_v1(rgt, op->ref).frame :
                                 shared_entry_v2(rgt, op->ref).full_page.frame;*/
 	
-    switch(op.status) {
+    switch(op->status) {
         case alexnet:
             head = alexnet_head;
             break;
