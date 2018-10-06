@@ -156,13 +156,7 @@ _gntmap_map_grant_ref_batch(struct gntmap_entry *entry,
     if (!writable)
         op.flags |= GNTMAP_readonly;
 
-    switch(model) {
-        case alexnet:
-            rc = HYPERVISOR_grant_table_op(GNTTABOP_map_model, &op, 1);
-            break;
-        default:
-            break;
-    }
+    rc = HYPERVISOR_grant_table_op(GNTTABOP_map_model, &op, 1);
     /*if (rc != 0 || op.status != GNTST_okay) {
         printk("GNTTABOP_map_model failed: "
                "returned %d, status %" PRId16 "\n",
@@ -209,13 +203,7 @@ _gntmap_unmap_grant_ref_batch(struct gntmap_entry *entry, int model)
 
     op.status = model;
 
-    switch (model) {
-        case alexnet:
-            rc = HYPERVISOR_grant_table_op(GNTTABOP_unmap_model, &op, 1);
-            break;
-        default:
-            break;
-    }
+    rc = HYPERVISOR_grant_table_op(GNTTABOP_unmap_model, &op, 1);
 
     if (rc != 0 || op.status != GNTST_okay) {
         printk("GNTTABOP_unmap_model failed: "
