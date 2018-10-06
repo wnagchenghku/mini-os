@@ -4082,7 +4082,7 @@ do_grant_table_op(
 {
     long rc;
     unsigned int opaque_in = cmd & GNTTABOP_ARG_MASK, opaque_out = 0;
-    el *elt, *tmp, *head;
+    el *elt, *tmp, *head = NULL;
     int i, isFisrt = 0;
     struct gnttab_unmap_grant_ref gnttab_unmap_op;
     
@@ -4282,6 +4282,8 @@ do_grant_table_op(
                 default:
                     break;
             }
+            if (head == NULL)
+                continue;
             DL_FOREACH_SAFE(head,elt,tmp) {
                 DL_DELETE(head,elt);
                 xfree(elt);
