@@ -4082,8 +4082,8 @@ do_grant_table_op(
 {
     long rc;
     unsigned int opaque_in = cmd & GNTTABOP_ARG_MASK, opaque_out = 0;
-    el *elt, *tmp;
-    int isFisrt = 0;
+    el *elt, *tmp, *head;
+    int i, isFisrt = 0;
     struct gnttab_unmap_grant_ref gnttab_unmap_op;
     
     if ( (int)count < 0 )
@@ -4274,10 +4274,18 @@ do_grant_table_op(
     }
     case GNTTABOP_setup_model:
     {
-        // iterate enum
-        DL_FOREACH_SAFE(alexnet_head,elt,tmp) {
-            DL_DELETE(alexnet_head,elt);
-            xfree(elt);
+        for (i = none; i <= alexnet; i++) {
+            switch(i) {
+                case alexnet:
+                    head = alexnet_head;
+                    break;
+                default:
+                    break;
+            }
+            DL_FOREACH_SAFE(head,elt,tmp) {
+                DL_DELETE(head,elt);
+                xfree(elt);
+            }
         }
         rc = 0;
         break;
