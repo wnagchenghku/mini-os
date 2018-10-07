@@ -2354,8 +2354,7 @@ gnttab_unmap_grant_ref_model_uninstall(
             switch(op.status) {
                 case alexnet:
                     DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
-                    if (elt)
-                        unmap_grant_ref_alexnet_count++;
+                    if (elt) unmap_grant_ref_alexnet_count++;
                     break;
                 default:
                     break;
@@ -4083,7 +4082,7 @@ do_grant_table_op(
     long rc;
     unsigned int opaque_in = cmd & GNTTABOP_ARG_MASK, opaque_out = 0;
     el *elt, *tmp, *head;
-    int i, isFisrt = 0;
+    int i, isFirst = 0;
     struct gnttab_unmap_grant_ref gnttab_unmap_op;
     
     if ( (int)count < 0 )
@@ -4136,13 +4135,13 @@ do_grant_table_op(
         switch (gnttab_unmap_op.status) {
             case alexnet:
                 if (unmap_grant_ref_alexnet_count != ALEXNET_SIZE)
-                    isFisrt = 1;
+                    isFirst = 1;
                 break;
             default:
                 break;
         }
 
-        if (isFisrt)
+        if (isFirst)
             rc = gnttab_unmap_grant_ref_model_uninstall(unmap, count);
         else
             rc = gnttab_unmap_grant_ref_model_batch(unmap, count);
