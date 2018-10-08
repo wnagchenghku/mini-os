@@ -769,6 +769,9 @@ __gnttab_map_grant_ref(
     led = current;
     ld = led->domain;
 
+    s_time_t t;
+    t = NOW();
+
     if ( unlikely((op->flags & (GNTMAP_device_map|GNTMAP_host_map)) == 0) )
     {
         gdprintk(XENLOG_INFO, "Bad flags in grant map op (%x).\n", op->flags);
@@ -876,6 +879,9 @@ __gnttab_map_grant_ref(
     active_entry_release(act);
     read_unlock(&rgt->lock);
 
+    gdprintk(XENLOG_INFO, "Done %"PRI_stime" ns\n", NOW() - t);
+    t = NOW();
+
     /* pg may be set, with a refcount included, from __get_paged_frame */
     if ( !pg )
     {
@@ -980,6 +986,8 @@ __gnttab_map_grant_ref(
             goto undo_out;
         }
     }
+    gdprintk(XENLOG_INFO, "Done %"PRI_stime" ns\n", NOW() - t);
+    t = NOW();
 
     TRACE_1D(TRC_MEM_PAGE_GRANT_MAP, op->dom);
 
@@ -1005,6 +1013,9 @@ __gnttab_map_grant_ref(
     op->status       = GNTST_okay;
 
     rcu_unlock_domain(rd);
+
+    gdprintk(XENLOG_INFO, "Done %"PRI_stime" ns\n", NOW() - t);
+
     return;
 
  undo_out:
