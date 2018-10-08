@@ -778,7 +778,7 @@ static void timer_stop(void) {
             isFisrt = 0;
             continue;
         }
-        gdprintk(XENLOG_WARNING, "%"PRI_stime" ", elt->t - elt-prev->t);
+        gdprintk(XENLOG_WARNING, "%"PRI_stime" ", elt->t - elt->prev->t);
     }
 }
 
