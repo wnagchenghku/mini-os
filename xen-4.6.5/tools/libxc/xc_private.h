@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>
 
 #include "_paths.h"
 #include "xenctrl.h"

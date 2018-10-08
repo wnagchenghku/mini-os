@@ -765,12 +765,12 @@ __gnttab_map_grant_ref(
     grant_entry_header_t *shah;
     uint16_t *status;
     bool_t need_iommu;
+    
+    s_time_t t;
+    t = NOW();
 
     led = current;
     ld = led->domain;
-
-    s_time_t t;
-    t = NOW();
 
     if ( unlikely((op->flags & (GNTMAP_device_map|GNTMAP_host_map)) == 0) )
     {
