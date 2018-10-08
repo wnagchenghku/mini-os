@@ -431,7 +431,11 @@ int xc_ffs64(uint64_t x);
         ({ type __x = (x); type __y = (y); __x > __y ? __x: __y; })
 
 #define DOMPRINTF(fmt, args...) xc_dom_printf(dom->xch, fmt, ## args)
-#define DOMPRINTF_CALLED(xch) xc_dom_printf((xch), "%s: called", __FUNCTION__)
+#define DOMPRINTF_CALLED(xch) do { \
+    struct timeval tv; \
+    gettimeofday(&tv,0); \
+    xc_dom_printf((xch), "[%lu.%06lu] %s: called", tv.tv_sec, tv.tv_usec, __FUNCTION__); \
+}while(0);
 
 /**
  * vm_event operations. Internal use only.
