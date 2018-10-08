@@ -4279,6 +4279,8 @@ do_grant_table_op(
             switch(i) {
                 case alexnet:
                     head = alexnet_head;
+                    map_grant_ref_alexnet_count = 0;
+                    unmap_grant_ref_alexnet_count = 0;
                     break;
                 default:
                     break;
