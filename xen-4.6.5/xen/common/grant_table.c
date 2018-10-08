@@ -4151,6 +4151,7 @@ do_grant_table_op(
             guest_handle_add_offset(unmap, rc);
             uop = guest_handle_cast(unmap, void);
         }
+        break;
     }
     case GNTTABOP_unmap_and_replace:
     {
