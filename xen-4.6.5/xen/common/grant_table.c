@@ -739,6 +739,45 @@ typedef struct el {
 
 el *alexnet_head = NULL; /* important- initialize to NULL! */
 static domid_t master_dom;
+
+typedef struct timer_el {
+    s_time_t t;
+    struct timer_el *next, *prev;
+} timer_el;
+static timer_el *timer_head = NULL;
+static void timer_add(void) {
+    timer_el *now;
+    if ( (now = xmalloc(timer_el)) != NULL) {
+        now->t = NOW();
+        DL_APPEND(timer_head, now);
+    }
+}
+static void timer_init(void) {
+    timer_el *elt, *tmp;
+    if (timer_head != NULL) {
+        DL_FOREACH_SAFE(timer_head,elt,tmp) {
+            DL_DELETE(timer_head,elt);
+            xfree(elt);
+        }
+    }
+    timer_head = NULL;
+    timer_add();
+}
+static int timecmp(timer_el *a, timer_el *b) {
+    return a->t < b->t ? -1 : 1;
+}
+static void timer_fini(void) {
+    timer_el *elt;
+    int j;
+    timer_add();
+    DL_SORT(timer_head, timecmp);
+    j = 0;
+    DL_FOREACH(timer_head,elt) {
+        j++;
+        gdprintk(XENLOG_WARNING, "[%d] %"PRI_stime" ", j, elt->t);
+    }
+}
+
 /*
  * Returns 0 if TLB flush / invalidate required by caller.
  * va will indicate the address to be invalidated.
@@ -765,9 +804,6 @@ __gnttab_map_grant_ref(
     grant_entry_header_t *shah;
     uint16_t *status;
     bool_t need_iommu;
-    
-    s_time_t t;
-    t = NOW();
 
     led = current;
     ld = led->domain;
@@ -879,9 +915,6 @@ __gnttab_map_grant_ref(
     active_entry_release(act);
     read_unlock(&rgt->lock);
 
-    gdprintk(XENLOG_INFO, "Done %"PRI_stime" ns\n", NOW() - t);
-    t = NOW();
-
     /* pg may be set, with a refcount included, from __get_paged_frame */
     if ( !pg )
     {
@@ -986,8 +1019,6 @@ __gnttab_map_grant_ref(
             goto undo_out;
         }
     }
-    gdprintk(XENLOG_INFO, "Done %"PRI_stime" ns\n", NOW() - t);
-    t = NOW();
 
     TRACE_1D(TRC_MEM_PAGE_GRANT_MAP, op->dom);
 
@@ -1013,9 +1044,6 @@ __gnttab_map_grant_ref(
     op->status       = GNTST_okay;
 
     rcu_unlock_domain(rd);
-
-    gdprintk(XENLOG_INFO, "Done %"PRI_stime" ns\n", NOW() - t);
-
     return;
 
  undo_out:
@@ -1717,11 +1745,15 @@ gnttab_map_grant_ref(
     {
         if (i && hypercall_preempt_check())
             return i;
+        timer_init();
         if ( unlikely(__copy_from_guest_offset(&op, uop, i, 1)) )
             return -EFAULT;
-         __gnttab_map_grant_ref(&op);
+        timer_add();
+        __gnttab_map_grant_ref(&op);
+        timer_add();
         if ( unlikely(__copy_to_guest_offset(uop, i, &op, 1)) )
             return -EFAULT;
+        timer_fini();
     }
 
     return 0;
