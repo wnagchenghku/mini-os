@@ -752,7 +752,7 @@ static void timer_add(void) {
         DL_APPEND(timer_head, now);
     }
 }
-static void timer_init(void) {
+static void timer_start(void) {
     timer_el *elt, *tmp;
     if (timer_head != NULL) {
         DL_FOREACH_SAFE(timer_head,elt,tmp) {
@@ -766,7 +766,7 @@ static void timer_init(void) {
 static int timecmp(timer_el *a, timer_el *b) {
     return a->t < b->t ? -1 : 1;
 }
-static void timer_fini(void) {
+static void timer_stop(void) {
     timer_el *elt;
     int j;
     timer_add();
@@ -1745,7 +1745,7 @@ gnttab_map_grant_ref(
     {
         if (i && hypercall_preempt_check())
             return i;
-        timer_init();
+        timer_start();
         if ( unlikely(__copy_from_guest_offset(&op, uop, i, 1)) )
             return -EFAULT;
         timer_add();
@@ -1753,7 +1753,7 @@ gnttab_map_grant_ref(
         timer_add();
         if ( unlikely(__copy_to_guest_offset(uop, i, &op, 1)) )
             return -EFAULT;
-        timer_fini();
+        timer_stop();
     }
 
     return 0;
