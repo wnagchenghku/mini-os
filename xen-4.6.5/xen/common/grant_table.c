@@ -768,13 +768,17 @@ static int timecmp(timer_el *a, timer_el *b) {
 }
 static void timer_stop(void) {
     timer_el *elt;
-    int j;
+    int isFisrt;
     timer_add();
     DL_SORT(timer_head, timecmp);
-    j = 0;
+    isFisrt = 1;
     DL_FOREACH(timer_head,elt) {
-        j++;
-        gdprintk(XENLOG_WARNING, "[%d] %"PRI_stime" ", j, elt->t);
+        if (isFisrt) {
+            gdprintk(XENLOG_WARNING, "Timing ");
+            isFisrt = 0;
+            continue;
+        }
+        gdprintk(XENLOG_WARNING, "%"PRI_stime" ", elt->t - elt-prev->t);
     }
 }
 
