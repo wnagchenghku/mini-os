@@ -41,7 +41,49 @@
 #include <asm/flushtlb.h>
 
 #include <xen/utlist.h>
-enum ml_models {none, vgg11, alexnet};
+enum ml_models {none, squeezenet1_0, resnet18, alexnet, densenet121, vgg11};
+
+#define NONE_SIZE 100
+#define SQUEEZENET1_0_SIZE 1220
+#define RESNET18_SIZE 11429
+#define ALEXNET_SIZE 59669
+#define DENSENET121_SIZE 7876
+#define VGG11_SIZE 129750
+
+typedef struct el {
+    uint64_t addr;
+    unsigned long frame;
+    uint32_t flags;
+    unsigned long gfn;
+    domid_t  dom;
+    struct el *next, *prev;
+} el;
+
+el *none_head = NULL; /* important- initialize to NULL! */
+el *squeezenet1_0_head = NULL; /* important- initialize to NULL! */
+el *resnet18_head = NULL; /* important- initialize to NULL! */
+el *alexnet_head = NULL; /* important- initialize to NULL! */
+el *densenet121_head = NULL; /* important- initialize to NULL! */
+el *vgg11_head = NULL; /* important- initialize to NULL! */
+
+static int map_grant_ref_none_count = 0;
+static int unmap_grant_ref_none_count = 0;
+
+static int map_grant_ref_squeezenet1_0_count = 0;
+static int unmap_grant_ref_squeezenet1_0_count = 0;
+
+static int map_grant_ref_alexnet_count = 0;
+static int unmap_grant_ref_alexnet_count = 0;
+
+static int map_grant_ref_resnet18_count = 0;
+static int unmap_grant_ref_resnet18_count = 0;
+
+static int map_grant_ref_densenet121_count = 0;
+static int unmap_grant_ref_densenet121_count = 0;
+
+static int map_grant_ref_vgg11_count = 0;
+static int unmap_grant_ref_vgg11_count = 0;
+
 /* 
  * This option is deprecated, use gnttab_max_frames and
  * gnttab_max_maptrack_frames instead.
@@ -727,17 +769,6 @@ static unsigned int mapkind(
     return kind;
 }
 
-#define ALEXNET_SIZE 100
-typedef struct el {
-    uint64_t addr;
-    unsigned long frame;
-    uint32_t flags;
-    unsigned long gfn;
-    domid_t  dom;
-    struct el *next, *prev;
-} el;
-
-el *alexnet_head = NULL; /* important- initialize to NULL! */
 static domid_t master_dom;
 
 typedef struct timer_el {
@@ -1097,7 +1128,6 @@ int addrcmp(el *a, el *b) {
     return a->addr == b->addr ? 0 : 1;
 }
 
-static int map_grant_ref_alexnet_count = 0;
 static void
 __gnttab_map_grant_ref_model_install(
     struct gnttab_map_grant_ref *op)
@@ -1343,10 +1373,35 @@ __gnttab_map_grant_ref_model_install(
         mapping->dom = op->dom;
 
         switch(op->status) {
+            case none:
+                DL_APPEND(none_head, mapping);
+                map_grant_ref_none_count++;
+                if (map_grant_ref_none_count == NONE_SIZE) DL_SORT(none_head, addrcmp);
+                break;
+            case squeezenet1_0:
+                DL_APPEND(squeezenet1_0_head, mapping);
+                map_grant_ref_squeezenet1_0_count++;
+                if (map_grant_ref_squeezenet1_0_count == SQUEEZENET1_0_SIZE) DL_SORT(squeezenet1_0_head, addrcmp);
+                break;
             case alexnet:
                 DL_APPEND(alexnet_head, mapping);
                 map_grant_ref_alexnet_count++;
                 if (map_grant_ref_alexnet_count == ALEXNET_SIZE) DL_SORT(alexnet_head, addrcmp);
+                break;
+            case densenet121:
+                DL_APPEND(densenet121_head, mapping);
+                map_grant_ref_densenet121_count++;
+                if (map_grant_ref_densenet121_count == DENSENET121_SIZE) DL_SORT(densenet121_head, addrcmp);
+                break;
+            case vgg11:
+                DL_APPEND(vgg11_head, mapping);
+                map_grant_ref_vgg11_count++;
+                if (map_grant_ref_vgg11_count == VGG11_SIZE) DL_SORT(vgg11_head, addrcmp);
+                break;
+            case resnet18:
+                DL_APPEND(resnet18_head, mapping);
+                map_grant_ref_resnet18_count++;
+                if (map_grant_ref_resnet18_count == RESNET18_SIZE) DL_SORT(resnet18_head, addrcmp);
                 break;
             default:
                 break;
@@ -1523,8 +1578,23 @@ __gnttab_map_grant_ref_model_batch(
                                 shared_entry_v2(rgt, op->ref).full_page.frame;*/
 	
     switch(op->status) {
+        case none:
+            head = none_head;
+            break;
         case alexnet:
             head = alexnet_head;
+            break;
+        case vgg11:
+            head = vgg11_head;
+            break;
+        case densenet121:
+            head = densenet121_head;
+            break;
+        case resnet18:
+            head = resnet18_head;
+            break;
+        case squeezenet1_0:
+            head = squeezenet1_0_head;
             break;
         default:
             break;
@@ -1780,8 +1850,28 @@ gnttab_map_grant_ref_model(
             return -EFAULT;
 
         switch(op.status) {
+            case none:
+                if (map_grant_ref_none_count != NONE_SIZE)
+                    isFisrt = 1;
+                break;
+            case vgg11:
+                if (map_grant_ref_vgg11_count != VGG11_SIZE)
+                    isFisrt = 1;
+                break;
             case alexnet:
                 if (map_grant_ref_alexnet_count != ALEXNET_SIZE)
+                    isFisrt = 1;
+                break;
+            case densenet121:
+                if (map_grant_ref_densenet121_count != DENSENET121_SIZE)
+                    isFisrt = 1;
+                break;
+            case resnet18:
+                if (map_grant_ref_resnet18_count != RESNET18_SIZE)
+                    isFisrt = 1;
+                break;
+            case squeezenet1_0:
+                if (map_grant_ref_squeezenet1_0_count != SQUEEZENET1_0_SIZE)
                     isFisrt = 1;
                 break;
             default:
@@ -1979,8 +2069,23 @@ __gnttab_unmap_common_model(
 
     etmp.addr = op->host_addr;
     switch(op->status) {
+        case none:
+            head = none_head;
+            break;
         case alexnet:
             head = alexnet_head;
+            break;
+        case vgg11:
+            head = vgg11_head;
+            break;
+        case densenet121:
+            head = densenet121_head;
+            break;
+        case resnet18:
+            head = resnet18_head;
+            break;
+        case squeezenet1_0:
+            head = squeezenet1_0_head;
             break;
         default:
             break;
@@ -2377,7 +2482,7 @@ fault:
         __gnttab_unmap_common_complete(&(common[i]));
     return -EFAULT;
 }
-static int unmap_grant_ref_alexnet_count = 0;
+
 static long
 gnttab_unmap_grant_ref_model_uninstall(
     XEN_GUEST_HANDLE_PARAM(gnttab_unmap_grant_ref_t) uop, unsigned int count)
@@ -2399,9 +2504,29 @@ gnttab_unmap_grant_ref_model_uninstall(
 
             etmp.addr = op.host_addr;
             switch(op.status) {
+                case none:
+                    DL_SEARCH(none_head,elt,&etmp,addrcmp);
+                    if (elt) unmap_grant_ref_none_count++;
+                    break;
                 case alexnet:
                     DL_SEARCH(alexnet_head,elt,&etmp,addrcmp);
                     if (elt) unmap_grant_ref_alexnet_count++;
+                    break;
+                case squeezenet1_0:
+                    DL_SEARCH(squeezenet1_0_head,elt,&etmp,addrcmp);
+                    if (elt) unmap_grant_ref_squeezenet1_0_count++;
+                    break;
+                case vgg11:
+                    DL_SEARCH(vgg11_head,elt,&etmp,addrcmp);
+                    if (elt) unmap_grant_ref_vgg11_count++;
+                    break;
+                case densenet121:
+                    DL_SEARCH(densenet121_head,elt,&etmp,addrcmp);
+                    if (elt) unmap_grant_ref_densenet121_count++;
+                    break;
+                case resnet18:
+                    DL_SEARCH(resnet18_head,elt,&etmp,addrcmp);
+                    if (elt) unmap_grant_ref_resnet18_count++;
                     break;
                 default:
                     break;
@@ -4180,8 +4305,28 @@ do_grant_table_op(
         }
 
         switch (gnttab_unmap_op.status) {
+            case none:
+                if (unmap_grant_ref_none_count != NONE_SIZE)
+                    isFirst = 1;
+                break;
             case alexnet:
                 if (unmap_grant_ref_alexnet_count != ALEXNET_SIZE)
+                    isFirst = 1;
+                break;
+            case densenet121:
+                if (unmap_grant_ref_densenet121_count != DENSENET121_SIZE)
+                    isFirst = 1;
+                break;
+            case vgg11:
+                if (unmap_grant_ref_vgg11_count != VGG11_SIZE)
+                    isFirst = 1;
+                break;
+            case resnet18:
+                if (unmap_grant_ref_resnet18_count != RESNET18_SIZE)
+                    isFirst = 1;
+                break;
+            case squeezenet1_0:
+                if (unmap_grant_ref_squeezenet1_0_count != SQUEEZENET1_0_SIZE)
                     isFirst = 1;
                 break;
             default:
@@ -4321,13 +4466,38 @@ do_grant_table_op(
     }
     case GNTTABOP_setup_model:
     {
-        for (i = none; i <= alexnet; i++) {
+        for (i = none; i <= vgg11; i++) {
             head = NULL;
             switch(i) {
+                case none:
+                    head = none_head;
+                    map_grant_ref_none_count = 0;
+                    unmap_grant_ref_none_count = 0;
+                    break;
                 case alexnet:
                     head = alexnet_head;
                     map_grant_ref_alexnet_count = 0;
                     unmap_grant_ref_alexnet_count = 0;
+                    break;
+                case squeezenet1_0:
+                    head = squeezenet1_0_head;
+                    map_grant_ref_squeezenet1_0_count = 0;
+                    unmap_grant_ref_squeezenet1_0_count = 0;
+                    break;
+                case densenet121:
+                    head = densenet121_head;
+                    map_grant_ref_densenet121_count = 0;
+                    unmap_grant_ref_densenet121_count = 0;
+                    break;
+                case vgg11:
+                    head = vgg11_head;
+                    map_grant_ref_vgg11_count = 0;
+                    unmap_grant_ref_vgg11_count = 0;
+                    break;
+                case resnet18:
+                    head = resnet18_head;
+                    map_grant_ref_resnet18_count = 0;
+                    unmap_grant_ref_resnet18_count = 0;
                     break;
                 default:
                     break;
