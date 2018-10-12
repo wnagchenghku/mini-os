@@ -45,4 +45,7 @@ resnet18 needs 11425 pages. Some parameters to set:
 3. GRUB_CMDLINE_XEN="gnttab_max_frames=24000" in /etc/default/grub
 
 alexnet needs 59669 pages.
-
+squeezenet1_0 needs 1220 pages.
+resnet18 needs 11429 pages.
+densenet121 needs 7876 pages.
+vgg11 needs 129750 pages.
