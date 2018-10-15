@@ -2439,7 +2439,9 @@ __gnttab_unmap_grant_ref_model(
     common->new_addr = 0;
     common->rd = NULL;
 
+    common->status = op->status;
     __gnttab_unmap_common_model(common);
+    
     op->status = common->status;
 }
 
