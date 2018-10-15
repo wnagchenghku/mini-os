@@ -805,11 +805,11 @@ static void timer_stop(void) {
     isFisrt = 1;
     DL_FOREACH(timer_head,elt) {
         if (isFisrt) {
-            gdprintk(XENLOG_WARNING, "Timing ");
+            gdprintk(XENLOG_WARNING, "Timing Info\n");
             isFisrt = 0;
             continue;
         }
-        gdprintk(XENLOG_WARNING, "%"PRI_stime" ", elt->t - elt->prev->t);
+        gdprintk(XENLOG_WARNING, "%"PRI_stime"\n", elt->t - elt->prev->t);
     }
 }
 
