@@ -776,14 +776,21 @@ typedef struct timer_el {
     struct timer_el *next, *prev;
 } timer_el;
 static timer_el *timer_head = NULL;
+#define TIMER_INFO
+static int timecmp(timer_el *a, timer_el *b) {
+    return a->t < b->t ? -1 : 1;
+}
 static void timer_add(void) {
+#ifdef TIMER_INFO
     timer_el *now;
     if ( (now = xmalloc(timer_el)) != NULL) {
         now->t = NOW();
         DL_APPEND(timer_head, now);
     }
+#endif
 }
 static void timer_start(void) {
+#ifdef TIMER_INFO
     timer_el *elt, *tmp;
     if (timer_head != NULL) {
         DL_FOREACH_SAFE(timer_head,elt,tmp) {
@@ -793,11 +800,10 @@ static void timer_start(void) {
     }
     timer_head = NULL;
     timer_add();
-}
-static int timecmp(timer_el *a, timer_el *b) {
-    return a->t < b->t ? -1 : 1;
+#endif
 }
 static void timer_stop(void) {
+#ifdef TIMER_INFO
     timer_el *elt;
     int isFisrt;
     timer_add();
@@ -811,6 +817,7 @@ static void timer_stop(void) {
         }
         gdprintk(XENLOG_WARNING, "%"PRI_stime"\n", elt->t - elt->prev->t);
     }
+#endif
 }
 
 /*
