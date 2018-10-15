@@ -1703,7 +1703,7 @@ __gnttab_map_grant_ref_model_batch(
                     get_page_type(pg, PGT_writable_page);
             }*/
         }
-	}
+    }
     /*}*/
     /*else
     {
