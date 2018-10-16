@@ -957,8 +957,6 @@ __gnttab_map_grant_ref(
     active_entry_release(act);
     read_unlock(&rgt->lock);
 
-    timer_add();
-
     /* pg may be set, with a refcount included, from __get_paged_frame */
     if ( !pg )
     {
@@ -968,6 +966,8 @@ __gnttab_map_grant_ref(
     }
     else
         owner = page_get_owner(pg);
+
+    timer_add();
 
     if ( !pg || (owner == dom_io) )
     {
@@ -1090,7 +1090,6 @@ __gnttab_map_grant_ref(
     op->status       = GNTST_okay;
 
     rcu_unlock_domain(rd);
-    timer_add();
     return;
 
  undo_out:
