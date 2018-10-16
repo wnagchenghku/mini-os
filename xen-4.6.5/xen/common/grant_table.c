@@ -957,6 +957,8 @@ __gnttab_map_grant_ref(
     active_entry_release(act);
     read_unlock(&rgt->lock);
 
+    timer_add();
+
     /* pg may be set, with a refcount included, from __get_paged_frame */
     if ( !pg )
     {
@@ -1031,6 +1033,8 @@ __gnttab_map_grant_ref(
         goto undo_out;
     }
 
+    timer_add();
+
     need_iommu = gnttab_need_iommu_mapping(ld);
     if ( need_iommu )
     {
@@ -1086,6 +1090,7 @@ __gnttab_map_grant_ref(
     op->status       = GNTST_okay;
 
     rcu_unlock_domain(rd);
+    timer_add();
     return;
 
  undo_out:
