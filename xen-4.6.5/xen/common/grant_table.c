@@ -805,14 +805,14 @@ static void timer_start(void) {
 static void timer_stop(void) {
 #ifdef TIMER_INFO
     timer_el *elt;
-    int isFisrt;
+    int isFirst;
     timer_add();
     DL_SORT(timer_head, timecmp);
-    isFisrt = 1;
+    isFirst = 1;
     DL_FOREACH(timer_head,elt) {
-        if (isFisrt) {
+        if (isFirst) {
             gdprintk(XENLOG_WARNING, "Timing Info\n");
-            isFisrt = 0;
+            isFirst = 0;
             continue;
         }
         gdprintk(XENLOG_WARNING, "%"PRI_stime"\n", elt->t - elt->prev->t);
@@ -820,6 +820,16 @@ static void timer_stop(void) {
 #endif
 }
 
+static void measure_timer_overhead(void) {
+    int count = 100000, sum = 0, i;
+    s_time_t t;
+
+    for (i = 0; i < count; ++i) {
+        t = NOW();
+        sum += NOW() - t;
+    }
+    gdprintk(XENLOG_INFO, "average timer overhead is %d\n", sum / count);
+}
 /*
  * Returns 0 if TLB flush / invalidate required by caller.
  * va will indicate the address to be invalidated.
@@ -1826,6 +1836,12 @@ gnttab_map_grant_ref(
     int i;
     struct gnttab_map_grant_ref op;
 
+    static int isFirst = 1;
+    if (isFirst) {
+        measure_timer_overhead();
+        isFirst = 0;
+    }
+
     for ( i = 0; i < count; i++ )
     {
         if (i && hypercall_preempt_check())
@@ -1851,7 +1867,7 @@ gnttab_map_grant_ref_model(
     int i;
     struct gnttab_map_grant_ref op;
 
-    int isFisrt = 0;
+    int isFirst = 0;
 
     for ( i = 0; i < count; i++ )
     {
@@ -1863,33 +1879,33 @@ gnttab_map_grant_ref_model(
         switch(op.status) {
             case none:
                 if (map_grant_ref_none_count != NONE_SIZE)
-                    isFisrt = 1;
+                    isFirst = 1;
                 break;
             case vgg11:
                 if (map_grant_ref_vgg11_count != VGG11_SIZE)
-                    isFisrt = 1;
+                    isFirst = 1;
                 break;
             case alexnet:
                 if (map_grant_ref_alexnet_count != ALEXNET_SIZE)
-                    isFisrt = 1;
+                    isFirst = 1;
                 break;
             case densenet121:
                 if (map_grant_ref_densenet121_count != DENSENET121_SIZE)
-                    isFisrt = 1;
+                    isFirst = 1;
                 break;
             case resnet18:
                 if (map_grant_ref_resnet18_count != RESNET18_SIZE)
-                    isFisrt = 1;
+                    isFirst = 1;
                 break;
             case squeezenet1_0:
                 if (map_grant_ref_squeezenet1_0_count != SQUEEZENET1_0_SIZE)
-                    isFisrt = 1;
+                    isFirst = 1;
                 break;
             default:
                 break;
         }
 
-        if (isFisrt)
+        if (isFirst)
             __gnttab_map_grant_ref_model_install(&op);
         else {
             op.dom = master_dom;
