@@ -1620,7 +1620,7 @@ __gnttab_map_grant_ref_model_batch(
         default:
             break;
     }
-
+    
     DL_FOREACH(head,elt) {
             /*rc = __get_paged_frame(gfn, &frame, &pg, 
                                     !!(op->flags & GNTMAP_readonly), rd);*/
@@ -1909,6 +1909,8 @@ gnttab_map_grant_ref_model(
             __gnttab_map_grant_ref_model_install(&op);
         else {
             op.dom = master_dom;
+            op.flags = GNTMAP_host_map;
+            op.flags |= GNTMAP_readonly;
             __gnttab_map_grant_ref_model_batch(&op);
             return 0;
         }

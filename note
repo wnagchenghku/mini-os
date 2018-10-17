@@ -49,3 +49,6 @@ squeezenet1_0 needs 1220 pages.
 resnet18 needs 11429 pages.
 densenet121 needs 7876 pages.
 vgg11 needs 129750 pages.
+
+After running PUBLIC_GRANT once, we can turn on FAST_MODE.
+To run the traditional approach, we turn off both PUBLIC_GRANT and FAST_MODE.
