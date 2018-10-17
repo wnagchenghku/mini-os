@@ -96,6 +96,7 @@ static inline void sse_init(void) {
 void
 arch_init(start_info_t *si)
 {
+	HRT_TIMESTAMP_T t1;
 	static char hello[] = "Bootstrapping...\n";
 
 	(void)HYPERVISOR_console_io(CONSOLEIO_write, strlen(hello), hello);
