@@ -18,4 +18,12 @@ typedef struct {
 
 HRT_TIMESTAMP_T t1, t2;
 
+void printk_measure(const char *fmt, ...)
+{
+    va_list       args;
+    va_start(args, fmt);
+    print(0, fmt, args);
+    va_end(args);        
+}
+
 #endif
