@@ -46,6 +46,7 @@ extern char __app_bss_start, __app_bss_end;
 static void call_main(void *p)
 {
     char *c, quote;
+    uint64_t ticks;
 #ifdef CONFIG_QEMU_XS_ARGS
     char *domargs, *msg;
 #endif
@@ -162,6 +163,10 @@ static void call_main(void *p)
         ((void((*)(void)))__CTOR_LIST__[i]) ();
     tzset();
 
+    HRT_GET_TIMESTAMP(t2);
+    HRT_GET_ELAPSED_TICKS(t1, t2, &ticks);
+    printk_measure("boot time = %lu ticks\n", ticks);
+
     exit(main(argc, argv, envp));
 }
 
@@ -188,10 +193,6 @@ void _exit(int ret)
 
 int app_main(start_info_t *si)
 {
-    uint64_t ticks;
-    HRT_GET_TIMESTAMP(t2);
-    HRT_GET_ELAPSED_TICKS(t1, t2, &ticks);
-    printk_measure("boot time = %lu ticks\n", ticks);
     printk("main.c: dummy main: start_info=%p\n", si);
     main_thread = create_thread("main", call_main, si);
     return 0;
