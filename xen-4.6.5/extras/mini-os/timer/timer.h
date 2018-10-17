@@ -1,6 +1,9 @@
 #ifndef TIMER_H_
 #define TIMER_H_
 
+#include <unistd.h>
+#include <stdint.h>
+
 #define UINT32_T uint32_t
 #define UINT64_T uint64_t
 

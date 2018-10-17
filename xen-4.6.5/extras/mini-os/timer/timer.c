@@ -1,4 +1,5 @@
 #include "timer.h"
+#include <stdio.h>
 
 unsigned long long g_timerfreq;
 
