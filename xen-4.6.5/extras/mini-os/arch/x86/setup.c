@@ -31,6 +31,8 @@
 #include <mini-os/kernel.h>
 #include <xen/xen.h>
 
+#include "boot_measure.h"
+
 /*
  * Shared page for communicating with the hypervisor.
  * Events flags go here, for example.
@@ -96,7 +98,8 @@ static inline void sse_init(void) {
 void
 arch_init(start_info_t *si)
 {
-	HRT_TIMESTAMP_T t1;
+	HRT_GET_TIMESTAMP(t1);
+
 	static char hello[] = "Bootstrapping...\n";
 
 	(void)HYPERVISOR_console_io(CONSOLEIO_write, strlen(hello), hello);
