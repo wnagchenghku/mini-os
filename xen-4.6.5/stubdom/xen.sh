@@ -5,6 +5,7 @@ LOG_FILE="/tmp/tmp.txt"
 exec 3<> $LOG_FILE
 > $LOG_FILE
 
+xl destroy $DOMAINNAME
 xl create -p domain_config >&3
 
 DOMID=$( xl list | grep "^${DOMAINNAME}" | awk '{ print $2 }' )
