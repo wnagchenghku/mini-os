@@ -139,7 +139,7 @@ void print(int direct, const char *fmt, va_list args)
     }
 }
 
-// #define PRINT_DEBUG_INFO
+#define PRINT_DEBUG_INFO
 void printk(const char *fmt, ...)
 {
 #ifdef PRINT_DEBUG_INFO

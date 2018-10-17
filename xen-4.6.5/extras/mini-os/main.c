@@ -188,10 +188,10 @@ void _exit(int ret)
 
 int app_main(start_info_t *si)
 {
-    HRT_GET_TIMESTAMP(t2);
     uint64_t ticks;
+    HRT_GET_TIMESTAMP(t2);
     HRT_GET_ELAPSED_TICKS(t1, t2, &ticks);
-    printk("boot time =%"PRIu64" ticks\n", ticks);
+    printk("boot time =%lu ticks\n", ticks);
     printk("main.c: dummy main: start_info=%p\n", si);
     main_thread = create_thread("main", call_main, si);
     return 0;
