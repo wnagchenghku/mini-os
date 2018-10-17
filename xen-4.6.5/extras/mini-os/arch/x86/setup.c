@@ -98,10 +98,10 @@ static inline void sse_init(void) {
 void
 arch_init(start_info_t *si)
 {
-	HRT_GET_TIMESTAMP(t1);
-
 	static char hello[] = "Bootstrapping...\n";
-
+	
+	HRT_GET_TIMESTAMP(t1);
+	
 	(void)HYPERVISOR_console_io(CONSOLEIO_write, strlen(hello), hello);
 
 	trap_init();
