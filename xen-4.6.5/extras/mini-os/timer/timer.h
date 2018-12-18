@@ -44,4 +44,6 @@ typedef struct {
 /* global timer frequency in Hz */
 extern unsigned long long g_timerfreq;
 
+#define HRT_GET_USEC(ticks) 1e6/*1e4*/*(double)ticks/(double)g_timerfreq
+
 #endif /* TIMER_H_ */
